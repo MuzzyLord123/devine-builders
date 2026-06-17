@@ -56,6 +56,7 @@
     initConversionEnhancements();
     initBeforeAfter();
     initBackToTop();
+    initHeaderScrollState();
   });
 
   /* =================================================================
