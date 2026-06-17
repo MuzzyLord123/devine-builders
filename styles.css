@@ -1600,6 +1600,79 @@ body {
   .home .hero__media:hover { transform: translateY(-4px); }
 }
 
+/* ---------------------------------------------------------------------
+   Inner-page hero band — brings the animated brick wall to every page.
+   A single-column, centred dark band that hosts the SAME .bg-canvas wall
+   as the home hero. site.js finds it via the generic `.hero` selector
+   (so it paints the wall) and excludes any `.hero` + its contents from
+   scroll-reveal (so the band is visible above the fold, no flash). The
+   wall stays scoped to this band, so the rest of each page is solid white
+   and can never flash dark on a fast scroll — identical to the home hero.
+   --------------------------------------------------------------------- */
+.hero--inner {
+  display: flex;
+  align-items: center;
+  min-height: clamp(15rem, 26vh, 22rem);
+  position: relative;            /* positioning context for the .bg-canvas */
+  overflow: hidden;              /* clip the brick wall to the band */
+  isolation: isolate;
+  background: var(--color-dark); /* solid base: readable before/without JS; canvas paints over it */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.hero--inner > .container {
+  position: relative;            /* sit ABOVE the canvas */
+  z-index: 1;
+  width: 100%;
+  padding-block: var(--space-8);
+}
+@media (min-width: 48em) {
+  .hero--inner > .container { padding-block: var(--space-9); }
+}
+/* The animated wall + blue work-light can brighten the area behind the
+   copy, collapsing contrast for light text. Give the intro block its own
+   dark scrim so contrast is guaranteed independent of the wall's lit state
+   (AA floor holds even under the brightest lit pixel) — mirrors the home
+   hero's .hero__content treatment. */
+.hero--inner .section__head,
+.hero--inner .error-page {
+  background: linear-gradient(180deg, rgba(7, 11, 20, 0.84), rgba(7, 11, 20, 0.68));
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow: var(--shadow-xl), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  margin-bottom: 0;
+}
+/* Light copy over the dark scrim. The text-shadow is belt-and-braces in
+   case the scrim edge is brightened by the work-light. */
+.hero--inner .section__title,
+.hero--inner .section__lead,
+.hero--inner .error-page__title,
+.hero--inner .error-page__text {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+.hero--inner .section__title,
+.hero--inner .error-page__title { color: #f8fafc; }  /* AA even over the brightest lit pixel */
+.hero--inner .section__lead,
+.hero--inner .error-page__text { color: #e2e8f0; }   /* --color-on-dark; AA over the scrim */
+.hero--inner .section__eyebrow,
+.hero--inner .error-page__code { color: #dbeafe; }   /* light-blue accent on the dark wall */
+/* Inline links inside the band (e.g. the 404 phone/email) read light. */
+.hero--inner a:not(.btn) {
+  color: #bfdbfe;
+}
+/* Keep the blue primary button; switch secondaries to a light ghost that
+   reads on the dark wall (matches the home hero). */
+.hero--inner .btn--secondary {
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.6);
+}
+.hero--inner .btn--secondary:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: #ffffff;
+  color: #ffffff;
+}
+
 /* ---- Dark accent bands let the wall show through ----------------- */
 .service-area {
   /* deep slate with a soft blue work-light glow in the top corner + crisp edge */

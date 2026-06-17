@@ -68,9 +68,10 @@
 
     /* Scope the wall to the HERO only. Confining a dark/animated layer to the
        hero box means the rest of the page is solid white and can never "flash"
-       a dark background while scrolling quickly. Pages with no hero (gallery,
-       quote, 404) get no decorative wall at all — just clean white + a solid
-       dark footer. */
+       a dark background while scrolling quickly. EVERY page now carries a hero:
+       the home hero on index, or a `.hero hero--inner` band at the top of the
+       interior pages (services/gallery/quote/thank-you/404). A page with no
+       `.hero` at all simply gets no wall (the canvas is removed below). */
     var hero = document.querySelector(".hero");
     if (!hero) {
       if (canvas && canvas.parentNode) canvas.parentNode.removeChild(canvas);
