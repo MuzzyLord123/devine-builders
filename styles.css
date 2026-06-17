@@ -1542,12 +1542,16 @@ body {
 }
 /* Keep the blue primary button; switch the secondary to a light ghost
    that reads on the dark wall. */
-.home .hero__actions .btn--secondary {
+/* Light "ghost on dark" secondary button — shared by the home hero and every
+   inner-hero band (.hero--inner) so the treatment can't drift between them. */
+.home .hero__actions .btn--secondary,
+.hero--inner .btn--secondary {
   background: rgba(255, 255, 255, 0.06);
   color: #ffffff;
   border-color: rgba(255, 255, 255, 0.6);
 }
-.home .hero__actions .btn--secondary:hover {
+.home .hero__actions .btn--secondary:hover,
+.hero--inner .btn--secondary:hover {
   background: rgba(255, 255, 255, 0.14);
   border-color: #ffffff;
   color: #ffffff;
@@ -1660,18 +1664,8 @@ body {
 .hero--inner a:not(.btn) {
   color: #bfdbfe;
 }
-/* Keep the blue primary button; switch secondaries to a light ghost that
-   reads on the dark wall (matches the home hero). */
-.hero--inner .btn--secondary {
-  background: rgba(255, 255, 255, 0.06);
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.6);
-}
-.hero--inner .btn--secondary:hover {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: #ffffff;
-  color: #ffffff;
-}
+/* Secondary buttons in an inner-hero band get the same "ghost on dark"
+   treatment as the home hero — see `.home .hero__actions .btn--secondary` above. */
 
 /* ---- Dark accent bands let the wall show through ----------------- */
 .service-area {
