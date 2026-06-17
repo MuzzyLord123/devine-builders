@@ -663,6 +663,15 @@ ol[class] { list-style: none; padding: 0; }
   flex-wrap: wrap;
   gap: var(--space-3);
 }
+/* Centre the action buttons inside a centred section head (e.g. the services
+   hero) or immediately after one (e.g. the thank-you / closing CTAs). The home
+   hero keeps left-aligned actions — they sit in the left-aligned hero content,
+   not in/after a .section__head--center. (justify-content centres the flex row;
+   text-align:center on the parent doesn't reach flex items.) */
+.section__head--center .hero__actions,
+.section__head--center + .hero__actions {
+  justify-content: center;
+}
 .hero__trust {
   margin-top: var(--space-6);
   display: flex;
