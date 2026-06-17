@@ -141,23 +141,35 @@
 
       <div class="quote-layout">
         <!--
-          FORM SUBMISSION
+          FORM SUBMISSION — powered by FormSubmit.co (free, no account)
           ----------------------------------------------------------------
-          Default (no-JS fallback): the mailto: action below opens the
-          visitor's email client pre-addressed to phildevine24@icloud.com.
-          With JavaScript, quote.js intercepts submit, validates, and
-          composes a richer mailto: message.
+          The form POSTs to https://formsubmit.co/phildevine24@icloud.com.
 
-          TO USE A BACKEND (e.g. Formspree) INSTEAD OF mailto::
-            1. Create a form at https://formspree.io and copy the endpoint
-               (e.g. https://formspree.io/f/abcdwxyz).
-            2. Replace the action below:
-                 action="https://formspree.io/f/abcdwxyz" method="post"
-               and REMOVE enctype="text/plain" (so the no-JS POST works).
-            3. In quote.js, see the block marked
-               "OPTIONAL: send via a backend" and follow the steps there.
+          ONE-TIME SETUP: the first time the form is submitted, FormSubmit
+          emails Phil a confirmation link. He clicks it once, and from then
+          on every enquiry is delivered straight to his inbox.
+
+          With JavaScript, quote.js validates and sends it in the background
+          (FormSubmit's /ajax/ endpoint) then shows thank-you.html; if that
+          ever fails it falls back to opening the visitor's email app.
+          Without JavaScript, the plain POST above still works and uses the
+          _next field to land on thank-you.html.
+
+          Prefer Formspree or another backend? Swap the action URL here and
+          the ENDPOINT in quote.js — the field names stay the same.
         -->
-        <form class="quote-form" id="quote-form" novalidate action="mailto:phildevine24@icloud.com" method="post" enctype="text/plain">
+        <form class="quote-form" id="quote-form" novalidate method="POST" action="https://formsubmit.co/phildevine24@icloud.com">
+          <!-- FormSubmit.co settings (free, no account). The FIRST submission
+               emails phildevine24@icloud.com a one-time confirmation link;
+               once Phil clicks it, every enquiry lands in his inbox. -->
+          <input type="hidden" name="_subject" value="New quote request — Devine Builders website">
+          <input type="hidden" name="_template" value="table">
+          <input type="hidden" name="_captcha" value="false">
+          <!-- Where the no-JS POST lands after sending. Update this URL if you move to a custom domain. -->
+          <input type="hidden" name="_next" value="https://muzzylord123.github.io/devine-builders/thank-you.html">
+          <!-- Honeypot: real visitors never see or fill this; spam bots do, and FormSubmit drops those. -->
+          <input type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true" style="display:none">
+
           <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
 
           <p class="field__hint">Fields marked with an asterisk (<span class="req" aria-hidden="true">*</span>) are required.</p>

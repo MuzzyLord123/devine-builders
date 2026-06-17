@@ -2,56 +2,31 @@
    Devine Builders — quote.js
    Progressive enhancement for quote.html. Vanilla JS, defer-loaded.
 
-   Client-side validation with accessible inline errors (aria-live /
-   aria-describedby / aria-invalid), focus-the-first-invalid-field, and
-   — on a valid submit — composes a mailto: to phildevine24@icloud.com
-   with a prefilled subject + body so the default action works as a
-   fallback. A clearly commented Formspree swap is included below.
+   Accessible client-side validation (aria-live / aria-describedby /
+   aria-invalid, focus-the-first-invalid-field), then — on a valid submit —
+   sends the enquiry straight to Phil via FormSubmit.co (free, no account)
+   and shows the thank-you page. If that network send ever fails, it falls
+   back to opening the visitor's email app with a pre-filled message so the
+   enquiry can still get through. The no-JS path posts the plain <form>
+   directly to FormSubmit.
 
+   ONE-TIME SETUP (FormSubmit.co): the first submission emails Phil a
+   confirmation link; once he clicks it, every enquiry is delivered to his
+   inbox. No signup, dashboard, or endpoint key required.
    --------------------------------------------------------------------
    EXPECTED FORM CONTRACT (owned by quote.html)
    --------------------------------------------------------------------
-   <form id="quote-form" novalidate
-         action="mailto:phildevine24@icloud.com" method="post"
-         enctype="text/plain">
-
-     <!-- form-level status, polite live region -->
+   <form id="quote-form" novalidate method="POST"
+         action="https://formsubmit.co/phildevine24@icloud.com">
      <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
-
-     Each field follows this pattern (input/select/textarea):
-
-     <div class="field">
-       <label class="label" for="name">Full name <span class="req">*</span></label>
-       <input class="input" id="name" name="name" type="text"
-              autocomplete="name" required
-              aria-describedby="name-error">
-       <span class="error" id="name-error" role="alert"></span>
-     </div>
-
-     Required fields by id/name:
-       name      — text
-       email     — email (regex-validated)
-       phone     — tel  (basic length/charset check)
-       project-type — select; first <option value=""> is the placeholder
-       details   — textarea
-
-     Optional:
-       postcode  — text (not required, included in the email if present)
-
-     The project-type <select> options (value="label"):
-       ""                     → "Please choose a service…" (placeholder, disabled)
-       "Home Renovation"      → "Home Renovation"
-       "Property Maintenance" → "Property Maintenance"
-       "Garage Conversion"    → "Garage Conversion"
-       "Other / Not sure"     → "Other / Not sure"
-
-     <button class="btn btn--primary btn--lg" id="quote-submit" type="submit">
-       Get my free quote
-     </button>
+     ... fields named: name, email, phone, postcode (optional),
+         project-type, details ...
+     <button id="quote-submit" type="submit">Get my free quote</button>
    </form>
+   <div class="form-success" id="form-success" hidden></div>
 
-   Error elements MUST share the id "<fieldId>-error" and be referenced
-   by the control's aria-describedby for the wiring below to work.
+   Error elements share id "<fieldId>-error" and are referenced by each
+   control's aria-describedby.
    ===================================================================== */
 
 (function () {
@@ -179,105 +154,62 @@
         return;
       }
 
-      /* ----------------------------------------------------------------
-         VALID. Build the values object.
-         ---------------------------------------------------------------- */
+      /* ---- VALID ---- */
       var data = collect(form);
 
-      /* === DEFAULT BEHAVIOUR: mailto fallback ===
-         Opens the visitor's email client with a prefilled message to
-         Phil. Works with no backend / no server. */
-      var subject =
-        "Quote request — " + (data["project-type"] || "General enquiry") +
-        " (" + (data.name || "Website enquiry") + ")";
+      /* Build a mailto: link as a guaranteed FALLBACK if the live send fails
+         (no connection, FormSubmit unreachable, etc.). */
+      var mailto = buildMailto(data);
+      var submitBtn = document.getElementById("quote-submit");
 
-      var bodyLines = [
-        "New quote request from the Devine Builders website",
-        "------------------------------------------------------",
-        "Name:        " + (data.name || ""),
-        "Email:       " + (data.email || ""),
-        "Phone:       " + (data.phone || ""),
-        "Postcode:    " + (data.postcode || "(not given)"),
-        "Project:     " + (data["project-type"] || ""),
-        "",
-        "Details:",
-        data.details || "",
-        "",
-        "------------------------------------------------------",
-        "Sent from devinebuilders.co.uk quote form"
-      ];
-      var body = bodyLines.join("\r\n");
-
-      var mailto =
-        "mailto:" + RECIPIENT +
-        "?subject=" + encodeURIComponent(subject) +
-        "&body=" + encodeURIComponent(body);
-
-      // Trigger the email client once. We do NOT auto-redirect afterwards:
-      // a mailto: can silently fail (no mail client configured, the protocol
-      // dialog cancelled, etc.), and an unconditional timer would whisk the
-      // visitor away from their typed details to thank-you.html regardless.
-      // Instead we render a persistent success panel and let the visitor
-      // choose their next step. The form is intentionally NOT cleared, so
-      // nothing is lost if the email app didn't open. (NO-JS path: the
-      // <form> mailto action still works without this.)
-      window.location.href = mailto;
-
-      // Keep #form-status purely for the short polite announcement, and render
-      // the persistent panel (heading + links) into a separate, non-live
-      // container so the interactive controls aren't placed inside a live region.
-      if (status) {
-        setStatus(status, "Your email app should now be open.", "is-success");
-      }
-      if (successPanel) {
-        showSuccessPanel(successPanel, mailto);
+      function fallbackToEmailApp(note) {
+        if (submitBtn) submitBtn.disabled = false;
+        window.location.href = mailto;
+        if (status) setStatus(status, note, "is-success");
+        if (successPanel) showSuccessPanel(successPanel, mailto);
       }
 
-      /* ================================================================
-         OPTIONAL: send via a backend instead of (or as well as) mailto.
-         ----------------------------------------------------------------
-         To use Formspree (or any compatible JSON endpoint):
+      // Very old browser without fetch: go straight to the email-app method.
+      if (!window.fetch) {
+        fallbackToEmailApp("Your email app should now be open.");
+        return;
+      }
 
-         1. Create a form at https://formspree.io and copy your endpoint,
-            e.g. https://formspree.io/f/abcdwxyz
-         2. Comment OUT the `window.location.href = mailto;` line above.
-         3. Uncomment and adapt the block below.
+      /* PRIMARY: send straight to Phil via FormSubmit.co's CORS-friendly
+         /ajax/ endpoint, in the background, then show the thank-you page. */
+      var ENDPOINT = "https://formsubmit.co/ajax/" + RECIPIENT;
+      var payload = {
+        name: data.name || "",
+        email: data.email || "",
+        phone: data.phone || "",
+        postcode: data.postcode || "",
+        "project-type": data["project-type"] || "",
+        details: data.details || "",
+        _subject: "New quote request — Devine Builders website",
+        _template: "table"
+      };
 
-         var ENDPOINT = "https://formspree.io/f/your-id-here";
+      if (submitBtn) submitBtn.disabled = true;
+      if (status) setStatus(status, "Sending your enquiry…", "");
 
-         fetch(ENDPOINT, {
-           method: "POST",
-           headers: { "Accept": "application/json" },
-           body: new FormData(form)
-         })
-           .then(function (res) {
-             if (res.ok) {
-               // On success, send the visitor to the thank-you page.
-               window.location.assign("thank-you.html");
-             } else {
-               return res.json().then(function (j) {
-                 throw new Error((j && j.error) || "Submission failed");
-               });
-             }
-           })
-           .catch(function () {
-             setStatus(status,
-               "Sorry, something went wrong sending the form. " +
-               "Please call or email us directly.",
-               "is-error");
-           });
-
-         ALTERNATIVELY: instead of redirecting in JS, add a hidden field
-         to the <form> so Formspree redirects after a successful POST
-         (this also covers the no-JS path):
-
-           <input type="hidden" name="_next"
-                  value="https://devinebuilders.co.uk/thank-you.html">
-
-         NOTE: if you switch to Formspree, also set the <form> action to
-         the endpoint and remove enctype="text/plain" so the no-JS
-         fallback posts correctly too.
-         ================================================================ */
+      fetch(ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify(payload)
+      })
+        .then(function (res) {
+          if (!res.ok) throw new Error("HTTP " + res.status);
+          // Sent (or queued pending the one-time confirmation) → confirmation page.
+          window.location.assign("thank-you.html");
+        })
+        .catch(function () {
+          // Couldn't reach the backend — fall back to the email-app method
+          // so the enquiry can still reach Phil, without losing typed details.
+          fallbackToEmailApp(
+            "We couldn't send it directly just now — your email app should be open as a backup, " +
+            "or call or email us using the details opposite."
+          );
+        });
     });
   });
 
@@ -291,10 +223,37 @@
     var out = {};
     var els = form.querySelectorAll("input, select, textarea");
     Array.prototype.forEach.call(els, function (el) {
-      if (!el.name) return;
+      if (!el.name || el.name.charAt(0) === "_") return; // skip FormSubmit _config fields
       out[el.name] = (el.value || "").trim();
     });
     return out;
+  }
+
+  /* Build a mailto: link from the collected field values — the offline
+     fallback used only if the live (FormSubmit) send fails. */
+  function buildMailto(data) {
+    var subject =
+      "Quote request — " + (data["project-type"] || "General enquiry") +
+      " (" + (data.name || "Website enquiry") + ")";
+    var bodyLines = [
+      "New quote request from the Devine Builders website",
+      "------------------------------------------------------",
+      "Name:        " + (data.name || ""),
+      "Email:       " + (data.email || ""),
+      "Phone:       " + (data.phone || ""),
+      "Postcode:    " + (data.postcode || "(not given)"),
+      "Project:     " + (data["project-type"] || ""),
+      "",
+      "Details:",
+      data.details || "",
+      "",
+      "------------------------------------------------------",
+      "Sent from the Devine Builders website quote form"
+    ];
+    var body = bodyLines.join("\r\n");
+    return "mailto:" + RECIPIENT +
+      "?subject=" + encodeURIComponent(subject) +
+      "&body=" + encodeURIComponent(body);
   }
 
   function setError(r, msg) {
@@ -329,14 +288,12 @@
     el.textContent = msg;
   }
 
-  /* Render a persistent success panel after the mailto: is triggered, into a
-     NON-live container (not role=status / aria-live) so its interactive links
-     aren't treated as transient status announcements. Focus is moved to the
-     panel heading so keyboard/AT users are taken to it deterministically.
-     Built with DOM nodes (not innerHTML) so the user-derived mailto link
-     can't inject markup. The panel stays put — no auto-redirect — and the
-     form is left untouched so nothing is lost if the email app didn't open. */
+  /* Persistent success panel for the email-app FALLBACK path (rendered into a
+     NON-live container so its links aren't announced as transient status).
+     Built with DOM nodes (not innerHTML) so the user-derived mailto link can't
+     inject markup. Focus moves to the heading; the form is left untouched. */
   function showSuccessPanel(el, mailto) {
+    if (!el) return;
     el.className = "form-success";
     el.textContent = "";
     el.hidden = false;
@@ -369,10 +326,6 @@
     actions.appendChild(retry);
 
     el.appendChild(actions);
-
-    // Move focus to the panel so it isn't lost after the mailto: navigation
-    // attempt, and AT users land on the heading rather than relying on the
-    // (now intentionally brief) live-region announcement.
     heading.focus();
   }
 
