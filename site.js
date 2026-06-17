@@ -983,4 +983,51 @@
       mo.observe(nav, { attributes: true, attributeFilter: ["class"] });
     }
   }
+
+  /* =================================================================
+     FEATURE 6 — Scroll-aware header (all pages)
+
+     Toggles ".is-scrolled" on the sticky ".site-header" once the page is
+     scrolled down off the very top, and removes it again on return to the
+     top — the CSS uses that state to make the bar a touch more compact with
+     a crisper hairline/shadow while staying solid white and legible.
+
+     Done with an IntersectionObserver watching a 1px sentinel inserted at
+     the very top of <body>, NOT a scroll-event loop, so it costs nothing
+     while scrolling. The sentinel is visually hidden and aria-hidden, so it
+     adds no visible box, no layout shift, and nothing for assistive tech.
+
+     Fully degrade-safe: no header → no-op; no IntersectionObserver → no-op
+     (the header simply keeps its default, un-scrolled state). Idempotent.
+     ================================================================= */
+  function initHeaderScrollState() {
+    var header = document.querySelector(".site-header");
+    if (!header) return; // pages without the shared header: nothing to do.
+    if (!("IntersectionObserver" in window)) return; // old browser: stay default.
+    if (!document.body) return;
+    if (document.getElementById("header-scroll-sentinel")) return; // idempotent.
+
+    // A zero-impact marker at the very top of the page. When it scrolls out
+    // of view the page is no longer at the top; when it's back in view we're
+    // at (or near) the top again. 1px tall, visually hidden and aria-hidden
+    // so it never paints, never shifts layout, and never reaches AT.
+    var sentinel = document.createElement("div");
+    sentinel.id = "header-scroll-sentinel";
+    sentinel.setAttribute("aria-hidden", "true");
+    sentinel.style.position = "absolute";
+    sentinel.style.top = "0";
+    sentinel.style.left = "0";
+    sentinel.style.width = "1px";
+    sentinel.style.height = "1px";
+    sentinel.style.pointerEvents = "none";
+    document.body.insertBefore(sentinel, document.body.firstChild);
+
+    var io = new IntersectionObserver(function (entries) {
+      // Sentinel OUT of view → scrolled down → compact state on.
+      // Sentinel back IN view → at the top → compact state off.
+      header.classList.toggle("is-scrolled", !entries[0].isIntersecting);
+    }, { threshold: 0 });
+
+    io.observe(sentinel);
+  }
 })();

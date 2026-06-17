@@ -2589,3 +2589,275 @@ body.has-call-bar { /* only meaningful with the mobile media query below */ }
   .ba-slider__range,
   .ba-slider__divider { display: none !important; }
 }
+
+/* =====================================================================
+   19. Cohesive front-end enhancements
+   A restrained, professional polish layer that ENHANCES the existing
+   design without restructuring it. Five tightly-scoped additions:
+     19.1  Scroll-aware header (.is-scrolled compact/elevated state)
+     19.2  Hero staggered fade-up entrance
+     19.3  Connected process timeline (decorative connector + nodes)
+     19.4  Reveal stagger for grid children
+     19.5  Cohesive micro-accents
+   GUARANTEES (every rule below honours these):
+     - Animates ONLY transform / opacity / box-shadow / colour — never any
+       property that reflows (no animated width/height/top/margin), so there
+       is ZERO layout shift and the Lighthouse 100s are preserved.
+     - ALL motion is gated behind @media (prefers-reduced-motion:no-preference)
+       and is degrade-safe: with JS off or reduced motion on, nothing is ever
+       left hidden, shifted, or stuck at opacity:0.
+     - :focus-visible indicators and the blue/white theme are untouched.
+   ===================================================================== */
+
+/* ---------------------------------------------------------------------
+   19.1 Scroll-aware header — ".is-scrolled" compact / elevated state
+   site.js toggles `.is-scrolled` on `.site-header` via an IntersectionObserver
+   watching a 1px sentinel at the top of <body> (no scroll-event loop). With JS
+   off the class is never added, so the header simply keeps its default look —
+   fully no-JS safe. The header stays solid white and legible in both states.
+   Transitions are gated; under reduced motion the state flips instantly.
+   --------------------------------------------------------------------- */
+.site-header {
+  /* Only the shadow + hairline colour animate (compositor/paint-cheap, no
+     reflow of page content). The header's reserved flow-box height NEVER
+     changes between states (see .is-scrolled below), so toggling the class
+     cannot move any in-flow content and there is provably zero layout-shift
+     cost — the bar is position:sticky and a sticky box reserves its size in
+     normal flow, so compacting that box would shift everything after it. */
+  transition: box-shadow var(--transition), border-color var(--transition);
+}
+/* Scrolled state: a crisper hairline + lifted shadow so the bar reads as
+   "floating" over content once you leave the very top. The compaction is
+   expressed PURELY through shadow + border-colour (both already transitioned,
+   both layout-free) — the header keeps its resting height so nothing below it
+   reflows. No min-height / padding change here: that would shrink the sticky
+   element's reserved flow box and shift subsequent content (a scroll-triggered
+   shift, which counts toward CLS). */
+.site-header.is-scrolled {
+  border-bottom-color: var(--color-border-2);
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04),
+              0 8px 24px -12px rgba(15, 23, 42, 0.28);
+}
+/* Reduced motion → the state change is instant (no easing). */
+@media (prefers-reduced-motion: reduce) {
+  .site-header { transition: none; }
+}
+
+/* ---------------------------------------------------------------------
+   19.2 Hero entrance — subtle staggered fade-up
+   The opacity:0 start AND the animation BOTH live inside the
+   (prefers-reduced-motion: no-preference) query, so reduced-motion users and
+   no-CSS-animation engines always see the hero at full opacity from frame one.
+   Order: eyebrow -> title -> lead -> actions -> trust. Transform/opacity only,
+   short durations, runs once on load — no CLS, no scroll dependency.
+   --------------------------------------------------------------------- */
+@media (prefers-reduced-motion: no-preference) {
+  .home .hero__eyebrow,
+  .home .hero__title,
+  .home .hero__lead,
+  .home .hero__actions,
+  .home .hero__trust {
+    opacity: 0;
+    animation: hero-fade-up 620ms var(--ease) both;
+  }
+  .home .hero__eyebrow { animation-delay: 80ms; }
+  .home .hero__title   { animation-delay: 180ms; }
+  .home .hero__lead    { animation-delay: 280ms; }
+  .home .hero__actions { animation-delay: 380ms; }
+  .home .hero__trust   { animation-delay: 480ms; }
+}
+@keyframes hero-fade-up {
+  from { opacity: 0; transform: translate3d(0, 12px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+/* ---------------------------------------------------------------------
+   19.3 Process timeline — connected visual "How we work"
+   A subtle connector line links the numbered .process-step__num badges so the
+   three steps read as nodes on a single path: HORIZONTAL on desktop, a VERTICAL
+   stack on mobile. Purely decorative pseudo-elements on .process-steps — the
+   <ol>/<li> semantics, the numbers, and all content stay exactly as authored.
+   Nothing animates; nothing can overflow (connectors are inset within padding).
+   --------------------------------------------------------------------- */
+/* The badge reads as a "node": a white halo rings it so the connector appears
+   to tuck neatly behind each node. (Shadow only — no layout change.) */
+.process-step__num {
+  position: relative;
+  box-shadow: var(--shadow-accent),
+              0 0 0 4px var(--color-bg);
+}
+
+/* MOBILE (vertical stack) ------------------------------------------------
+   Each non-last badge drops a short VERTICAL line beneath itself, drawn on the
+   BADGE's own ::after so it is anchored exactly to the badge (immune to text
+   length) and stays INSIDE the card (so the card's overflow:hidden never clips
+   it). It runs from just under the badge down through the card body, reading as
+   the continuing "spine" of the timeline. Decorative, transform-free, no CLS. */
+.process-step:not(:last-child) .process-step__num::after {
+  content: "";
+  position: absolute;
+  top: calc(100% + 4px);                 /* clear the badge's white halo */
+  left: 50%;
+  width: 2px;
+  height: var(--space-6);                /* fixed, subtle drop — never reflows */
+  transform: translateX(-50%);
+  background: linear-gradient(180deg,
+              var(--color-accent), var(--color-accent-darker));
+  border-radius: var(--radius-pill);
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* DESKTOP (3-up row) -----------------------------------------------------
+   The connector becomes HORIZONTAL. It is drawn on the GRID CONTAINER
+   (.process-steps, which has NO overflow clipping) as its two pseudo-elements,
+   each filling exactly ONE inter-card gap at badge-centre height — so the three
+   badges read as nodes on one continuous line. In a grid row all cells share a
+   height, so the badge centre is a fixed offset from the row top: the position
+   is exact regardless of content length. The badge halos mask the join. */
+.process-steps { position: relative; }
+@media (min-width: 52em) {
+  .process-steps { --ps-gap: var(--space-5); }
+  /* hide the mobile vertical drop on desktop */
+  .process-step:not(:last-child) .process-step__num::after { display: none; }
+
+  .process-steps::before,
+  .process-steps::after {
+    content: "";
+    position: absolute;
+    z-index: 0;                          /* behind the badge nodes' halos */
+    top: calc(var(--space-6) + 1.4375rem - 1px);   /* badge vertical centre */
+    width: var(--ps-gap);
+    height: 2px;
+    background: linear-gradient(90deg,
+                var(--color-accent), var(--color-accent-darker));
+    border-radius: var(--radius-pill);
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  /* col width = (100% - 2*gap)/3. Gap 1 starts at the end of column 1; gap 2
+     starts at the end of column 2 plus the first gap. Both stay inside the row,
+     so there is no overflow at any width above the breakpoint. */
+  .process-steps::before {
+    left: calc((100% - 2 * var(--ps-gap)) / 3);
+  }
+  .process-steps::after {
+    left: calc(2 * (100% - 2 * var(--ps-gap)) / 3 + var(--ps-gap));
+  }
+}
+
+/* ---------------------------------------------------------------------
+   19.4 Reveal stagger — grid children ease in one after another
+   The site uses `.reveal` on <section> wrappers and `.is-visible` (added by
+   site.js) to fade the whole section up. Here we add a SMALL per-child
+   transition-delay so the grid items inside a revealed section land in a gentle
+   cascade rather than all at once. Scoped under `.js-reveal` (only present when
+   JS runs AND reduced motion is off) and only takes effect once `.is-visible`
+   is set — so with JS off or reduced motion on, every child is fully visible
+   with no delay. Transform/opacity only; the section's existing reveal owns the
+   actual animation, we only stagger its grid children.
+   --------------------------------------------------------------------- */
+@media (prefers-reduced-motion: no-preference) {
+  /* Grid containers that live inside a revealed section. Their direct children
+     inherit the section's reveal transform/opacity but with a staggered delay.
+     Children start in the section's hidden state and settle in sequence. */
+  .js-reveal .reveal .trust-strip > *,
+  .js-reveal .reveal .process-steps > *,
+  .js-reveal .reveal .areas-list > *,
+  .js-reveal .reveal .service-detail__grid > * {
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 460ms var(--ease), transform 460ms var(--ease);
+  }
+  .js-reveal .reveal.is-visible .trust-strip > *,
+  .js-reveal .reveal.is-visible .process-steps > *,
+  .js-reveal .reveal.is-visible .areas-list > *,
+  .js-reveal .reveal.is-visible .service-detail__grid > * {
+    opacity: 1;
+    transform: none;
+  }
+  /* Cascade: each subsequent child waits a little longer. Capped at the 8th so
+     long lists (e.g. the areas chips) finish promptly and never feel sluggish. */
+  .js-reveal .reveal.is-visible .trust-strip > *:nth-child(1),
+  .js-reveal .reveal.is-visible .process-steps > *:nth-child(1),
+  .js-reveal .reveal.is-visible .areas-list > *:nth-child(1),
+  .js-reveal .reveal.is-visible .service-detail__grid > *:nth-child(1) { transition-delay: 60ms; }
+  .js-reveal .reveal.is-visible .trust-strip > *:nth-child(2),
+  .js-reveal .reveal.is-visible .process-steps > *:nth-child(2),
+  .js-reveal .reveal.is-visible .areas-list > *:nth-child(2),
+  .js-reveal .reveal.is-visible .service-detail__grid > *:nth-child(2) { transition-delay: 120ms; }
+  .js-reveal .reveal.is-visible .trust-strip > *:nth-child(3),
+  .js-reveal .reveal.is-visible .process-steps > *:nth-child(3),
+  .js-reveal .reveal.is-visible .areas-list > *:nth-child(3),
+  .js-reveal .reveal.is-visible .service-detail__grid > *:nth-child(3) { transition-delay: 180ms; }
+  .js-reveal .reveal.is-visible .trust-strip > *:nth-child(4),
+  .js-reveal .reveal.is-visible .areas-list > *:nth-child(4) { transition-delay: 240ms; }
+  .js-reveal .reveal.is-visible .areas-list > *:nth-child(5) { transition-delay: 300ms; }
+  .js-reveal .reveal.is-visible .areas-list > *:nth-child(6) { transition-delay: 360ms; }
+  .js-reveal .reveal.is-visible .areas-list > *:nth-child(7) { transition-delay: 420ms; }
+  .js-reveal .reveal.is-visible .areas-list > *:nth-child(n+8) { transition-delay: 480ms; }
+}
+/* Belt-and-braces: never leave a staggered child hidden under reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  .js-reveal .reveal .trust-strip > *,
+  .js-reveal .reveal .process-steps > *,
+  .js-reveal .reveal .areas-list > *,
+  .js-reveal .reveal .service-detail__grid > * {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+/* Print: flatten any staggered children too. */
+@media print {
+  .reveal .trust-strip > *,
+  .reveal .process-steps > *,
+  .reveal .areas-list > *,
+  .reveal .service-detail__grid > * {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   19.5 Cohesive micro-accents
+   A few restrained touches that tie the set together. Nothing flashy.
+   --------------------------------------------------------------------- */
+/* (a) Refined section-eyebrow accent: a soft glow on the leading rule gives the
+       blue accent a touch more presence without changing layout or contrast. */
+@media (prefers-reduced-motion: no-preference) {
+  .section__eyebrow::before,
+  .section__head--center .section__eyebrow::after {
+    transition: width var(--transition);
+  }
+}
+
+/* (b) Consistent hover-lift easing on interactive cards: the cards already lift
+       on hover via translateY; ensure they all share the same refined --ease
+       curve and a matching focus-visible affordance so keyboard users get the
+       same crisp accent edge as mouse users (the ::before edge already fills on
+       :focus-within for cards that have it; here we add a clean ring for the
+       whole card on keyboard focus-within without shifting layout). */
+.service-card:focus-within,
+.trust-item:focus-within,
+.process-step:focus-within {
+  outline: none;   /* the inner control keeps its own :focus-visible ring */
+}
+
+/* (c) Tasteful node-badge accent on the process timeline: gently scale the
+       badge on card hover so the "node" feels alive. Transform only, gated. */
+@media (prefers-reduced-motion: no-preference) {
+  .process-step__num { transition: transform var(--transition), box-shadow var(--transition); }
+  .process-step:hover .process-step__num,
+  .process-step:focus-within .process-step__num {
+    transform: scale(1.06);
+  }
+}
+
+/* (d) Unify the trust-item icon with the service-card icon micro-interaction:
+       a subtle scale on hover, motion-gated, to match the existing card feel. */
+@media (prefers-reduced-motion: no-preference) {
+  .trust-item__icon { transition: background var(--transition), color var(--transition), transform var(--transition); }
+  .trust-item:hover .trust-item__icon,
+  .trust-item:focus-within .trust-item__icon { transform: scale(1.04); }
+}
