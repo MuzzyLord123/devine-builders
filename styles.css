@@ -708,15 +708,17 @@ ol[class] { list-style: none; padding: 0; }
    8. Services grid (home — 3 cards)
    --------------------------------------------------------------------- */
 .services-grid {
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;   /* full rows fill edge-to-edge; only a partial last row centres (no lopsided gap) */
   gap: var(--space-4);
-  grid-template-columns: 1fr;
 }
+.services-grid > * { flex: 0 1 100%; }                                      /* mobile: 1 per row */
 @media (min-width: 40em) {
-  .services-grid { grid-template-columns: repeat(2, 1fr); }
+  .services-grid > * { flex-basis: calc((100% - var(--space-4)) / 2); }     /* 2 per row */
 }
 @media (min-width: 60em) {
-  .services-grid { grid-template-columns: repeat(3, 1fr); }
+  .services-grid > * { flex-basis: calc((100% - 2 * var(--space-4)) / 3); } /* 3 per row */
 }
 .service-card {
   position: relative;
@@ -893,16 +895,21 @@ ol[class] { list-style: none; padding: 0; }
 
 /* ---------------------------------------------------------------------
    11. Gallery grid
-   1 col mobile → 2 col small tablet → 3 col desktop → 4 col wide
+   1 col mobile → 2 col small tablet → 3 col desktop; a partial last row centres
    --------------------------------------------------------------------- */
 .gallery {
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;   /* full rows fill; a partial last row centres (no lopsided gap) */
   gap: var(--space-4);
-  grid-template-columns: 1fr;
 }
-@media (min-width: 36em) { .gallery { grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 60em) { .gallery { grid-template-columns: repeat(3, 1fr); } }
-@media (min-width: 80em) { .gallery { grid-template-columns: repeat(4, 1fr); } }
+.gallery__item { flex: 0 1 100%; }                                          /* mobile: 1 per row */
+@media (min-width: 36em) {
+  .gallery__item { flex-basis: calc((100% - var(--space-4)) / 2); }         /* 2 per row */
+}
+@media (min-width: 60em) {
+  .gallery__item { flex-basis: calc((100% - 2 * var(--space-4)) / 3); }     /* 3 per row */
+}
 
 .gallery__item { margin: 0; }
 /* The clickable thumbnail is a <button> for full keyboard support */
