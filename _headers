@@ -1,0 +1,18 @@
+# Security & best-practice response headers.
+# Read automatically by Netlify and Cloudflare Pages on deploy.
+# (Plain static hosts like GitHub Pages ignore this file — set headers their own way.)
+
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), usb=()
+  Cross-Origin-Opener-Policy: same-origin
+
+  # Content-Security-Policy — uncomment AFTER testing on your live domain.
+  # Tuned to what this site actually uses: same-origin scripts (site.js / gallery.js /
+  # quote.js), inline styles (the site injects a couple of styles and uses <style> in
+  # <noscript>), data: images (the gallery's inline-SVG broken-image placeholder), and
+  # mailto: form submission. If you turn on a cookie-free analytics provider, add its
+  # domain to script-src and connect-src.
+  # Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; base-uri 'self'; form-action 'self' mailto:; frame-ancestors 'self'; object-src 'none'

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<!-- OWNER: configure your host to serve 404.html for unknown URLs.
+     A static file host needs configuration to actually return this page
+     for missing routes; for local/offline use it is directly viewable. -->
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Page not found | Devine Builders</title>
+  <meta name="description" content="Sorry, we couldn't find that page. Head back to the Devine Builders home page, view our work or request a free quote.">
+  <meta name="author" content="Devine Builders">
+  <meta name="theme-color" content="#1d4ed8">
+  <!-- 404 pages must not be indexed; follow links so crawlers can recover. -->
+  <meta name="robots" content="noindex, follow">
+  <!-- SEO / social — OWNER: replace https://www.devinebuilders.co.uk with your real domain. -->
+  <!-- Canonical points at this page's own URL (PLACEHOLDER domain — update to
+       real domain), matching the per-page convention documented on the other
+       pages (404.html -> .../404.html). Harmless on a noindex page. -->
+  <link rel="canonical" href="https://www.devinebuilders.co.uk/404.html">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Page not found | Devine Builders">
+  <meta property="og:description" content="Sorry, we couldn't find that page. Head back to the Devine Builders home page, view our work or request a free quote.">
+  <meta property="og:url" content="https://www.devinebuilders.co.uk/404.html">
+  <meta property="og:site_name" content="Devine Builders">
+  <meta property="og:locale" content="en_GB">
+  <meta property="og:image" content="https://www.devinebuilders.co.uk/og-cover.svg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Page not found | Devine Builders">
+  <meta name="twitter:description" content="Sorry, we couldn't find that page. Head back to the Devine Builders home page, view our work or request a free quote.">
+  <meta name="twitter:image" content="https://www.devinebuilders.co.uk/og-cover.svg">
+  <!-- Icons & manifest -->
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="site.webmanifest">
+
+  <!-- No-JS fallback: the mobile nav panel is collapsed by default and only
+       opened by site.js. With JavaScript disabled the hamburger does nothing,
+       so on mobile we statically expand the nav (and its "Get a Quote" CTA)
+       and hide the now-useless toggle. Identical block on every page. -->
+  <noscript>
+    <style>
+      @media (max-width: 47.99em) {
+        .nav-toggle { display: none; }
+        .primary-nav {
+          position: static;
+          max-height: none;
+          overflow: visible;
+          opacity: 1;
+          visibility: visible;
+          transform: none;
+        }
+      }
+    </style>
+  </noscript>
+
+  <link rel="stylesheet" href="styles.css">
+<!-- =====================================================================
+     PRIVACY-FRIENDLY, COOKIE-FREE ANALYTICS  (disabled by default)
+     ---------------------------------------------------------------------
+     NOTHING loads until you uncomment ONE option below, so the site stays
+     fully offline by default. All options are COOKIELESS and collect no
+     personal data, so they need NO cookie/consent banner under UK GDPR/PECR.
+     Pick one, set your domain/token, and deploy.
+
+     1) Plausible (plausible.io):
+     <script defer data-domain="devinebuilders.co.uk" src="https://plausible.io/js/script.js"></script>
+
+     2) Cloudflare Web Analytics (free):
+     <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"YOUR_TOKEN"}'></script>
+
+     3) GoatCounter (goatcounter.com):
+     <script data-goatcounter="https://YOURCODE.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+     ===================================================================== -->
+</head>
+<body>
+  <canvas class="bg-canvas" aria-hidden="true"></canvas>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="container site-header__inner">
+      <a class="brand" href="index.html" aria-label="Devine Builders — home">
+        <span class="brand__mark" aria-hidden="true">DB</span>
+        <span>
+          <span class="brand__name">Devine Builders</span>
+          <span class="brand__tagline">Connah's Quay &middot; North Wales</span>
+        </span>
+      </a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Open menu">
+        <span class="nav-toggle__box" aria-hidden="true">
+          <span class="nav-toggle__bar"></span>
+          <span class="nav-toggle__bar"></span>
+          <span class="nav-toggle__bar"></span>
+        </span>
+      </button>
+      <nav class="primary-nav" id="primary-nav" aria-label="Primary">
+        <ul class="primary-nav__list" id="primary-nav-list">
+          <li><a class="primary-nav__link" href="index.html">Home</a></li>
+          <li><a class="primary-nav__link" href="services.html">Services</a></li>
+          <li><a class="primary-nav__link" href="gallery.html">Gallery</a></li>
+          <li><a class="primary-nav__cta" href="quote.html">Get a Quote</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="section" id="main" tabindex="-1">
+    <div class="container">
+      <div class="error-page">
+        <p class="error-page__code">404</p>
+        <h1 class="error-page__title">We couldn't find that page</h1>
+        <p class="error-page__text">The page you were looking for may have
+           been moved or no longer exists. Let's get you back on track.</p>
+        <div class="error-page__actions">
+          <a class="btn btn--primary btn--lg" href="index.html">Back to home</a>
+          <a class="btn btn--secondary btn--lg" href="gallery.html">View our work</a>
+          <a class="btn btn--secondary btn--lg" href="quote.html">Get a quote</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container site-footer__inner">
+      <div class="footer-brand">
+        <p class="footer-brand__name">Devine Builders</p>
+        <p class="footer-brand__text">Trusted home renovations, property maintenance and garage conversions across Connah's Quay, Flintshire and North Wales. Run by Phil Devine.</p>
+      </div>
+      <div class="footer-col">
+        <h2 class="footer-col__title">Explore</h2>
+        <ul class="footer-list">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="services.html">Services</a></li>
+          <li><a href="gallery.html">Gallery</a></li>
+          <li><a href="quote.html">Get a Quote</a></li>
+          <li><a href="devine-builders-services.pdf" download>Services brochure (PDF)</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h2 class="footer-col__title">Get in touch</h2>
+        <ul class="footer-list">
+          <li class="footer-contact-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/></svg>
+            <a href="tel:+447956547040">+44 7956 547040</a>
+          </li>
+          <li class="footer-contact-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>
+            <a href="mailto:phildevine24@icloud.com">phildevine24@icloud.com</a>
+          </li>
+          <li class="footer-contact-item">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7A10 10 0 0 0 22 12Z"/></svg>
+            <a href="https://www.facebook.com/phillip.devine1/" target="_blank" rel="noopener">Facebook</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="container footer-bottom__inner">
+        <span>&copy; 2026 Devine Builders. All rights reserved.</span>
+        <span>Connah's Quay, Flintshire, North Wales</span>
+      </div>
+    </div>
+  </footer>
+  <script src="site.js" defer></script>
+</body>
+</html>

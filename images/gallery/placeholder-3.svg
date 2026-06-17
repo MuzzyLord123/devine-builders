@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Devine Builders project photo placeholder">
+  <rect width="800" height="600" fill="#eef2f6"/>
+  <rect x="1" y="1" width="798" height="598" fill="none" stroke="#e2e8f0" stroke-width="2"/>
+  <g fill="none" stroke="#cbd5e1" stroke-width="10" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M250 360h300M250 360l70-90 55 65 45-55 80 80"/>
+    <circle cx="330" cy="250" r="26"/>
+  </g>
+  <rect x="300" y="300" width="200" height="6" fill="#2563eb" opacity="0.55"/>
+  <text x="400" y="450" text-anchor="middle" font-family="system-ui,Segoe UI,Arial,sans-serif" font-size="34" font-weight="700" fill="#475569">Devine Builders</text>
+  <text x="400" y="492" text-anchor="middle" font-family="system-ui,Segoe UI,Arial,sans-serif" font-size="24" fill="#94a3b8">Project Photo</text>
+</svg>

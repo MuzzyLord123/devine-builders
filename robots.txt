@@ -1,0 +1,6 @@
+# Devine Builders — robots.txt
+# OWNER: update the Sitemap URL below to your real domain.
+User-agent: *
+Allow: /
+
+Sitemap: https://www.devinebuilders.co.uk/sitemap.xml
