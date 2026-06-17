@@ -16,3 +16,20 @@
   # mailto: form submission. If you turn on a cookie-free analytics provider, add its
   # domain to script-src and connect-src.
   # Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; base-uri 'self'; form-action 'self' mailto:; frame-ancestors 'self'; object-src 'none'
+
+# --- Caching (read by Netlify / Cloudflare Pages; GitHub Pages ignores this) ---
+# HTML is always revalidated so deploys/content edits show up immediately.
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+# Static assets get a SHORT TTL rather than long/immutable: filenames are not
+# fingerprinted and images may be swapped in place, so we must not pin stale copies.
+/*.css
+  Cache-Control: public, max-age=3600
+/*.js
+  Cache-Control: public, max-age=3600
+/*.svg
+  Cache-Control: public, max-age=3600
+/images/*
+  Cache-Control: public, max-age=3600
+/*.woff2
+  Cache-Control: public, max-age=86400

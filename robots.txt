@@ -3,4 +3,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://www.devinebuilders.co.uk/sitemap.xml
+Sitemap: https://muzzylord123.github.io/devine-builders/sitemap.xml
