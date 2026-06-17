@@ -400,15 +400,21 @@ ol[class] { list-style: none; padding: 0; }
 }
 
 .btn--primary {
-  /* accent-dark (#1d4ed8) gives ~5.9:1 against #fff — passes WCAG AA for normal
-     text. The gradient stays inside accent-dark→darker so contrast holds. */
-  background: linear-gradient(180deg, var(--color-accent) 0%, var(--color-accent-dark) 100%);
+  /* SOLID colour first as a guaranteed fallback: Chrome can drop a
+     linear-gradient background-IMAGE when the button sits inside a composited
+     .reveal section, which left the fill transparent (white label on a white
+     section — an unreadable CTA). The background-COLOUR always paints, so the
+     button is never invisible; the gradient just layers on top where it renders.
+     accent-dark (#1d4ed8) gives ~5.9:1 against #fff (WCAG AA). */
+  background-color: var(--color-accent-dark);
+  background-image: linear-gradient(180deg, var(--color-accent) 0%, var(--color-accent-dark) 100%);
   color: #ffffff;
   border-color: var(--color-accent-dark);
   box-shadow: var(--shadow-accent);
 }
 .btn--primary:hover {
-  background: linear-gradient(180deg, var(--color-accent-dark) 0%, var(--color-accent-darker) 100%);
+  background-color: var(--color-accent-darker);
+  background-image: linear-gradient(180deg, var(--color-accent-dark) 0%, var(--color-accent-darker) 100%);
   border-color: var(--color-accent-darker);
   color: #fff;
   box-shadow: var(--shadow-accent-lg);
@@ -1867,7 +1873,10 @@ body {
   width: 2.875rem;
   height: 2.875rem;
   border-radius: 50%;
-  background: linear-gradient(160deg, var(--color-accent) 0%, var(--color-accent-darker) 100%);
+  /* Solid colour fallback under the gradient (same Chrome composited-.reveal
+     gradient-drop bug as .btn--primary) so the numbered badges never go blank. */
+  background-color: var(--color-accent-dark);
+  background-image: linear-gradient(160deg, var(--color-accent) 0%, var(--color-accent-darker) 100%);
   color: #fff;
   font-weight: 800;
   font-size: var(--fs-500);
@@ -2981,36 +2990,13 @@ body.has-call-bar { /* only meaningful with the mobile media query below */ }
    transform/opacity, all motion-gated, none affecting layout or focus rings.
    --------------------------------------------------------------------- */
 @media (prefers-reduced-motion: no-preference) {
-  /* (a) Primary CTAs in the hero / nav get a faint sheen sweep on hover. The
-         sheen is a clipped pseudo-element that slides across — purely cosmetic,
-         pointer-events:none, and contained by the button's own border-radius so
-         it never spills or shifts layout. */
-  .btn--primary,
-  .primary-nav__cta {
-    position: relative;
-    overflow: hidden;
-    isolation: isolate;
-  }
-  .btn--primary::after,
-  .primary-nav__cta::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: -1;                 /* behind the label, above the button fill */
-    background: linear-gradient(
-      100deg,
-      transparent 30%,
-      rgba(255, 255, 255, 0.22) 50%,
-      transparent 70%
-    );
-    transform: translateX(-120%);
-    transition: transform 620ms var(--ease);
-    pointer-events: none;
-  }
-  .btn--primary:hover::after,
-  .primary-nav__cta:hover::after {
-    transform: translateX(120%);
-  }
+  /* (a) The hover "sheen sweep" on primary CTAs was REMOVED. Giving
+         .btn--primary position:relative + overflow:hidden + a pseudo-element
+         caused Chrome to DROP the button's gradient fill whenever the button
+         sat inside a composited .reveal section — leaving white label text on a
+         white fill (an unreadable call-to-action). The buttons keep their solid
+         gradient fill + hover lift, which is clean and rock-solid; the flourish
+         wasn't worth the rendering risk. */
 
   /* (b) Footer link arrow nudge already exists; mirror the same crisp feel on
          contact-card rows so the dark surfaces share one interaction grammar.
@@ -3023,9 +3009,7 @@ body.has-call-bar { /* only meaningful with the mobile media query below */ }
   .contact-item:hover .contact-item__icon { transform: translateY(-1px); }
 }
 
-/* Reduced motion: kill the sheen + nudge entirely. */
+/* Reduced motion: kill the contact-icon nudge. */
 @media (prefers-reduced-motion: reduce) {
-  .btn--primary::after,
-  .primary-nav__cta::after { display: none; }
   .contact-item:hover .contact-item__icon { transform: none; }
 }
