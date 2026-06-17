@@ -2028,15 +2028,22 @@ body {
    prefers-reduced-motion is "no-preference".
    --------------------------------------------------------------------- */
 .reveal { /* no visual change by itself */ }
+/* Refined, cohesive fade-up. One rule set deliberately covers BOTH the few
+   sections that ship with class="reveal" in the HTML AND every section that
+   site.js auto-tags with the SAME `.reveal` class at runtime — so the whole
+   site shares one consistent entrance. Uses the project easing curve and a
+   short, premium duration. Transform/opacity ONLY (compositor-friendly, zero
+   layout shift): the element's box is fully reserved while hidden. */
 .js-reveal .reveal {
   opacity: 0;
-  transform: translateY(16px);
-  transition: opacity 480ms ease, transform 480ms ease;
+  transform: translateY(18px);
+  transition: opacity 520ms var(--ease), transform 520ms var(--ease);
   will-change: opacity, transform;
 }
 .js-reveal .reveal.is-visible {
   opacity: 1;
   transform: none;
+  will-change: auto;   /* release the hint once settled */
 }
 /* Belt-and-braces: if reduced motion is on, never hide content even if the
    flag class somehow got added. */
@@ -2045,7 +2052,12 @@ body {
     opacity: 1 !important;
     transform: none !important;
     transition: none !important;
+    will-change: auto !important;
   }
+}
+/* Print: every revealed section must be solid ink on paper. */
+@media print {
+  .reveal { opacity: 1 !important; transform: none !important; }
 }
 
 /* ---------------------------------------------------------------------
@@ -2860,4 +2872,160 @@ body.has-call-bar { /* only meaningful with the mobile media query below */ }
   .trust-item__icon { transition: background var(--transition), color var(--transition), transform var(--transition); }
   .trust-item:hover .trust-item__icon,
   .trust-item:focus-within .trust-item__icon { transform: scale(1.04); }
+}
+
+/* =====================================================================
+   20. Cross-document View Transitions + cohesive entrance/interaction polish
+   Pure progressive enhancement. Browsers without the View Transitions API
+   simply navigate normally; everything below is transform/opacity only and
+   fully neutralised under prefers-reduced-motion, so the perfect Lighthouse
+   scores and CLS 0 are preserved.
+   ===================================================================== */
+
+/* ---------------------------------------------------------------------
+   20.1 Cross-document View Transitions (page-to-page crossfade)
+   `navigation: auto` opts every same-origin navigation into a smooth
+   default crossfade. The persistent header (and footer) get a STABLE
+   view-transition-name so the browser MORPHS them across pages instead of
+   cross-fading — the chrome stays put while the content swaps beneath it.
+   The API already disables itself under prefers-reduced-motion; we also
+   guard our custom names + animations in an explicit reduced-motion reset.
+   --------------------------------------------------------------------- */
+@view-transition {
+  navigation: auto;
+}
+
+/* Keep the default crossfade subtle and fast. The root snapshot owns the
+   page-content fade; the named header/footer morph independently. */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-group(root) {
+    animation-duration: 320ms;
+    animation-timing-function: var(--ease);
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 320ms;
+    animation-timing-function: var(--ease);
+  }
+
+  /* Persistent chrome morphs in place rather than flashing. Because these
+     regions are visually identical across pages, the morph reads as the
+     header/footer simply "staying" while the body content transitions. */
+  .site-header { view-transition-name: site-header; }
+  .site-footer { view-transition-name: site-footer; }
+
+  /* Give the morphing chrome a snappy, near-instant settle so it never
+     drifts or smears during the swap. */
+  ::view-transition-group(site-header),
+  ::view-transition-group(site-footer) {
+    animation-duration: 240ms;
+    animation-timing-function: var(--ease);
+  }
+}
+
+/* Reduced motion: no view-transition animation, no custom names, no morph.
+   Belt-and-braces on top of the API's own reduced-motion handling. */
+@media (prefers-reduced-motion: reduce) {
+  .site-header,
+  .site-footer { view-transition-name: none; }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   20.2 Cohesive reveal nuance by element type
+   The single `.reveal` rule (17.5) gives every section a harmonious fade-up.
+   Here we vary the DISTANCE/feel subtly by element kind so the entrance reads
+   as intentional rather than uniform — still transform/opacity only, still
+   gated, still box-reserving. Dark bands and cards settle from a gentler
+   offset so heavy surfaces don't feel like they "drop". The head deliberately
+   has no separate entrance — it rides the parent fade as one cohesive move.
+   Never applied to anything but already-revealed boxes.
+   --------------------------------------------------------------------- */
+@media (prefers-reduced-motion: no-preference) {
+  /* The section head intentionally has NO separate entrance: the parent
+     `.reveal` already carries it as part of one cohesive fade-up. A second
+     opacity:0 layer here would compound multiplicatively with the parent
+     (parentOpacity × childOpacity) and stack transforms, making the heading
+     read as a laggy "fade within a fade" that desyncs from its own section.
+     One owner, one entrance. */
+
+  /* Heavy dark surfaces (service-area band, contact card) ease from a calmer,
+     shorter offset so they feel grounded, not bouncy. */
+  .js-reveal .reveal .service-area,
+  .js-reveal .reveal .contact-card {
+    transform: translateY(10px);
+    transition: opacity 560ms var(--ease), transform 560ms var(--ease);
+  }
+}
+/* Reduced motion: flatten the per-type nuance too. */
+@media (prefers-reduced-motion: reduce) {
+  .js-reveal .reveal .service-area,
+  .js-reveal .reveal .contact-card {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+@media print {
+  .reveal .service-area,
+  .reveal .contact-card { opacity: 1 !important; transform: none !important; }
+}
+
+/* ---------------------------------------------------------------------
+   20.3 Restrained interaction touches
+   A few small "alive" details that match the existing hover language. All
+   transform/opacity, all motion-gated, none affecting layout or focus rings.
+   --------------------------------------------------------------------- */
+@media (prefers-reduced-motion: no-preference) {
+  /* (a) Primary CTAs in the hero / nav get a faint sheen sweep on hover. The
+         sheen is a clipped pseudo-element that slides across — purely cosmetic,
+         pointer-events:none, and contained by the button's own border-radius so
+         it never spills or shifts layout. */
+  .btn--primary,
+  .primary-nav__cta {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .btn--primary::after,
+  .primary-nav__cta::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;                 /* behind the label, above the button fill */
+    background: linear-gradient(
+      100deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.22) 50%,
+      transparent 70%
+    );
+    transform: translateX(-120%);
+    transition: transform 620ms var(--ease);
+    pointer-events: none;
+  }
+  .btn--primary:hover::after,
+  .primary-nav__cta:hover::after {
+    transform: translateX(120%);
+  }
+
+  /* (b) Footer link arrow nudge already exists; mirror the same crisp feel on
+         contact-card rows so the dark surfaces share one interaction grammar.
+         The base icon already transitions colour/border — we layer transform on
+         top here (gated) so the nudge eases rather than snaps. */
+  .contact-item__icon {
+    transition: background var(--transition), color var(--transition),
+                border-color var(--transition), transform var(--transition);
+  }
+  .contact-item:hover .contact-item__icon { transform: translateY(-1px); }
+}
+
+/* Reduced motion: kill the sheen + nudge entirely. */
+@media (prefers-reduced-motion: reduce) {
+  .btn--primary::after,
+  .primary-nav__cta::after { display: none; }
+  .contact-item:hover .contact-item__icon { transform: none; }
 }

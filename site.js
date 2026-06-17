@@ -685,18 +685,41 @@
    * No-JS safe and reduced-motion safe: the CSS only hides `.reveal`
    * once the root carries the `.js-reveal` flag class, which we add
    * here ONLY when JS runs AND motion is allowed. So no-JS users and
-   * reduced-motion users always see fully-visible content.            */
+   * reduced-motion users always see fully-visible content.
+   *
+   * SITE-WIDE: on top of any `.reveal` sections authored in the HTML, we
+   * programmatically tag the remaining top-level <main> content SECTIONS
+   * (and, on pages whose <main> is itself a single section, its safe intro
+   * block) with the SAME `.reveal` class, then hand them to the SAME
+   * IntersectionObserver — so the whole site eases in on scroll without a
+   * second, competing system. Auto-tagging is strictly opt-OUT: the hero,
+   * header, footer, canvas, lightbox, call bar, back-to-top, skip-link and
+   * the scroll sentinel are excluded, and any block that hosts a form, the
+   * before/after slider or other critical interactive UI is left fully
+   * visible and untouched. It is idempotent (never re-tags an element that
+   * is already `.reveal` or sits inside one), CLS-safe (transform/opacity
+   * only, via the shared CSS) and never hides content that is already in
+   * the viewport on load (those are marked visible synchronously, so there
+   * is no flash and nothing can get stuck hidden).                       */
   function initScrollReveal() {
     var canAnimate = !prefersReducedMotion();
     if (!canAnimate) return; // leave content visible; never add the flag.
 
-    document.documentElement.classList.add("js-reveal");
+    var hasIO = "IntersectionObserver" in window;
+
+    // Only add the hidden-state flag + auto-tag extra sections when we can
+    // actually observe them back into view. Without IntersectionObserver we
+    // skip both, so nothing is ever hidden that we couldn't reveal again.
+    if (hasIO) {
+      document.documentElement.classList.add("js-reveal");
+      autoTagReveal();
+    }
 
     var nodes = document.querySelectorAll(".reveal");
     if (!nodes.length) return;
 
     var i;
-    if ("IntersectionObserver" in window) {
+    if (hasIO) {
       var io = new IntersectionObserver(
         function (entries, obs) {
           for (var e = 0; e < entries.length; e++) {
@@ -709,11 +732,114 @@
         },
         { rootMargin: "0px 0px -10% 0px", threshold: 0.05 }
       );
-      for (i = 0; i < nodes.length; i++) io.observe(nodes[i]);
+      for (i = 0; i < nodes.length; i++) {
+        var node = nodes[i];
+        // Anything already on screen at load reveals immediately (no flash,
+        // never stuck at opacity:0); everything below the fold animates in.
+        if (node.classList.contains("is-visible") || inViewportNow(node)) {
+          node.classList.add("is-visible");
+        } else {
+          io.observe(node);
+        }
+      }
     } else {
-      // No IntersectionObserver: just show everything, no animation.
+      // No IntersectionObserver: just show everything, no animation. (We also
+      // never added `js-reveal` above, so these were never hidden to begin
+      // with — this is purely belt-and-braces.)
       for (i = 0; i < nodes.length; i++) nodes[i].classList.add("is-visible");
     }
+  }
+
+  /* Is the element's top edge already within (or above) the current viewport?
+   * Used so above-the-fold reveals are shown synchronously and never flash. */
+  function inViewportNow(el) {
+    var r = el.getBoundingClientRect();
+    var vh = window.innerHeight || document.documentElement.clientHeight || 0;
+    // Mirror the observer's "-10% bottom" bias: count it visible if its top is
+    // above 90% of the viewport height (and it isn't entirely above us).
+    return r.top < vh * 0.9 && r.bottom > 0;
+  }
+
+  /* Programmatically extend the reveal to every eligible top-level <main>
+   * content SECTION that the HTML didn't already tag. Reuses the existing
+   * `.reveal` contract end-to-end — we only add the class; the shared CSS +
+   * IntersectionObserver do the rest. Excludes all decorative/interactive
+   * chrome and never touches the hero or anything inside an existing reveal. */
+  function autoTagReveal() {
+    var mains = document.querySelectorAll("main");
+    if (!mains.length) return;
+
+    for (var m = 0; m < mains.length; m++) {
+      var main = mains[m];
+      var sections = directChildSections(main);
+
+      if (sections.length) {
+        // Normal pages: tag each eligible top-level <section>.
+        for (var s = 0; s < sections.length; s++) {
+          tagIfEligible(sections[s]);
+        }
+      } else {
+        // Single-section pages (e.g. the quote form, the 404 page) where
+        // <main> IS the section. We must NEVER hide the form/critical block,
+        // so we only reveal the safe intro/heading block(s) and leave the
+        // rest (form, error actions, contact panel) permanently visible.
+        // tagIfEligible still refuses any block that hosts a form/slider, and
+        // anything already on screen reveals instantly (no flash), so these
+        // small above-the-fold pages stay solid and usable either way.
+        var heads = main.querySelectorAll(".section__head, .error-page");
+        if (heads.length) {
+          for (var h = 0; h < heads.length; h++) tagIfEligible(heads[h]);
+        }
+      }
+    }
+  }
+
+  /* Direct <section> children of an element (no querySelector descendant
+   * surprises — only the page's true top-level section blocks). */
+  function directChildSections(parent) {
+    var out = [];
+    var kids = parent.children;
+    for (var i = 0; i < kids.length; i++) {
+      if (kids[i].tagName === "SECTION") out.push(kids[i]);
+    }
+    return out;
+  }
+
+  /* Add `.reveal` to a block IFF it is safe to animate. Idempotent and
+   * conservative: bail on anything already revealed (or inside a reveal),
+   * the hero, excluded chrome, or any block that hosts critical interactive
+   * UI (a form, the before/after slider or the lightbox) which must always
+   * stay fully visible and functional. */
+  function tagIfEligible(el) {
+    if (!el || el.nodeType !== 1) return;
+
+    // Idempotent: already animated, or nested inside an existing reveal.
+    if (el.classList.contains("reveal")) return;
+    if (el.closest && el.closest(".reveal")) return;
+
+    // The hero owns its own entrance — never auto-reveal it or its contents.
+    if (el.classList.contains("hero")) return;
+    if (el.closest && el.closest(".hero")) return;
+
+    // Excluded chrome / decorative / floating UI. Bail if the candidate IS,
+    // CONTAINS, or sits INSIDE any of these.
+    var EXCLUDE = [
+      ".site-header", ".site-footer", "header", "footer",
+      "canvas.bg-canvas", ".lightbox", "#lightbox",
+      ".call-bar", "#call-bar", "#to-top", ".skip-link",
+      "#header-scroll-sentinel"
+    ].join(",");
+    if (el.matches && el.matches(EXCLUDE)) return;
+    if (el.closest && el.closest(EXCLUDE)) return;
+    if (el.querySelector && el.querySelector(EXCLUDE)) return;
+
+    // Critical interactive UI must never be hidden behind a reveal. Reveal at
+    // SECTION granularity only — if this block hosts a form or the
+    // before/after slider, leave it permanently visible.
+    if (el.querySelector && el.querySelector("form, [data-ba-slider]")) return;
+    if (el.matches && el.matches("form, [data-ba-slider]")) return;
+
+    el.classList.add("reveal");
   }
 
   /* ---- (b) sticky mobile call bar ---------------------------------- *
