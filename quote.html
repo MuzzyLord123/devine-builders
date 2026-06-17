@@ -136,7 +136,7 @@
       <div class="section__head section__head--center">
         <p class="section__eyebrow">Free &middot; No obligation</p>
         <h1 class="section__title">Get a free quote</h1>
-        <p class="section__lead">Tell us a little about your home renovation, property maintenance or garage conversion project and Phil will get back to you with a friendly, no-pressure quote. We cover Connah's Quay, Flintshire and the wider North Wales area.</p>
+        <p class="section__lead">Tell us a little about your home renovation, property maintenance or garage conversion project and Phil will get back to you with a friendly, no-pressure quote. We cover Connah's Quay, Flintshire and the wider North Wales area &mdash; Phil usually replies within a day or two.</p>
       </div>
 
       <div class="quote-layout">
@@ -177,7 +177,8 @@
           <div class="form-row form-row--split">
             <div class="field">
               <label class="label" for="phone">Phone number <span class="req" aria-hidden="true">*</span></label>
-              <input class="input" id="phone" name="phone" type="tel" autocomplete="tel" required inputmode="tel" aria-describedby="phone-error">
+              <input class="input" id="phone" name="phone" type="tel" autocomplete="tel" required inputmode="tel" aria-describedby="phone-hint phone-error">
+              <span class="field__hint" id="phone-hint">So Phil can call you back to talk the job through.</span>
               <span class="error" id="phone-error" role="alert"></span>
             </div>
             <div class="field">
@@ -201,19 +202,26 @@
 
           <div class="field">
             <label class="label" for="details">Project details <span class="req" aria-hidden="true">*</span></label>
-            <textarea class="textarea" id="details" name="details" rows="5" required aria-describedby="details-error"></textarea>
+            <span class="field__hint" id="details-hint">Roughly what you'd like done, where the property is, and any rough timescale. A sentence or two is plenty.</span>
+            <textarea class="textarea" id="details" name="details" rows="5" required aria-describedby="details-hint details-error"></textarea>
             <span class="error" id="details-error" role="alert"></span>
           </div>
 
           <div class="form-actions">
-            <button class="btn btn--primary btn--lg btn--block" id="quote-submit" type="submit">Send my enquiry</button>
+            <button class="btn btn--primary btn--lg btn--block" id="quote-submit" type="submit">Get my free quote</button>
+            <p class="field__hint form-actions__note">Your details are only used to reply to your enquiry — never shared or sold. Prefer not to fill in a form? Just call or email Phil using the details opposite.</p>
           </div>
         </form>
+
+        <!-- Persistent success panel (populated by quote.js after a valid submit).
+             Kept OUT of the #form-status live region so the interactive links
+             aren't announced as transient status text. -->
+        <div class="form-success" id="form-success" hidden></div>
 
         <aside class="contact-aside" aria-label="Contact Devine Builders directly">
           <div class="contact-card">
             <h2 class="contact-card__title">Prefer to talk?</h2>
-            <p class="contact-card__text">Call or email Phil directly — happy to help and answer any questions about your project.</p>
+            <p class="contact-card__text">Rather speak to someone? Call or email Phil directly — he'll happily talk through your project, no obligation.</p>
             <div class="contact-list">
               <div class="contact-item">
                 <span class="contact-item__icon">

@@ -1249,6 +1249,36 @@ ol[class] { list-style: none; padding: 0; }
   border: 1px solid #fecaca;
 }
 
+/* Persistent success panel rendered by quote.js after a valid submit.
+   Visually matches the form's success state but lives in a NON-live
+   container, so its links aren't announced as transient status text. */
+.form-success {
+  margin-bottom: var(--space-5);
+  padding: var(--space-4);
+  border-radius: var(--radius-sm);
+  color: var(--color-success);
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+}
+.form-success[hidden] { display: none; }
+.form-success__heading {
+  display: block;
+  font-weight: 600;
+}
+.form-success__heading:focus-visible {
+  outline: 2px solid var(--color-success);
+  outline-offset: 3px;
+}
+.form-success p { margin-top: var(--space-2); }
+.form-success__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-4);
+  margin-top: var(--space-4);
+}
+.form-success__retry { font-weight: 600; }
+
 .form-actions { margin-top: var(--space-2); }
 
 /* Direct-contact block (sidebar) */

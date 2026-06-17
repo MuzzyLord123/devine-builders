@@ -46,7 +46,7 @@
        "Other / Not sure"     → "Other / Not sure"
 
      <button class="btn btn--primary btn--lg" id="quote-submit" type="submit">
-       Send my enquiry
+       Get my free quote
      </button>
    </form>
 
@@ -107,7 +107,7 @@
       label: "some details",
       validate: function (v) {
         if (!v) return "Please tell us a little about the job.";
-        if (v.length < 10) return "Please add a little more detail (10+ characters).";
+        if (v.length < 10) return "Please add a little more about the job (a sentence or two is plenty).";
         return "";
       }
     }
@@ -126,6 +126,7 @@
     if (!form) return; // Nothing to enhance.
 
     var status = document.getElementById("form-status");
+    var successPanel = document.getElementById("form-success");
 
     // Cache control + error element references per field.
     var refs = FIELDS.map(function (f) {
@@ -151,6 +152,7 @@
       // We control submission entirely.
       e.preventDefault();
       clearStatus(status);
+      hideSuccessPanel(successPanel);
 
       var firstInvalid = null;
 
@@ -211,24 +213,25 @@
         "?subject=" + encodeURIComponent(subject) +
         "&body=" + encodeURIComponent(body);
 
-      if (status) {
-        setStatus(
-          status,
-          "Opening your email app to send this enquiry to Phil… " +
-            "If nothing happens, call or email us using the details on the right.",
-          "is-success"
-        );
-      }
-
-      // Trigger the email client.
+      // Trigger the email client once. We do NOT auto-redirect afterwards:
+      // a mailto: can silently fail (no mail client configured, the protocol
+      // dialog cancelled, etc.), and an unconditional timer would whisk the
+      // visitor away from their typed details to thank-you.html regardless.
+      // Instead we render a persistent success panel and let the visitor
+      // choose their next step. The form is intentionally NOT cleared, so
+      // nothing is lost if the email app didn't open. (NO-JS path: the
+      // <form> mailto action still works without this.)
       window.location.href = mailto;
 
-      // Then send the visitor to the thank-you page. The short delay gives
-      // the email client a moment to open before navigation. (NO-JS path:
-      // the <form> mailto action still works without this redirect.)
-      window.setTimeout(function () {
-        window.location.assign("thank-you.html");
-      }, 600);
+      // Keep #form-status purely for the short polite announcement, and render
+      // the persistent panel (heading + links) into a separate, non-live
+      // container so the interactive controls aren't placed inside a live region.
+      if (status) {
+        setStatus(status, "Your email app should now be open.", "is-success");
+      }
+      if (successPanel) {
+        showSuccessPanel(successPanel, mailto);
+      }
 
       /* ================================================================
          OPTIONAL: send via a backend instead of (or as well as) mailto.
@@ -324,6 +327,60 @@
     if (!el) return;
     el.className = "form-status " + (cls || "");
     el.textContent = msg;
+  }
+
+  /* Render a persistent success panel after the mailto: is triggered, into a
+     NON-live container (not role=status / aria-live) so its interactive links
+     aren't treated as transient status announcements. Focus is moved to the
+     panel heading so keyboard/AT users are taken to it deterministically.
+     Built with DOM nodes (not innerHTML) so the user-derived mailto link
+     can't inject markup. The panel stays put — no auto-redirect — and the
+     form is left untouched so nothing is lost if the email app didn't open. */
+  function showSuccessPanel(el, mailto) {
+    el.className = "form-success";
+    el.textContent = "";
+    el.hidden = false;
+
+    var heading = document.createElement("strong");
+    heading.className = "form-success__heading";
+    heading.setAttribute("tabindex", "-1");
+    heading.textContent = "Your enquiry is ready to send.";
+    el.appendChild(heading);
+
+    var hint = document.createElement("p");
+    hint.textContent =
+      "Just press Send in your email app to get this enquiry to Phil. " +
+      "Nothing opened? Use the button below, or call or email us directly.";
+    el.appendChild(hint);
+
+    var actions = document.createElement("p");
+    actions.className = "form-success__actions";
+
+    var cont = document.createElement("a");
+    cont.className = "btn btn--secondary";
+    cont.href = "thank-you.html";
+    cont.textContent = "Continue";
+    actions.appendChild(cont);
+
+    var retry = document.createElement("a");
+    retry.className = "form-success__retry";
+    retry.href = mailto;
+    retry.textContent = "Open my email app again";
+    actions.appendChild(retry);
+
+    el.appendChild(actions);
+
+    // Move focus to the panel so it isn't lost after the mailto: navigation
+    // attempt, and AT users land on the heading rather than relying on the
+    // (now intentionally brief) live-region announcement.
+    heading.focus();
+  }
+
+  function hideSuccessPanel(el) {
+    if (!el) return;
+    el.hidden = true;
+    el.textContent = "";
+    el.className = "form-success";
   }
 
   function clearStatus(el) {

@@ -764,18 +764,32 @@
       "M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"
     ]);
     bar.appendChild(
-      btn("call", "tel:+447956547040", "Call Phil on 07956 547040", phoneSvg, "Call Phil")
+      btn("call", "tel:+447956547040", "Call Phil on +44 7956 547040", phoneSvg, "Call Phil")
     );
 
-    var quoteSvg = svg([
-      "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z",
-      "M14 2v6h6",
-      "M9 13h6",
-      "M9 17h4"
-    ]);
-    bar.appendChild(
-      btn("quote", "quote.html", "Get a quote — free, no obligation", quoteSvg, "Get a quote")
-    );
+    // On the quote page itself the 'Get a quote' button would link to the
+    // current page — a dead, redundant control. Offer a genuine alternative
+    // action (email Phil) instead, while keeping the two-up grid intact.
+    var onQuote = !!document.getElementById("quote-form");
+    if (onQuote) {
+      var mailSvg = svg([
+        "M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z",
+        "M22 7 12 13 2 7"
+      ]);
+      bar.appendChild(
+        btn("quote", "mailto:phildevine24@icloud.com", "Email Phil at phildevine24@icloud.com", mailSvg, "Email Phil")
+      );
+    } else {
+      var quoteSvg = svg([
+        "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z",
+        "M14 2v6h6",
+        "M9 13h6",
+        "M9 17h4"
+      ]);
+      bar.appendChild(
+        btn("quote", "quote.html", "Get a quote — free, no obligation", quoteSvg, "Get a quote")
+      );
+    }
 
     // Append as the LAST child of <body> so it is a sibling AFTER
     // #lightbox where present; gallery.js's setBackgroundHidden iterates
