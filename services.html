@@ -449,7 +449,17 @@
           <h2 class="section__title" id="capabilities-title">The full list of what we take on</h2>
           <p class="section__lead">Big build or small repair, here's the full range of work Devine Builders covers across North Wales. Not listed? Just <a href="quote.html">ask</a> &mdash; if it's a building job, there's a good chance we can help.</p>
         </div>
-        <ul class="services-grid">
+        <div class="service-filter">
+          <div class="service-filter__field">
+            <span class="service-filter__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            </span>
+            <label class="visually-hidden" for="service-filter">Filter our services</label>
+            <input class="service-filter__input" id="service-filter" type="search" inputmode="search" autocomplete="off" placeholder="Filter services — e.g. roofing, plastering, driveways…">
+          </div>
+          <p class="service-filter__count" id="service-filter-count" role="status" aria-live="polite"></p>
+        </div>
+        <ul class="services-grid" id="capabilities-grid">
           <li class="service-card">
             <h3 class="service-card__title">Extensions &amp; New Builds</h3>
             <ul class="service-card__list">
@@ -580,6 +590,7 @@
             </ul>
           </li>
         </ul>
+        <p class="services-empty" id="services-empty" hidden>No services match that search. Try a different word, or <a href="quote.html">just ask Phil</a> &mdash; chances are we still cover it.</p>
       </div>
     </section>
 

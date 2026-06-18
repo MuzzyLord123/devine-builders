@@ -3096,3 +3096,88 @@ body.has-call-bar { /* only meaningful with the mobile media query below */ }
 @media (prefers-reduced-motion: reduce) {
   .contact-item:hover .contact-item__icon { transform: none; }
 }
+
+/* =====================================================================
+   Interactive features (progressive enhancement — all no-JS safe)
+   Scroll-progress bar, animated stat count-up, services live filter,
+   and the quote-form smart helper. Vanilla CSS, on-brand, offline.
+   ===================================================================== */
+
+/* ---- Scroll progress bar (injected by site.js on every page) ------- */
+.scroll-progress {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 3px;
+  transform: scaleX(0);
+  transform-origin: left center;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-darker));
+  z-index: 150;            /* above the header (100), below the lightbox (200) */
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* ---- Services live filter (services.html capabilities section) ----- */
+.service-filter {
+  max-width: 34rem;
+  margin: 0 auto var(--space-6);
+}
+.service-filter__field { position: relative; }
+.service-filter__icon {
+  position: absolute;
+  left: var(--space-4);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.1rem;
+  height: 1.1rem;
+  color: var(--color-ink-faint);
+  pointer-events: none;
+}
+.service-filter__icon svg { width: 100%; height: 100%; display: block; }
+.service-filter__input {
+  width: 100%;
+  font: inherit;
+  font-size: var(--fs-400);
+  color: var(--color-ink);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border-2);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-xs);
+  padding: 0.7rem var(--space-4) 0.7rem calc(var(--space-4) * 2 + 1.1rem);
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.service-filter__input::placeholder { color: var(--color-ink-faint); }
+.service-filter__input:focus-visible {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
+.service-filter__count {
+  margin: var(--space-2) 0 0;
+  text-align: center;
+  font-size: var(--fs-300);
+  color: var(--color-ink-soft);
+  min-height: 1.25rem;
+}
+.services-empty {
+  text-align: center;
+  color: var(--color-ink-soft);
+  font-size: var(--fs-500);
+  padding: var(--space-6) 0;
+}
+/* A filtered-out card: `.service-card` sets display:flex (an author rule that
+   out-ranks the UA [hidden] rule), so hiding needs this explicit override. */
+.service-card[hidden] { display: none; }
+
+/* ---- Quote-form smart helper (quote.html) -------------------------- */
+.field-tip {
+  margin: var(--space-3) 0 0;
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--fs-300);
+  line-height: var(--lh-base);
+  color: var(--color-ink-soft);
+  background: var(--color-accent-soft);
+  border: 1px solid #bfdbfe;
+  border-left: 3px solid var(--color-accent);
+  border-radius: var(--radius);
+}
+.field-tip[hidden] { display: none; }

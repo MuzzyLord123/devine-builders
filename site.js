@@ -57,6 +57,10 @@
     initBeforeAfter();
     initBackToTop();
     initHeaderScrollState();
+    initScrollProgress();
+    initStatCounters();
+    initServiceFilter();
+    initQuoteHelper();
   });
 
   /* =================================================================
@@ -1156,5 +1160,158 @@
     }, { threshold: 0 });
 
     io.observe(sentinel);
+  }
+
+  /* =================================================================
+     FEATURE — Scroll progress bar (all pages)
+     A 3px accent bar at the very top that tracks reading progress.
+     Injected here so no per-page markup is needed; rAF-throttled.
+     ================================================================= */
+  function initScrollProgress() {
+    var bar = document.createElement("div");
+    bar.className = "scroll-progress";
+    bar.setAttribute("aria-hidden", "true");
+    document.body.appendChild(bar);
+
+    var ticking = false;
+    function update() {
+      var doc = document.documentElement;
+      var max = doc.scrollHeight - doc.clientHeight;
+      var y = window.pageYOffset || doc.scrollTop || 0;
+      var p = max > 0 ? y / max : 0;
+      if (p < 0) p = 0; else if (p > 1) p = 1;
+      bar.style.transform = "scaleX(" + p + ")";
+      ticking = false;
+    }
+    function onScroll() {
+      if (!ticking) { ticking = true; requestAnimationFrame(update); }
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+    update();
+  }
+
+  /* =================================================================
+     FEATURE — Animated stat count-up (home "About" stats)
+     Counts each .stat__num up from 0 when scrolled into view. Only
+     touches pure-integer values (e.g. "8", "100%") and leaves things
+     like "1:1" alone. Honours reduced-motion / no-IntersectionObserver
+     by leaving the real values untouched (no reset, no flash).
+     ================================================================= */
+  function initStatCounters() {
+    var nums = document.querySelectorAll(".stat__num");
+    if (!nums.length) return;
+    if (prefersReducedMotion() || !("IntersectionObserver" in window)) return;
+
+    var items = [];
+    for (var i = 0; i < nums.length; i++) {
+      var raw = nums[i].textContent.trim();
+      var m = raw.match(/^(\d+)(\D*)$/);     // integer with optional suffix (e.g. %)
+      if (!m) continue;                       // skip non-numeric like "1:1"
+      items.push({ el: nums[i], target: parseInt(m[1], 10), suffix: m[2], raw: raw });
+    }
+    if (!items.length) return;
+
+    function find(el) {
+      for (var j = 0; j < items.length; j++) { if (items[j].el === el) return items[j]; }
+      return null;
+    }
+    function animate(item) {
+      var start = null, dur = 1100;
+      function step(ts) {
+        if (start === null) start = ts;
+        var t = (ts - start) / dur;
+        if (t > 1) t = 1;
+        var eased = 1 - Math.pow(1 - t, 3);   // ease-out cubic
+        item.el.textContent = Math.round(eased * item.target) + item.suffix;
+        if (t < 1) requestAnimationFrame(step);
+        else item.el.textContent = item.raw;  // land on the exact original text
+      }
+      requestAnimationFrame(step);
+    }
+
+    var io = new IntersectionObserver(function (entries) {
+      for (var k = 0; k < entries.length; k++) {
+        if (!entries[k].isIntersecting) continue;
+        var item = find(entries[k].target);
+        io.unobserve(entries[k].target);
+        if (item) animate(item);
+      }
+    }, { threshold: 0.6 });
+
+    for (var n = 0; n < items.length; n++) {
+      items[n].el.textContent = "0" + items[n].suffix;   // reset just before it reveals
+      io.observe(items[n].el);
+    }
+  }
+
+  /* =================================================================
+     FEATURE — Services live filter (services.html capabilities list)
+     Type to filter the capability cards by title OR any listed
+     sub-service. No-op on pages without the filter input. Shows a live
+     count and a friendly empty state. Esc clears.
+     ================================================================= */
+  function initServiceFilter() {
+    var input = document.getElementById("service-filter");
+    var grid = document.getElementById("capabilities-grid");
+    if (!input || !grid) return;
+    var countEl = document.getElementById("service-filter-count");
+    var emptyEl = document.getElementById("services-empty");
+
+    var cardEls = grid.querySelectorAll(".service-card");
+    var data = [];
+    for (var i = 0; i < cardEls.length; i++) {
+      data.push({ el: cardEls[i], text: (cardEls[i].textContent || "").toLowerCase() });
+    }
+    var total = data.length;
+
+    function apply() {
+      var q = input.value.replace(/\s+/g, " ").trim().toLowerCase();
+      var shown = 0;
+      for (var j = 0; j < data.length; j++) {
+        var match = !q || data[j].text.indexOf(q) !== -1;
+        data[j].el.hidden = !match;
+        if (match) shown++;
+      }
+      if (emptyEl) emptyEl.hidden = (shown !== 0);
+      if (countEl) countEl.textContent = q ? ("Showing " + shown + " of " + total) : "";
+    }
+
+    input.addEventListener("input", apply);
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" || e.keyCode === 27) { input.value = ""; apply(); }
+    });
+    apply();
+  }
+
+  /* =================================================================
+     FEATURE — Quote-form smart helper (quote.html)
+     When a project type is chosen, show a short, honest tip on what
+     helps Phil quote it accurately. No prices, no commitments.
+     ================================================================= */
+  function initQuoteHelper() {
+    var select = document.getElementById("project-type");
+    var tip = document.getElementById("project-type-tip");
+    if (!select || !tip) return;
+
+    var tips = {
+      "Extension": "A rough idea of the size and how you'll use the new space helps Phil scope it — photos or any plans are a bonus.",
+      "Renovation": "Tell us which rooms and roughly what you'd like done; photos of the current space help Phil quote accurately.",
+      "Brickwork & Masonry": "A photo of the wall or area and rough measurements help Phil price new brickwork or repairs.",
+      "Groundworks": "Let us know the site access and roughly the area involved — photos help with drainage, foundations or concrete work.",
+      "Roofing": "For a repair, a photo of the issue (from the ground is fine) really helps; for a new roof, the rough size and type.",
+      "Driveway / Patio": "The rough area and your preferred finish — block paving, resin, tarmac or concrete — help Phil quote.",
+      "Landscaping": "Describe the space and what you'd like (lawn, decking, fencing, walls); photos of the garden help.",
+      "Property Maintenance": "A quick description of the job and a photo of the problem help Phil tell you what's needed.",
+      "Other / Not sure": "No problem — just describe what you're after and Phil will point you in the right direction."
+    };
+
+    function update() {
+      var msg = tips[select.value];
+      if (msg) { tip.textContent = msg; tip.hidden = false; }
+      else { tip.hidden = true; tip.textContent = ""; }
+    }
+    select.addEventListener("change", update);
+    update();   // in case the browser restored a previous selection
   }
 })();
