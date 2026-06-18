@@ -164,7 +164,7 @@ a:hover { text-decoration-color: currentColor; color: var(--color-accent-darker)
    is drawn as a background gradient that grows from 0 → full width on hover/
    focus. Falls back gracefully: the native underline still shows. */
 .section__lead a,
-.section__head a,
+.section__head a:not(.btn),
 .prose a,
 .about__body a,
 .faq__a a,
@@ -182,7 +182,7 @@ a:hover { text-decoration-color: currentColor; color: var(--color-accent-darker)
 }
 @media (prefers-reduced-motion: no-preference) {
   .section__lead a,
-  .section__head a,
+  .section__head a:not(.btn),
   .prose a,
   .about__body a,
   .faq__a a,
@@ -194,8 +194,8 @@ a:hover { text-decoration-color: currentColor; color: var(--color-accent-darker)
   }
   .section__lead a:hover,
   .section__lead a:focus-visible,
-  .section__head a:hover,
-  .section__head a:focus-visible,
+  .section__head a:not(.btn):hover,
+  .section__head a:not(.btn):focus-visible,
   .prose a:hover,
   .prose a:focus-visible,
   .about__body a:hover,
