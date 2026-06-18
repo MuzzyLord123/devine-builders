@@ -672,6 +672,11 @@ ol[class] { list-style: none; padding: 0; }
 .section__head--center + .hero__actions {
   justify-content: center;
 }
+/* Phone: stack the hero CTAs as clean full-width buttons instead of wrapped pills. */
+@media (max-width: 36em) {
+  .hero__actions { gap: var(--space-2); }
+  .hero__actions .btn { width: 100%; }
+}
 .hero__trust {
   margin-top: var(--space-6);
   display: flex;
@@ -823,8 +828,12 @@ ol[class] { list-style: none; padding: 0; }
 .about__body { color: var(--color-ink-soft); font-size: var(--fs-500); }
 .about__stats {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1fr;   /* phone: stack the three stats cleanly */
   gap: var(--space-4);
+}
+@media (min-width: 40em) {
+  /* a clean, even 3-up row on tablet and up (no more 2+1 orphan) */
+  .about__stats { grid-template-columns: repeat(3, 1fr); }
 }
 .stat {
   padding: var(--space-5);
@@ -1124,6 +1133,12 @@ ol[class] { list-style: none; padding: 0; }
     align-items: start;
     gap: var(--space-7);
   }
+  /* Keep the contact card in view while scrolling the long form (2-column only,
+     so it never overlaps the stacked layout on phone/portrait tablet). */
+  .contact-aside {
+    position: sticky;
+    top: calc(var(--header-h, 4.5rem) + var(--space-4));
+  }
 }
 
 .quote-form {
@@ -1148,7 +1163,14 @@ ol[class] { list-style: none; padding: 0; }
   .form-row--split { grid-template-columns: 1fr 1fr; }
 }
 
-.field { display: grid; gap: var(--space-2); }
+.field {
+  display: grid;
+  gap: var(--space-2);
+  /* When JS focuses the first invalid field, keep it clear of the sticky
+     header (top) and the mobile call bar (bottom). */
+  scroll-margin-top: calc(var(--header-h, 4.5rem) + var(--space-3));
+  scroll-margin-bottom: 5rem;
+}
 
 .label {
   font-weight: 700;
@@ -1156,7 +1178,7 @@ ol[class] { list-style: none; padding: 0; }
   color: var(--color-ink);
 }
 .label .req { color: var(--color-danger); font-weight: 700; }
-.field__hint { font-size: var(--fs-300); color: var(--color-ink-faint); }
+.field__hint { font-size: 0.9375rem; line-height: 1.5; color: var(--color-ink-faint); }
 
 .input,
 .select,
@@ -1424,13 +1446,15 @@ ol[class] { list-style: none; padding: 0; }
   border-radius: var(--radius-pill);
   background: linear-gradient(90deg, var(--color-accent), transparent);
 }
-.footer-list { display: grid; gap: var(--space-1); }
+.footer-list { display: grid; gap: var(--space-2); }
 .footer-list a,
 .footer-list span { color: var(--color-on-dark-mut); text-decoration: none; }
 .footer-list a {
   display: inline-flex;
   align-items: center;
-  padding-block: var(--space-1);
+  min-height: 2.75rem;          /* >=44px touch target (phone/tablet); fine on desktop too */
+  min-width: 0;                 /* let long email/URL wrap instead of overflowing */
+  padding-block: var(--space-2);
   border-radius: var(--radius-sm);
   transition: color var(--transition), transform var(--transition);
 }
@@ -1442,6 +1466,7 @@ ol[class] { list-style: none; padding: 0; }
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  min-height: 2.75rem;          /* comfortable touch row for the tel:/mailto: links */
 }
 .footer-contact-item svg { width: 1.1rem; height: 1.1rem; flex: none; color: #93c5fd; }
 
@@ -2329,7 +2354,7 @@ body.has-call-bar { /* only meaningful with the mobile media query below */ }
 .services-jump__list {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
+  gap: 0.625rem;                /* a touch more room so wrapped rows don't crowd on phone */
   justify-content: center;
   list-style: none;
   padding: 0;
@@ -2338,7 +2363,7 @@ body.has-call-bar { /* only meaningful with the mobile media query below */ }
 .services-jump__link {
   display: inline-flex;
   align-items: center;
-  min-height: 2.5rem;
+  min-height: 2.75rem;          /* >=44px touch target */
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-pill);
   font-size: var(--fs-300);
@@ -3142,7 +3167,7 @@ body.has-call-bar { /* only meaningful with the mobile media query below */ }
   border: 1px solid var(--color-border-2);
   border-radius: var(--radius-pill);
   box-shadow: var(--shadow-xs);
-  padding: 0.7rem var(--space-4) 0.7rem calc(var(--space-4) * 2 + 1.1rem);
+  padding: 0.7rem 3rem 0.7rem calc(var(--space-4) * 2 + 1.1rem);
   transition: border-color var(--transition), box-shadow var(--transition);
 }
 .service-filter__input::placeholder { color: var(--color-ink-faint); }
@@ -3151,6 +3176,30 @@ body.has-call-bar { /* only meaningful with the mobile media query below */ }
   border-color: var(--color-accent);
   box-shadow: 0 0 0 3px var(--color-accent-soft);
 }
+/* Touch-reachable clear (x) button — shown by site.js only when there's text. */
+.service-filter__clear {
+  position: absolute;
+  right: 0.3rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2.75rem;
+  height: 2.75rem;
+  display: inline-grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: var(--color-ink-faint);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+.service-filter__clear svg { width: 1.05rem; height: 1.05rem; }
+.service-filter__clear:hover { color: var(--color-ink); }
+.service-filter__clear:focus-visible {
+  outline: none;
+  color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
+.service-filter__clear[hidden] { display: none; }
 .service-filter__count {
   margin: var(--space-2) 0 0;
   text-align: center;

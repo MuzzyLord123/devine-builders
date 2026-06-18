@@ -525,8 +525,17 @@
     window.addEventListener("pointermove", onPointerMove, { passive: true });
     window.addEventListener("pointerdown", onPointerMove, { passive: true });
     window.addEventListener("pointerleave", onPointerLeave, { passive: true });
-    window.addEventListener("touchmove", onTouchMove, { passive: true });
-    window.addEventListener("touchstart", onTouchMove, { passive: true });
+    // The "light follows pointer" effect is meaningless on touch (no persistent
+    // cursor), and binding touchmove re-animates the wall during ordinary
+    // scrolling — wasted battery + jank on phones. Skip the touch bindings on
+    // coarse / no-hover devices; the one-time build reveal still plays via the
+    // idle drift, then the loop settles to idle and stays there.
+    var coarsePointer = !!(window.matchMedia &&
+      window.matchMedia("(hover: none), (pointer: coarse)").matches);
+    if (!coarsePointer) {
+      window.addEventListener("touchmove", onTouchMove, { passive: true });
+      window.addEventListener("touchstart", onTouchMove, { passive: true });
+    }
     window.addEventListener("resize", onResize);
     document.addEventListener("visibilitychange", onVisibility);
 
@@ -625,6 +634,22 @@
       if (e.key === "Escape" || e.key === "Esc") {
         e.preventDefault();
         close(true);
+        return;
+      }
+      // Trap Tab within the open menu (the toggle/X + its links) so keyboard and
+      // screen-reader users can't tab out into the hidden page behind the panel.
+      if (e.key === "Tab") {
+        var f = [toggle].concat([].slice.call(nav.querySelectorAll("a[href], button")));
+        f = f.filter(function (el) { return el === toggle || el.offsetParent !== null; });
+        if (f.length < 2) return;
+        var first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
       }
     }
 
@@ -1257,6 +1282,7 @@
     if (!input || !grid) return;
     var countEl = document.getElementById("service-filter-count");
     var emptyEl = document.getElementById("services-empty");
+    var clearBtn = document.getElementById("service-filter-clear");
 
     var cardEls = grid.querySelectorAll(".service-card");
     var data = [];
@@ -1275,12 +1301,16 @@
       }
       if (emptyEl) emptyEl.hidden = (shown !== 0);
       if (countEl) countEl.textContent = q ? ("Showing " + shown + " of " + total) : "";
+      if (clearBtn) clearBtn.hidden = !input.value;
     }
 
     input.addEventListener("input", apply);
     input.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" || e.keyCode === 27) { input.value = ""; apply(); }
+      if (e.key === "Escape" || e.keyCode === 27) { input.value = ""; apply(); input.focus(); }
     });
+    if (clearBtn) {
+      clearBtn.addEventListener("click", function () { input.value = ""; apply(); input.focus(); });
+    }
     apply();
   }
 
