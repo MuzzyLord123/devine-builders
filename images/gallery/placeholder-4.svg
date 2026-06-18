@@ -1,11 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Devine Builders project photo placeholder">
-  <rect width="800" height="600" fill="#f8fafc"/>
-  <rect x="1" y="1" width="798" height="598" fill="none" stroke="#e2e8f0" stroke-width="2"/>
-  <g fill="none" stroke="#cbd5e1" stroke-width="10" stroke-linejoin="round" stroke-linecap="round">
-    <path d="M250 360h300M250 360l70-90 55 65 45-55 80 80"/>
-    <circle cx="330" cy="250" r="26"/>
-  </g>
-  <rect x="300" y="300" width="200" height="6" fill="#2563eb" opacity="0.6"/>
-  <text x="400" y="450" text-anchor="middle" font-family="system-ui,Segoe UI,Arial,sans-serif" font-size="34" font-weight="700" fill="#475569">Devine Builders</text>
-  <text x="400" y="492" text-anchor="middle" font-family="system-ui,Segoe UI,Arial,sans-serif" font-size="24" fill="#94a3b8">Project Photo</text>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Illustration: bathroom refurbishment by Devine Builders"><defs><linearGradient id="bp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0f172a"/><stop offset="1" stop-color="#1e293b"/></linearGradient><pattern id="g" width="56" height="28" patternUnits="userSpaceOnUse"><path d="M0 .5h56M0 14.5h56M0 27.5h56M.5 0v14M28.5 0v14M14.5 14v14M42.5 14v14" fill="none" stroke="#93c5fd" stroke-opacity="0.10" stroke-width="1"/></pattern></defs><rect width="800" height="600" fill="url(#bp)"/><rect width="800" height="600" fill="url(#g)"/><rect x="0" y="0" width="800" height="5" fill="#2563eb"/><rect x="16" y="16" width="768" height="568" rx="8" fill="none" stroke="#2563eb" stroke-opacity="0.40" stroke-width="2"/><g transform="translate(400 272) scale(13) translate(-12 -12)" fill="none" stroke="#93c5fd" stroke-width="0.23" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/></g><text x="44" y="70" fill="#cbd5e1" font-family="system-ui,Segoe UI,Arial,sans-serif" font-size="26" font-weight="700" letter-spacing="4">FIG. 04</text><text x="44" y="560" fill="#64748b" font-family="system-ui,Segoe UI,Arial,sans-serif" font-size="19" font-weight="600" letter-spacing="3">DEVINE BUILDERS · ILLUSTRATION</text></svg>

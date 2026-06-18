@@ -105,6 +105,26 @@
   --ease: cubic-bezier(0.2, 0.6, 0.25, 1);
   --transition: 180ms var(--ease);
   --transition-fast: 120ms var(--ease);
+
+  /* ---- Craft-elevation layer (ADDITIVE — changes no value above) ----
+     "Trowel & Slate" premium pass: surfaces lit from above, hairline edges,
+     a running-bond brick motif, and a consistent eyebrow/numeral voice. */
+  --shadow-craft: inset 0 1px 0 rgba(255, 255, 255, 0.7),
+                  0 1px 2px rgba(15, 23, 42, 0.06),
+                  0 10px 24px -10px rgba(15, 23, 42, 0.16);
+  --shadow-craft-hover: inset 0 1px 0 rgba(255, 255, 255, 0.8),
+                  0 4px 10px -2px rgba(15, 23, 42, 0.10),
+                  0 22px 40px -16px rgba(15, 23, 42, 0.24);
+  --hairline:        1px solid rgba(15, 23, 42, 0.08);
+  --hairline-strong: 1px solid rgba(15, 23, 42, 0.12);
+  --surface-grad:    linear-gradient(180deg, #ffffff 0%, var(--color-surface) 100%);
+  --accent-tile-grad: linear-gradient(160deg, #eff6ff, #dbeafe);
+  --accent-ring:     0 0 0 4px rgba(37, 99, 235, 0.12);
+  --tracking-eyebrow: 0.14em;
+  --tracking-tight:  -0.025em;
+  --fs-fluid-500: clamp(1.0625rem, 1rem + 0.3vw, 1.1875rem);
+  /* Running-bond mortar hairline (white, for dark bands) — single source. */
+  --pattern-brick: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='28' viewBox='0 0 56 28'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.5' stroke-width='1'%3E%3Cpath d='M0 .5h56M0 14.5h56M0 27.5h56M.5 0v14M28.5 0v14M14.5 14v14M42.5 14v14'/%3E%3C/g%3E%3C/svg%3E");
 }
 
 /* ---------------------------------------------------------------------
@@ -3230,3 +3250,123 @@ body.has-call-bar { /* only meaningful with the mobile media query below */ }
   border-radius: var(--radius);
 }
 .field-tip[hidden] { display: none; }
+
+/* =====================================================================
+   "TROWEL & SLATE" PREMIUM ELEVATION
+   Appended so it layers over the base rules by source order. Additive
+   polish only: NO brand colour value changed, NO JS behaviour touched,
+   hero <canvas> untouched. Lit card surfaces, a hairline "kicker" eyebrow
+   voice, oversized accent numerals, section depth + a dark CTA plinth.
+   ===================================================================== */
+
+/* ---- Eyebrow "kicker": one crafted type voice across hero + sections - */
+.section__eyebrow { letter-spacing: var(--tracking-eyebrow); }
+.section__eyebrow::before { background: linear-gradient(90deg, var(--color-accent), transparent); }
+.section__head--center .section__eyebrow::after { background: linear-gradient(90deg, transparent, var(--color-accent)); }
+
+/* ---- Lit, physical card surfaces (key-light + hairline + hover ring) - */
+.service-card,
+.trust-item,
+.process-step,
+.testimonial,
+.stat {
+  border: var(--hairline);
+  box-shadow: var(--shadow-craft);
+}
+.service-card:hover,
+.service-card:focus-within,
+.trust-item:hover,
+.process-step:hover,
+.testimonial:hover,
+.stat:hover {
+  border-color: #bfdbfe;
+  box-shadow: var(--shadow-craft-hover), var(--accent-ring);
+}
+.service-card::before { height: 4px; }               /* thicker signature accent top-edge */
+
+/* Icon tiles: dimensional resting state; hover flip to solid stays. */
+.service-card__icon,
+.trust-item__icon {
+  background: var(--accent-tile-grad);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+
+/* ---- Precise, oversized numerals (spec-sheet feel) ------------------ */
+.stat__num {
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(2.5rem, 1.9rem + 2.6vw, 3.25rem);
+  line-height: 1;
+}
+.process-step__num { font-variant-numeric: tabular-nums; }
+
+/* ---- Section depth: lit surface bands + premium dark CTA plinth ----- */
+.section--surface {
+  background: var(--surface-grad);
+  border-top: var(--hairline);
+}
+.service-area {
+  border-radius: var(--radius-lg);
+  background-image:
+    var(--pattern-brick),
+    radial-gradient(120% 140% at 100% 0%, rgba(37, 99, 235, 0.22), transparent 55%),
+    linear-gradient(180deg, #16233d 0%, var(--color-dark) 70%);
+  background-size: 56px 28px, auto, auto;
+  background-repeat: repeat, no-repeat, no-repeat;
+  box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* ---- Component detailing: buttons, secondary, form fields ----------- */
+.btn--primary { box-shadow: var(--shadow-accent), inset 0 1px 0 rgba(255, 255, 255, 0.25); }
+.btn--primary:hover { box-shadow: var(--shadow-accent-lg), inset 0 1px 0 rgba(255, 255, 255, 0.28); }
+.btn--secondary { border: var(--hairline-strong); box-shadow: var(--shadow-craft); }
+.input,
+.select,
+.textarea {
+  border: var(--hairline-strong);
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.05);
+}
+
+/* ---- Areas chips: refined lit pill ---------------------------------- */
+.areas-list__chip { box-shadow: var(--shadow-xs), inset 0 1px 0 rgba(255, 255, 255, 0.7); }
+
+/* ---- Hero: two-tone accent clause + designed "blueprint plate" media - */
+.home .hero__title {
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+}
+.hero__title-accent { color: #93c5fd; }              /* light blue, AA over the dark scrim */
+.home .hero__media {
+  position: relative;
+  border: var(--hairline-strong);
+  box-shadow: var(--shadow-xl), inset 0 1px 0 rgba(255, 255, 255, 0.10);
+}
+.home .hero__media::before {                          /* accent rule along the top edge */
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  z-index: 2;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-dark));
+}
+/* Honest "illustration" caption on the hero plate */
+.media-note {
+  position: absolute;
+  left: var(--space-3);
+  bottom: var(--space-3);
+  z-index: 2;
+  margin: 0;
+  padding: 0.25rem 0.6rem;
+  font-size: var(--fs-300);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #e2e8f0;
+  background: rgba(7, 11, 20, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--radius-pill);
+  -webkit-backdrop-filter: saturate(120%);
+  backdrop-filter: saturate(120%);
+}
+
+/* ---- Bigger lead measure/scale (kept inside the existing cap) ------- */
+.hero__lead,
+.section__lead { font-size: var(--fs-fluid-500); }
