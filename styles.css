@@ -1370,6 +1370,9 @@ ol[class] { list-style: none; padding: 0; }
 }
 .contact-list a,
 .contact-list span { color: #fff; text-decoration: none; }
+/* Breathing room between the contact list (Facebook row) and the
+   "Save Phil's number" button so they don't sit flush together. */
+.contact-card > .btn { margin-top: var(--space-5); }
 .contact-item {
   display: flex;
   align-items: center;
