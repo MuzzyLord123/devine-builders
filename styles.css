@@ -3309,7 +3309,11 @@ body.has-call-bar { /* only meaningful with the mobile media query below */ }
 }
 .service-area {
   border-radius: var(--radius-lg);
-  background: var(--color-accent);            /* solid brand blue — no grid/gradient */
+  /* Match the primary-button fill so the CTA band reads as the SAME blue as the
+     rest of the site (was flat --color-accent #2563eb, which looked brighter).
+     Solid colour first as a guaranteed fallback, gradient layered on top. */
+  background-color: var(--color-accent-dark);
+  background-image: linear-gradient(180deg, var(--color-accent) 0%, var(--color-accent-dark) 100%);
   box-shadow: var(--shadow-accent-lg), inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 .service-area__text { color: #fff; }          /* white body copy keeps AA on the solid blue */
