@@ -3803,3 +3803,67 @@ body.db-chat-active #to-top { display: none !important; }
 @media print {
   .db-chat { display: none !important; }
 }
+
+/* =====================================================================
+   19. SCROLL-DRIVEN MOTION  (home page only)
+   A pure-CSS progressive enhancement layered on top of the existing
+   .reveal fade-up. Compositor-driven (no scroll handlers), so it costs
+   nothing when idle. Gated three ways so it can only ever ADD polish:
+     • @supports (animation-timeline) — older browsers get today's behaviour
+     • prefers-reduced-motion: no-preference — motion-safe users only
+     • scoped to .home — never touches the other pages
+   IMPORTANT: animates the individual `translate`/`scale` properties (NOT
+   `transform`), leaving `transform` free for the existing hover lifts so a
+   finished scroll animation can't pin a card flat and break its :hover.
+   ===================================================================== */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+
+    /* --- Hero parallax: content drifts up + dissolves while the blueprint
+       plate floats at a different rate, giving depth as the hero exits. --- */
+    .home .hero__content {
+      animation: db-hero-rise linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 90vh;
+    }
+    .home .hero__media {
+      animation: db-hero-float linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 90vh;
+    }
+
+    /* --- Cards & blocks rise + settle into place as they scroll into view.
+       Items sharing a row enter together, so rows stagger naturally. The
+       .reveal section still owns the fade; this adds the motion. --- */
+    .home .services-grid > li,
+    .home .trust-strip > li,
+    .home .process-steps > li,
+    .home .testimonials > li {
+      animation: db-rise-in linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 92%;
+    }
+
+    /* The big CTA band gets a gentler pop. */
+    .home .service-area {
+      animation: db-rise-soft linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 88%;
+    }
+  }
+}
+
+@keyframes db-hero-rise {
+  to { translate: 0 -32px; opacity: 0.45; }
+}
+@keyframes db-hero-float {
+  to { translate: 0 -72px; }
+}
+@keyframes db-rise-in {
+  from { translate: 0 48px; scale: 0.965; }
+  to   { translate: 0 0;    scale: 1; }
+}
+@keyframes db-rise-soft {
+  from { translate: 0 34px; scale: 0.985; }
+  to   { translate: 0 0;    scale: 1; }
+}
