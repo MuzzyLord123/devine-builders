@@ -534,6 +534,13 @@ ol[class] { list-style: none; padding: 0; }
   font-weight: 800;
   box-shadow: var(--shadow-sm);
 }
+/* Real logo monogram (transparent PNG) — replaces the text "DB" mark. */
+.brand__logo {
+  flex: none;
+  height: 2.5rem;
+  width: auto;
+  display: block;
+}
 .brand__name { font-size: var(--fs-500); }
 .brand__tagline {
   display: block;
