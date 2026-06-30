@@ -312,7 +312,9 @@
       var nodes = document.body.children;
       for (var i = 0; i < nodes.length; i++) {
         var el = nodes[i];
-        if (el === lightbox) continue;
+        // Never inert the lightbox itself OR any ancestor that contains it —
+        // otherwise the open viewer (incl. its close button) becomes inert.
+        if (el === lightbox || el.contains(lightbox)) continue;
         if (hidden) {
           if (el.getAttribute("aria-hidden") === null) {
             el.setAttribute("data-lb-hidden", "1");
