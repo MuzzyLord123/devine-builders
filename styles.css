@@ -3913,3 +3913,27 @@ body.db-chat-active #to-top { display: none !important; }
   line-height: var(--lh-snug);
 }
 .next-steps__list span { font-weight: 700; color: var(--color-ink); }
+
+/* =====================================================================
+   21. GALLERY "ILLUSTRATIVE" BADGE  (honesty: these are stock examples,
+   not photos of Phil's own completed jobs)
+   ===================================================================== */
+.gallery__btn { position: relative; }
+.gallery__tag,
+.ba-slider__tag {
+  position: absolute;
+  top: 0.55rem;
+  left: 0.55rem;
+  z-index: 3;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #fff;
+  background: rgba(15, 23, 42, 0.80);
+  border: 1px solid rgba(255, 255, 255, 0.20);
+  border-radius: var(--radius-pill);
+  pointer-events: none;
+}
+.ba-slider__tag { z-index: 4; }
