@@ -43,22 +43,27 @@
 <!-- 1200x630 branded card that ships with the site (created as og-cover.svg).
      OWNER: for best results in social previews, export a real photo as
      og-cover.jpg (1200x630) and change the two URLs below to .jpg -->
-<meta property="og:image" content="https://muzzylord123.github.io/devine-builders/og-cover.svg">
+<meta property="og:image" content="https://muzzylord123.github.io/devine-builders/images/og-cover.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Devine Builders — extensions, renovations, brickwork, roofing and building services in Connah's Quay, North Wales">
 
 <!-- Twitter / X card -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Devine Builders | Connah's Quay, North Wales">
 <meta name="twitter:description" content="Local, owner-run builder in Connah's Quay. Extensions, renovations, brickwork, groundworks, roofing, driveways, landscaping and property maintenance across North Wales. Free, no-obligation quotes.">
-<meta name="twitter:image" content="https://muzzylord123.github.io/devine-builders/og-cover.svg">
+<meta name="twitter:image" content="https://muzzylord123.github.io/devine-builders/images/og-cover.png">
 
 <!-- Favicon (SVG, scalable, ships with the site) + manifest -->
-<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16.png">
 <!-- OWNER (optional): add a favicon.ico fallback for very old browsers:
      <link rel="icon" href="favicon.ico" sizes="any"> -->
 <!-- Apple touch icon: SVG works in modern Safari; OWNER may add a 180x180 PNG:
      <link rel="apple-touch-icon" href="apple-touch-icon.png"> -->
-<link rel="apple-touch-icon" href="favicon.svg">
+<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
 <link rel="manifest" href="site.webmanifest">
 
 <!-- No-JS fallback: the mobile nav panel is collapsed by default and only
@@ -453,40 +458,41 @@
       </div>
     </section>
 
-    <!-- ===== SECTION 3: TESTIMONIALS (PLACEHOLDER QUOTES) =====
-      !! PHIL — IMPORTANT !!
-      The three quotes below are SAMPLE / PLACEHOLDER text only. They are
-      NOT real customer reviews. Replace each quote text and the name/
-      location under it with genuine words from real, consenting clients
-      before publishing. Until you do, this section is honest because it
-      is clearly marked as a sample (see the note shown on the page).
-      Do NOT add star ratings or schema markup to these — they are not
-      verified reviews. -->
-    <section class="section reveal" aria-labelledby="testimonials-title">
+    <!-- ===== SECTION 3: OUR PROMISE =====
+      Honest, owner-stated commitments drawn straight from the site's own
+      About/Why copy — these are NOT customer reviews and make no claim of
+      ratings, testimonials or third-party endorsement. When Phil has genuine,
+      consenting client quotes, a real testimonials section can be added (and
+      only then is review schema appropriate). The Facebook link points to
+      where real, third-party-hosted proof lives. -->
+    <section class="section reveal" aria-labelledby="promise-title">
       <div class="container">
         <div class="section__head section__head--center">
-          <p class="section__eyebrow">What clients say</p>
-          <h2 class="section__title" id="testimonials-title">What local homeowners say</h2>
-          <p class="section__lead testimonials__note">Sample placeholder quotes shown below — Phil will replace these with real client feedback.</p>
+          <p class="section__eyebrow">Our promise</p>
+          <h2 class="section__title" id="promise-title">What you can expect from Phil</h2>
+          <p class="section__lead">Straight talk and solid workmanship on every job, big or small. You can see more of our recent work over on <a href="https://www.facebook.com/phillip.devine1/" target="_blank" rel="noopener">our Facebook page</a>.</p>
         </div>
-        <ul class="testimonials">
-          <li class="testimonial">
-            <blockquote class="testimonial__quote">
-              <p>&ldquo;Sample quote — replace with a real client's words. Describe the job and how it went here.&rdquo;</p>
-            </blockquote>
-            <p class="testimonial__cite">— Placeholder name, Connah's Quay <span class="testimonial__badge">Sample</span></p>
+        <ul class="trust-strip">
+          <li class="trust-item">
+            <span class="trust-item__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </span>
+            <h3 class="trust-item__title">One point of contact</h3>
+            <p class="trust-item__text">You deal directly with Phil — not a call centre — from the first phone call right through to the final finish.</p>
           </li>
-          <li class="testimonial">
-            <blockquote class="testimonial__quote">
-              <p>&ldquo;Sample quote — replace with a real client's words. Describe the job and how it went here.&rdquo;</p>
-            </blockquote>
-            <p class="testimonial__cite">— Placeholder name, Flintshire <span class="testimonial__badge">Sample</span></p>
+          <li class="trust-item">
+            <span class="trust-item__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+            </span>
+            <h3 class="trust-item__title">Tidy, careful work</h3>
+            <p class="trust-item__text">We treat your home like our own — a tidy site, work done properly the first time, and we turn up when we say we will.</p>
           </li>
-          <li class="testimonial">
-            <blockquote class="testimonial__quote">
-              <p>&ldquo;Sample quote — replace with a real client's words. Describe the job and how it went here.&rdquo;</p>
-            </blockquote>
-            <p class="testimonial__cite">— Placeholder name, North Wales <span class="testimonial__badge">Sample</span></p>
+          <li class="trust-item">
+            <span class="trust-item__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82Z"/><path d="M7 7h.01"/></svg>
+            </span>
+            <h3 class="trust-item__title">Honest, clear pricing</h3>
+            <p class="trust-item__text">A free, no-obligation quote and a fair price you can plan around — clear advice and no surprises along the way.</p>
           </li>
         </ul>
       </div>
@@ -566,6 +572,7 @@
   <footer class="site-footer">
     <div class="container site-footer__inner">
       <div class="footer-brand">
+        <img class="footer-brand__logo" src="images/logo-mark-white.png" width="60" height="40" alt="" aria-hidden="true">
         <p class="footer-brand__name">Devine Builders</p>
         <p class="footer-brand__text">Extensions, renovations, brickwork, groundworks, roofing, driveways, landscaping and property maintenance across Connah's Quay, Flintshire and North Wales. Run by Phil Devine.</p>
       </div>
@@ -629,7 +636,8 @@
     "url": "https://muzzylord123.github.io/devine-builders/",
     "telephone": "+447956547040",
     "email": "phildevine24@icloud.com",
-    "image": "https://muzzylord123.github.io/devine-builders/og-cover.svg",
+    "image": "https://muzzylord123.github.io/devine-builders/images/og-cover.png",
+    "logo": "https://muzzylord123.github.io/devine-builders/images/logo.png",
     "founder": {
       "@type": "Person",
       "name": "Phil Devine"

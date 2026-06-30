@@ -43,22 +43,27 @@
   <!-- 1200x630 branded card that ships with the site (created as og-cover.svg).
        OWNER: for best results in social previews, export a real photo as
        og-cover.jpg (1200x630) and change the two URLs below to .jpg -->
-  <meta property="og:image" content="https://muzzylord123.github.io/devine-builders/og-cover.svg">
+  <meta property="og:image" content="https://muzzylord123.github.io/devine-builders/images/og-cover.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Devine Builders — extensions, renovations, brickwork, roofing and building services in Connah's Quay, North Wales">
 
   <!-- Twitter / X card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Devine Builders | Connah's Quay, North Wales">
   <meta name="twitter:description" content="Local, owner-run builder in Connah's Quay. Extensions, renovations, brickwork, groundworks, roofing, driveways, landscaping and property maintenance across North Wales. Free, no-obligation quotes.">
-  <meta name="twitter:image" content="https://muzzylord123.github.io/devine-builders/og-cover.svg">
+  <meta name="twitter:image" content="https://muzzylord123.github.io/devine-builders/images/og-cover.png">
 
   <!-- Favicon (SVG, scalable, ships with the site) + manifest -->
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16.png">
   <!-- OWNER (optional): add a favicon.ico fallback for very old browsers:
        <link rel="icon" href="favicon.ico" sizes="any"> -->
   <!-- Apple touch icon: SVG works in modern Safari; OWNER may add a 180x180 PNG:
        <link rel="apple-touch-icon" href="apple-touch-icon.png"> -->
-  <link rel="apple-touch-icon" href="favicon.svg">
+  <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
   <link rel="manifest" href="site.webmanifest">
 
   <!-- No-JS fallback: the mobile nav panel is collapsed by default and only
@@ -176,8 +181,10 @@
           <input type="hidden" name="_subject" value="New quote request — Devine Builders website">
           <input type="hidden" name="_template" value="table">
           <input type="hidden" name="_captcha" value="false">
-          <!-- Where the no-JS POST lands after sending. Update this URL if you move to a custom domain. -->
-          <input type="hidden" name="_next" value="thank-you.html">
+          <!-- Where the no-JS POST lands after sending. FormSubmit needs an ABSOLUTE
+               URL here to redirect (a relative value lands on its generic page).
+               Update this URL when you move to a custom domain. -->
+          <input type="hidden" name="_next" value="https://muzzylord123.github.io/devine-builders/thank-you.html">
           <!-- Honeypot: real visitors never see or fill this; spam bots do, and FormSubmit drops those. -->
           <input type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true" style="display:none">
 
@@ -208,6 +215,7 @@
               <label class="label" for="postcode">Postcode</label>
               <input class="input" id="postcode" name="postcode" type="text" autocomplete="postal-code" autocapitalize="characters" autocorrect="off" spellcheck="false" maxlength="8" aria-describedby="postcode-hint">
               <span class="field__hint" id="postcode-hint">Helps us confirm we cover your area.</span>
+              <span class="field__area" id="postcode-area" role="status" aria-live="polite"></span>
             </div>
           </div>
 
@@ -234,6 +242,12 @@
             <span class="field__hint" id="details-hint">Roughly what you'd like done, where the property is, and any rough timescale. A sentence or two is plenty.</span>
             <textarea class="textarea" id="details" name="details" rows="5" required aria-describedby="details-hint details-error"></textarea>
             <span class="error" id="details-error" role="alert"></span>
+          </div>
+
+          <div class="field">
+            <label class="label" for="attachment">Add a photo of the job <span class="field__optional">(optional)</span></label>
+            <span class="field__hint" id="attachment-hint">A quick photo — or a plan/PDF — helps Phil quote more accurately. You can add more than one.</span>
+            <input class="input input--file" id="attachment" name="attachment" type="file" accept="image/*,.pdf" multiple aria-describedby="attachment-hint">
           </div>
 
           <div class="form-actions">
@@ -282,6 +296,14 @@
             </div>
             <a class="btn btn--secondary btn--block" href="devine-builders.vcf" download="phil-devine-devine-builders.vcf">Save Phil's number to your phone</a>
           </div>
+          <div class="next-steps">
+            <h2 class="next-steps__title">What happens next</h2>
+            <ol class="next-steps__list">
+              <li><span>You send a few details</span> — a photo of the job helps Phil quote it accurately.</li>
+              <li><span>Phil reads it himself</span> — not a call centre — usually within a day or two.</li>
+              <li><span>He talks it through</span> and arranges your free, no-obligation quote.</li>
+            </ol>
+          </div>
           <p class="contact-note">We cover Connah's Quay, Flintshire and the wider North Wales area.</p>
         </aside>
         </div>
@@ -292,6 +314,7 @@
   <footer class="site-footer">
     <div class="container site-footer__inner">
       <div class="footer-brand">
+        <img class="footer-brand__logo" src="images/logo-mark-white.png" width="60" height="40" alt="" aria-hidden="true">
         <p class="footer-brand__name">Devine Builders</p>
         <p class="footer-brand__text">Extensions, renovations, brickwork, groundworks, roofing, driveways, landscaping and property maintenance across Connah's Quay, Flintshire and North Wales. Run by Phil Devine.</p>
       </div>

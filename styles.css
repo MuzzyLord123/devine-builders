@@ -497,9 +497,6 @@ ol[class] { list-style: none; padding: 0; }
   border-bottom: 1px solid var(--color-border);
   box-shadow: 0 1px 0 rgba(15, 23, 42, 0.02), 0 4px 16px -10px rgba(15, 23, 42, 0.18);
 }
-.brand__mark {
-  background: linear-gradient(160deg, var(--color-accent) 0%, var(--color-accent-darker) 100%);
-}
 .site-header__inner {
   display: flex;
   flex-wrap: wrap;
@@ -521,19 +518,6 @@ ol[class] { list-style: none; padding: 0; }
   line-height: 1.05;
 }
 .brand:hover { color: var(--color-ink); }
-.brand__mark {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: var(--radius-sm);
-  background: var(--color-accent);
-  color: #fff;
-  font-size: 1.1rem;
-  font-weight: 800;
-  box-shadow: var(--shadow-sm);
-}
 /* Real logo monogram (transparent PNG) — replaces the text "DB" mark. */
 .brand__logo {
   flex: none;
@@ -1449,6 +1433,8 @@ ol[class] { list-style: none; padding: 0; }
   .site-footer__inner { grid-template-columns: 1.4fr 1fr 1fr; }
 }
 .footer-brand { color: #fff; }
+/* Real logo monogram (white variant) on the dark footer. */
+.footer-brand__logo { height: 2.75rem; width: auto; display: block; margin-bottom: var(--space-3); }
 .footer-brand__name {
   font-size: var(--fs-500);
   font-weight: 800;
@@ -3867,3 +3853,63 @@ body.db-chat-active #to-top { display: none !important; }
   from { translate: 0 34px; scale: 0.985; }
   to   { translate: 0 0;    scale: 1; }
 }
+
+/* =====================================================================
+   20. QUOTE-FORM UPGRADES  (photo upload, area checker, next-steps)
+   ===================================================================== */
+.field__optional { font-weight: 600; color: var(--color-ink-faint); font-size: var(--fs-300); }
+
+.input--file {
+  padding: 0.55rem 0.7rem;
+  background: var(--color-surface);
+  cursor: pointer;
+}
+.input--file::file-selector-button {
+  margin-right: 0.75rem;
+  padding: 0.45rem 0.85rem;
+  border: 1px solid var(--color-border-2);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  color: var(--color-accent-dark);
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+.input--file::file-selector-button:hover {
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent);
+}
+
+/* Advisory "do we cover your area?" reassurance under the postcode field */
+.field__area {
+  display: block;
+  margin-top: var(--space-2);
+  font-size: var(--fs-300);
+  font-weight: 600;
+  padding: 0.4rem 0.65rem;
+  border-radius: var(--radius-sm);
+}
+.field__area:empty { display: none; }
+.field__area.is-yes   { color: var(--color-success);    background: #f0fdf4; border: 1px solid #bbf7d0; }
+.field__area.is-maybe { color: var(--color-accent-dark); background: var(--color-accent-soft); border: 1px solid #bfdbfe; }
+
+/* "What happens next" aid in the quote-page contact aside */
+.next-steps {
+  margin-top: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-accent);
+  border-radius: var(--radius);
+  padding: var(--space-4) var(--space-5);
+}
+.next-steps__title { font-size: var(--fs-500); font-weight: 800; color: var(--color-ink); margin: 0 0 var(--space-2); }
+.next-steps__list {
+  margin: 0;
+  padding-left: 1.2rem;
+  color: var(--color-ink-soft);
+  display: grid;
+  gap: var(--space-2);
+  line-height: var(--lh-snug);
+}
+.next-steps__list span { font-weight: 700; color: var(--color-ink); }

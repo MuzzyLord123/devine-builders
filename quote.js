@@ -112,6 +112,56 @@
       };
     }).filter(function (r) { return r.control; });
 
+    // Honest, advisory "do we cover your area?" hint as the user types a postcode.
+    // Outward codes for Flintshire / Deeside / the wider North Wales area.
+    var postcode = document.getElementById("postcode");
+    var areaMsg = document.getElementById("postcode-area");
+    if (postcode && areaMsg) {
+      var COVERED = /^(CH4|CH5|CH6|CH7|CH8|LL)/i;
+      postcode.addEventListener("input", function () {
+        var v = postcode.value.replace(/\s+/g, "").toUpperCase();
+        if (v.length < 2) { areaMsg.textContent = ""; areaMsg.className = "field__area"; return; }
+        if (COVERED.test(v)) {
+          areaMsg.textContent = "Great — that's within the area we cover. Phil will confirm when he's in touch.";
+          areaMsg.className = "field__area is-yes";
+        } else {
+          areaMsg.textContent = "We're based in Connah's Quay and cover Flintshire & North Wales — pop it in and Phil will let you know either way.";
+          areaMsg.className = "field__area is-maybe";
+        }
+      });
+    }
+
+    // Deep-link: quote.html?service=Roofing pre-selects the matching project type
+    // and triggers the helper tip (initQuoteHelper in site.js listens for change).
+    var select = document.getElementById("project-type");
+    try {
+      var wanted = new URLSearchParams(window.location.search).get("service") ||
+                   new URLSearchParams(window.location.search).get("type");
+      if (wanted && select) {
+        var norm = wanted.trim().toLowerCase();
+        var ALIAS = {
+          "extensions": "Extension", "extension": "Extension",
+          "renovations": "Renovation", "renovation": "Renovation",
+          "brickwork": "Brickwork & Masonry", "brickwork & masonry": "Brickwork & Masonry", "masonry": "Brickwork & Masonry",
+          "groundworks": "Groundworks",
+          "roofing": "Roofing", "roof": "Roofing",
+          "driveways & patios": "Driveway / Patio", "driveways": "Driveway / Patio", "driveway / patio": "Driveway / Patio", "patios": "Driveway / Patio",
+          "landscaping": "Landscaping",
+          "property maintenance": "Property Maintenance", "maintenance": "Property Maintenance"
+        };
+        var match = ALIAS[norm] || "";
+        if (!match) {
+          Array.prototype.forEach.call(select.options, function (o) {
+            if (o.value && o.value.toLowerCase() === norm) match = o.value;
+          });
+        }
+        if (match) {
+          select.value = match;
+          select.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+      }
+    } catch (e) { /* URLSearchParams unsupported — ignore */ }
+
     // Clear a field's error as the user fixes it (on input/change).
     refs.forEach(function (r) {
       var evt = r.control.tagName === "SELECT" ? "change" : "input";
@@ -155,12 +205,24 @@
       }
 
       /* ---- VALID ---- */
+      var submitBtn = document.getElementById("quote-submit");
+
+      // If a photo/plan is attached, submit the real multipart <form> natively:
+      // FormSubmit emails the file(s) and redirects to _next (thank-you.html).
+      // The background JSON path below cannot carry file uploads.
+      var fileInput = document.getElementById("attachment");
+      if (fileInput && fileInput.files && fileInput.files.length) {
+        if (status) setStatus(status, "Sending your enquiry…", "");
+        if (submitBtn) submitBtn.disabled = true;
+        form.submit();
+        return;
+      }
+
       var data = collect(form);
 
       /* Build a mailto: link as a guaranteed FALLBACK if the live send fails
          (no connection, FormSubmit unreachable, etc.). */
       var mailto = buildMailto(data);
-      var submitBtn = document.getElementById("quote-submit");
 
       function fallbackToEmailApp(note) {
         if (submitBtn) submitBtn.disabled = false;
@@ -186,7 +248,9 @@
         "project-type": data["project-type"] || "",
         details: data.details || "",
         _subject: "New quote request — Devine Builders website",
-        _template: "table"
+        _template: "table",
+        _captcha: "false",
+        _honey: (function () { var h = form.querySelector('[name="_honey"]'); return h ? h.value : ""; })()
       };
 
       if (submitBtn) submitBtn.disabled = true;
@@ -199,6 +263,7 @@
       })
         .then(function (res) {
           if (!res.ok) throw new Error("HTTP " + res.status);
+          if (submitBtn) submitBtn.disabled = false; // leave a usable form on back-navigation
           // Sent (or queued pending the one-time confirmation) → confirmation page.
           window.location.assign("thank-you.html");
         })

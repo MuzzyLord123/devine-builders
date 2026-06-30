@@ -971,6 +971,7 @@
     log.setAttribute("role", "log");
     log.setAttribute("aria-live", "polite");
     log.setAttribute("aria-atomic", "false");
+    log.setAttribute("aria-label", "Conversation with the Devine Builders assistant");
 
     // composer
     var form = el("form", "db-chat__composer");
