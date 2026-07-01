@@ -61,6 +61,9 @@
     initStatCounters();
     initServiceFilter();
     initQuoteHelper();
+    initParallax();
+    initCardTilt();
+    initJumpSpy();
   });
 
   /* =================================================================
@@ -98,6 +101,18 @@
     if (!ctx) return; // No 2D context — bail gracefully, CSS bg remains.
 
     var reduce = prefersReducedMotion();
+
+    /* Parallax overscan: when the canvas doubles as a parallax layer (it
+       carries data-parallax on the home page) AND the environment will
+       actually run the parallax (fine pointer, motion allowed), paint ~22%
+       extra wall height and centre the slack, so vertical drift can never
+       reveal a gap at the hero's top/bottom edge. Everywhere else the wall
+       stays exactly hero-sized (no extra paint cost on phones). */
+    var OVERSCAN =
+      canvas.hasAttribute("data-parallax") &&
+      !reduce &&
+      !!(window.matchMedia &&
+         window.matchMedia("(hover: hover) and (pointer: fine)").matches);
 
     /* ----- tunables ----- */
     var DPR = 1;                 // set per resize, capped at 2
@@ -236,6 +251,15 @@
       W = Math.max(1, Math.round(rect.width));
       H = Math.max(1, Math.round(hero.offsetHeight || rect.height));
       DPR = Math.min(window.devicePixelRatio || 1, 2);
+
+      // Parallax slack (see OVERSCAN above): taller wall, centred on the hero.
+      if (OVERSCAN) {
+        var baseH = H;
+        H = Math.round(baseH * 1.22);
+        canvas.style.top = Math.round((baseH - H) / 2) + "px";
+      } else {
+        canvas.style.top = "";
+      }
 
       canvas.width = Math.round(W * DPR);
       canvas.height = Math.round(H * DPR);
@@ -1343,5 +1367,208 @@
     }
     select.addEventListener("change", update);
     update();   // in case the browser restored a previous selection
+  }
+
+  /* =================================================================
+     FEATURE — JS PARALLAX ENGINE  (works in every browser)
+
+     Elements opt in with data-parallax="<speed>". Two modes, picked
+     automatically:
+       • inside .hero  → scroll-linked from the page top (shift = scrollY
+         × speed; zero displacement on load, so the hero renders exactly
+         as designed). Positive speed lags (background), negative leads.
+       • elsewhere     → centre-relative (shift grows as the element
+         crosses the viewport centre) — used by the decorative floaters.
+     Optional attrs: data-parallax-max="px" clamp, data-parallax-fade
+     (dissolve as it scrolls off the top — used by the hero copy).
+
+     Writes the individual `translate` property (NOT transform), so CSS
+     hover lifts (transform) and the scroll-reveal system keep working
+     untouched. rAF-throttled, passive listener, IntersectionObserver
+     gates off-screen items, and it never runs under reduced motion or
+     on coarse pointers (same policy as the brick canvas).
+     ================================================================= */
+  function initParallax() {
+    if (prefersReducedMotion()) return;
+    if (
+      window.matchMedia &&
+      window.matchMedia("(hover: none), (pointer: coarse)").matches
+    ) return;
+    if (!("translate" in document.documentElement.style)) return;
+
+    var nodes = document.querySelectorAll("[data-parallax]");
+    if (!nodes.length) return;
+
+    var vh = window.innerHeight || 1;
+    var items = [];
+
+    Array.prototype.forEach.call(nodes, function (el) {
+      var speed = parseFloat(el.getAttribute("data-parallax"));
+      if (!speed) return;
+      items.push({
+        el: el,
+        speed: speed,
+        max: Math.abs(parseFloat(el.getAttribute("data-parallax-max"))) || 160,
+        fade: el.hasAttribute("data-parallax-fade"),
+        heroMode: !!(el.closest && el.closest(".hero")),
+        top: 0,
+        h: 1,
+        on: true
+      });
+    });
+    if (!items.length) return;
+
+    function measure() {
+      vh = window.innerHeight || 1;
+      var y = window.pageYOffset || 0;
+      items.forEach(function (it) {
+        var prev = it.el.style.translate;
+        it.el.style.translate = ""; // measure at rest
+        var r = it.el.getBoundingClientRect();
+        it.top = r.top + y;
+        it.h = r.height || 1;
+        it.el.style.translate = prev;
+      });
+    }
+
+    // Only animate items near the viewport.
+    if ("IntersectionObserver" in window) {
+      var io = new IntersectionObserver(
+        function (entries) {
+          for (var e = 0; e < entries.length; e++) {
+            for (var i = 0; i < items.length; i++) {
+              if (items[i].el === entries[e].target) {
+                items[i].on = entries[e].isIntersecting;
+              }
+            }
+          }
+          queue();
+        },
+        { rootMargin: "30% 0px 30% 0px" }
+      );
+      items.forEach(function (it) { io.observe(it.el); });
+    }
+
+    function frame() {
+      ticking = false;
+      var y = window.pageYOffset || 0;
+      for (var i = 0; i < items.length; i++) {
+        var it = items[i];
+        if (!it.on) continue;
+
+        var shift;
+        if (it.heroMode) {
+          shift = y * it.speed;
+        } else {
+          // Distance of the element's centre from the viewport centre.
+          var delta = it.top + it.h / 2 - y - vh / 2;
+          shift = -delta * it.speed;
+        }
+        shift = Math.max(-it.max, Math.min(it.max, shift));
+        it.el.style.translate = "0 " + shift.toFixed(1) + "px";
+
+        if (it.fade) {
+          var p = (y - Math.max(0, it.top - vh * 0.15)) / (it.h * 1.1);
+          p = Math.max(0, Math.min(1, p));
+          it.el.style.opacity = String(1 - 0.75 * p);
+        }
+      }
+    }
+
+    var ticking = false;
+    function queue() {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(frame);
+    }
+
+    var measureTimer = 0;
+    window.addEventListener("scroll", queue, { passive: true });
+    window.addEventListener("resize", function () {
+      window.clearTimeout(measureTimer);
+      measureTimer = window.setTimeout(function () { measure(); queue(); }, 160);
+    });
+    window.addEventListener("load", function () { measure(); queue(); }, { once: true });
+
+    measure();
+    queue();
+  }
+
+  /* =================================================================
+     FEATURE — 3D CARD TILT  (desktop, fine pointer, motion-gated)
+     A subtle perspective tilt following the cursor on the card grids.
+     Uses inline `transform` — safe because these cards animate via the
+     `translate`/`scale` properties, never transform.
+     ================================================================= */
+  function initCardTilt() {
+    if (prefersReducedMotion()) return;
+    if (
+      window.matchMedia &&
+      window.matchMedia("(hover: none), (pointer: coarse)").matches
+    ) return;
+
+    var cards = document.querySelectorAll(
+      ".service-card, .trust-item, .workstrip__item"
+    );
+    if (!cards.length) return;
+
+    var MAXDEG = 4.5;
+
+    Array.prototype.forEach.call(cards, function (card) {
+      card.classList.add("has-tilt");
+      card.addEventListener("pointermove", function (e) {
+        var r = card.getBoundingClientRect();
+        var px = (e.clientX - r.left) / (r.width || 1) - 0.5;
+        var py = (e.clientY - r.top) / (r.height || 1) - 0.5;
+        card.style.transform =
+          "perspective(760px) rotateX(" + (-py * MAXDEG).toFixed(2) + "deg)" +
+          " rotateY(" + (px * MAXDEG).toFixed(2) + "deg)";
+      });
+      card.addEventListener("pointerleave", function () {
+        card.style.transform = "";
+      });
+    });
+  }
+
+  /* =================================================================
+     FEATURE — SERVICES JUMP-PILL SCROLLSPY  (services.html)
+     Highlights the pill for the .service-detail section currently in
+     view. No-ops without the nav or IntersectionObserver.
+     ================================================================= */
+  function initJumpSpy() {
+    var nav = document.querySelector(".services-jump");
+    if (!nav || !("IntersectionObserver" in window)) return;
+
+    var links = nav.querySelectorAll('.services-jump__link[href^="#"]');
+    var sections = [];
+    Array.prototype.forEach.call(links, function (a) {
+      var sec = document.getElementById(a.getAttribute("href").slice(1));
+      if (sec) sections.push(sec);
+    });
+    if (!sections.length) return;
+
+    var current = null;
+    var io = new IntersectionObserver(
+      function (entries) {
+        for (var e = 0; e < entries.length; e++) {
+          entries[e].target.__spyOn = entries[e].isIntersecting;
+        }
+        var active = null;
+        for (var i = 0; i < sections.length; i++) {
+          if (sections[i].__spyOn) { active = sections[i]; break; }
+        }
+        if (active === current) return;
+        current = active;
+        Array.prototype.forEach.call(links, function (a) {
+          var on = !!active && a.getAttribute("href") === "#" + active.id;
+          a.classList.toggle("is-active", on);
+          if (on) a.setAttribute("aria-current", "true");
+          else a.removeAttribute("aria-current");
+        });
+      },
+      // "In view" = crossing a band around the upper-middle of the screen.
+      { rootMargin: "-30% 0px -55% 0px" }
+    );
+    sections.forEach(function (s) { io.observe(s); });
   }
 })();

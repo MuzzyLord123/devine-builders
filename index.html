@@ -106,7 +106,10 @@
      ===================================================================== -->
 </head>
 <body>
-  <canvas class="bg-canvas" aria-hidden="true"></canvas>
+  <!-- data-parallax: the brick wall doubles as the slow background layer of
+       the home hero's parallax (initParallax in site.js paints it with ~22%
+       overscan so the drift never shows a gap). -->
+  <canvas class="bg-canvas" aria-hidden="true" data-parallax="0.16" data-parallax-max="52"></canvas>
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header">
     <div class="container site-header__inner">
@@ -139,7 +142,7 @@
     <!-- HERO -->
     <section class="hero" aria-labelledby="hero-title">
       <div class="container hero__inner">
-        <div class="hero__content">
+        <div class="hero__content" data-parallax="-0.10" data-parallax-max="90" data-parallax-fade>
           <p class="hero__eyebrow">Owner-run &middot; Connah's Quay, North Wales</p>
           <h1 class="hero__title" id="hero-title">Local, owner-run builders in Connah's Quay &amp; <span class="hero__title-accent">North Wales</span></h1>
           <p class="hero__lead">
@@ -158,18 +161,19 @@
             <li>Local &amp; reliable</li>
           </ul>
         </div>
-        <figure class="hero__media">
-          <!-- OWNER: replace src with a real hero photo at images/gallery/hero.jpg
-               (or any image in images/gallery/). A bundled placeholder is used
-               by default so the homepage never shows a broken image. -->
-          <img src="images/gallery/placeholder-1.svg" alt="Illustration of building work by Devine Builders in North Wales" width="800" height="600" loading="eager" fetchpriority="high" decoding="async">
-          <figcaption class="media-note">Illustration &mdash; real photos coming soon</figcaption>
+        <figure class="hero__media" data-parallax="-0.22" data-parallax-max="150">
+          <!-- OWNER: swap src for a photo of one of YOUR jobs when ready (any
+               image in images/). This one is a licensed stock photo, honestly
+               captioned as an illustrative example — never claimed as ours. -->
+          <img src="images/hero-photo.jpg" alt="A house extension under construction — an illustrative example of the building work Devine Builders takes on" width="1100" height="825" loading="eager" fetchpriority="high" decoding="async">
+          <figcaption class="media-note">Illustrative example &mdash; real job photos coming soon</figcaption>
         </figure>
       </div>
     </section>
 
     <!-- SERVICES -->
-    <section class="section section--surface" aria-labelledby="services-title">
+    <section class="section section--surface has-fx" aria-labelledby="services-title">
+      <div class="fx fx--glow-a" data-parallax="0.16" aria-hidden="true"></div>
       <div class="container">
         <div class="section__head section__head--center">
           <p class="section__eyebrow">What we do</p>
@@ -382,7 +386,8 @@
     </section>
 
     <!-- ===== SECTION 2: HOW WE WORK (3 STEPS) ===== -->
-    <section class="section section--surface reveal" aria-labelledby="process-title">
+    <section class="section section--surface reveal has-fx" aria-labelledby="process-title">
+      <div class="fx fx--grid" data-parallax="-0.12" aria-hidden="true"></div>
       <div class="container">
         <div class="section__head section__head--center">
           <p class="section__eyebrow">How we work</p>
@@ -406,6 +411,44 @@
             <p class="process-step__text">We carry out the job properly, keep the site tidy, and leave you with a finish you're genuinely happy with.</p>
           </li>
         </ol>
+      </div>
+    </section>
+
+    <!-- ===== WORK STRIP — illustrative photos, honest labels, gallery funnel.
+      HONESTY: these are licensed stock images shown explicitly as illustrative
+      examples of the TYPE of work — never presented as Phil's own jobs. -->
+    <section class="section reveal has-fx" aria-labelledby="workstrip-title">
+      <div class="fx fx--glow-b" data-parallax="0.14" aria-hidden="true"></div>
+      <div class="container">
+        <div class="section__head section__head--center">
+          <p class="section__eyebrow">The kind of work we do</p>
+          <h2 class="section__title" id="workstrip-title">From first dig to final finish</h2>
+          <p class="section__lead">Illustrative examples of the type of work we take on &mdash; real photos of Phil's own jobs are coming soon. <a href="gallery.html">See the full gallery</a>, including before &amp; after comparisons.</p>
+        </div>
+        <ul class="workstrip">
+          <li class="workstrip__item">
+            <a class="workstrip__link" href="gallery.html">
+              <span class="gallery__tag" aria-hidden="true">Illustrative</span>
+              <img src="images/gallery/photo-kitchen.jpg" alt="A modern fitted kitchen — illustrative example" loading="lazy" width="800" height="533">
+              <span class="workstrip__label">Kitchens &amp; renovations</span>
+            </a>
+          </li>
+          <li class="workstrip__item">
+            <a class="workstrip__link" href="gallery.html">
+              <span class="gallery__tag" aria-hidden="true">Illustrative</span>
+              <img src="images/gallery/photo-driveway.jpg" alt="A block-paved driveway — illustrative example" loading="lazy" width="800" height="533">
+              <span class="workstrip__label">Driveways &amp; patios</span>
+            </a>
+          </li>
+          <li class="workstrip__item">
+            <a class="workstrip__link" href="gallery.html">
+              <span class="gallery__tag" aria-hidden="true">Illustrative</span>
+              <img src="images/gallery/photo-landscaping.jpg" alt="A landscaped garden with a timber pergola — illustrative example" loading="lazy" width="800" height="533">
+              <span class="workstrip__label">Landscaping &amp; gardens</span>
+            </a>
+          </li>
+        </ul>
+        <p class="workstrip__cta"><a class="btn btn--secondary" href="gallery.html">View the gallery &amp; before/afters</a></p>
       </div>
     </section>
 

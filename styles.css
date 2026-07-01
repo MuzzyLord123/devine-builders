@@ -3805,18 +3805,10 @@ body.db-chat-active #to-top { display: none !important; }
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
 
-    /* --- Hero parallax: content drifts up + dissolves while the blueprint
-       plate floats at a different rate, giving depth as the hero exits. --- */
-    .home .hero__content {
-      animation: db-hero-rise linear both;
-      animation-timeline: scroll(root);
-      animation-range: 0 90vh;
-    }
-    .home .hero__media {
-      animation: db-hero-float linear both;
-      animation-timeline: scroll(root);
-      animation-range: 0 90vh;
-    }
+    /* NOTE: the hero parallax that used to live here (scroll(root) on
+       .hero__content/.hero__media) moved to the JS engine in site.js
+       (initParallax) so it works in EVERY browser, Firefox included.
+       Keeping both would double-move the hero — don't re-add it here. */
 
     /* --- Cards & blocks rise + settle into place as they scroll into view.
        Items sharing a row enter together, so rows stagger naturally. The
@@ -3824,6 +3816,7 @@ body.db-chat-active #to-top { display: none !important; }
     .home .services-grid > li,
     .home .trust-strip > li,
     .home .process-steps > li,
+    .home .workstrip > li,
     .home .testimonials > li {
       animation: db-rise-in linear both;
       animation-timeline: view();
@@ -3839,12 +3832,6 @@ body.db-chat-active #to-top { display: none !important; }
   }
 }
 
-@keyframes db-hero-rise {
-  to { translate: 0 -32px; opacity: 0.45; }
-}
-@keyframes db-hero-float {
-  to { translate: 0 -72px; }
-}
 @keyframes db-rise-in {
   from { translate: 0 48px; scale: 0.965; }
   to   { translate: 0 0;    scale: 1; }
@@ -3937,3 +3924,156 @@ body.db-chat-active #to-top { display: none !important; }
   pointer-events: none;
 }
 .ba-slider__tag { z-index: 4; }
+
+/* =====================================================================
+   22. SITE REHAUL — parallax layers, work strip, tilt, page transitions
+   All motion is triple-gated (reduced-motion, pointer type, @supports)
+   and every piece degrades to the previous design when unsupported.
+   ===================================================================== */
+
+/* ---- Decorative parallax floaters (home) ----------------------------
+   Absolutely-positioned, aria-hidden, pointer-events:none "blueprint"
+   depth layers that initParallax (site.js) drifts at their own speeds.
+   Desktop-only; the host section clips them so they can never cause
+   horizontal overflow. Nearly transparent by design. */
+.section.has-fx {
+  position: relative;
+  overflow: clip;
+}
+.fx {
+  position: absolute;
+  z-index: 0;
+  display: none;
+  pointer-events: none;
+  border-radius: var(--radius-pill);
+}
+@media (min-width: 60em) {
+  .fx { display: block; }
+}
+.fx--glow-a {
+  width: 30rem; height: 30rem;
+  top: -8rem; right: -9rem;
+  background: radial-gradient(circle at 40% 40%, rgba(37, 99, 235, 0.11), transparent 64%);
+}
+.fx--glow-b {
+  width: 24rem; height: 24rem;
+  bottom: -7rem; left: -8rem;
+  background: radial-gradient(circle at 55% 45%, rgba(37, 99, 235, 0.10), transparent 64%);
+}
+.fx--grid {
+  width: 22rem; height: 16rem;
+  top: 3rem; left: -6rem;
+  border-radius: var(--radius-lg);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='28' viewBox='0 0 56 28'%3E%3Cg fill='none' stroke='%232563eb' stroke-opacity='0.55' stroke-width='1'%3E%3Cpath d='M0 .5h56M0 14.5h56M0 27.5h56M.5 0v14M28.5 0v14M14.5 14v14M42.5 14v14'/%3E%3C/g%3E%3C/svg%3E");
+  opacity: 0.16;
+  -webkit-mask-image: radial-gradient(ellipse at center, #000 30%, transparent 72%);
+  mask-image: radial-gradient(ellipse at center, #000 30%, transparent 72%);
+}
+
+/* ---- "The kind of work we do" photo strip (home) -------------------- */
+.workstrip {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-4);
+}
+@media (min-width: 48em) {
+  .workstrip { grid-template-columns: repeat(3, 1fr); gap: var(--space-5); }
+}
+.workstrip__item { position: relative; }
+.workstrip__link {
+  position: relative;
+  display: block;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  text-decoration: none;
+  border: var(--hairline);
+  box-shadow: var(--shadow-craft);
+  background: var(--color-dark);
+  transition: box-shadow var(--transition);
+}
+.workstrip__link:hover { box-shadow: var(--shadow-craft-hover), var(--accent-ring); }
+.workstrip__link:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
+.workstrip__link img {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  display: block;
+  transition: transform 400ms var(--ease);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .workstrip__link:hover img { transform: scale(1.045); }
+}
+.workstrip__label {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  padding: 2rem var(--space-4) var(--space-3);
+  color: #fff;
+  font-weight: 700;
+  background: linear-gradient(180deg, transparent, rgba(7, 11, 20, 0.85));
+}
+.workstrip__cta { text-align: center; margin: var(--space-6) 0 0; }
+
+/* ---- 3D card tilt helper (JS sets the transform) -------------------- */
+.has-tilt { transition: transform 180ms var(--ease), box-shadow var(--transition); }
+
+/* ---- Services jump-pill scrollspy active state ----------------------- */
+.services-jump__link.is-active {
+  background: var(--color-accent);
+  border-color: var(--color-accent-dark);
+  color: #fff;
+  box-shadow: var(--shadow-accent);
+}
+.services-jump__link.is-active:hover { color: #fff; background: var(--color-accent-dark); }
+
+/* ---- Primary CTA sheen sweep (hover, motion-gated) ------------------- */
+.btn--primary { position: relative; overflow: hidden; }
+.btn--primary::after {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0; left: -60%;
+  width: 40%;
+  background: linear-gradient(105deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  transform: skewX(-18deg);
+  opacity: 0;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .btn--primary:hover::after,
+  .btn--primary:focus-visible::after { animation: btn-sheen 650ms var(--ease); }
+}
+@keyframes btn-sheen {
+  from { left: -60%; opacity: 1; }
+  to   { left: 120%; opacity: 0; }
+}
+
+/* ---- Cross-document view transitions (app-like page changes) --------
+   Supporting browsers cross-fade between pages while the (identical)
+   header stays put. Others navigate exactly as before. Under reduced
+   motion the animations are removed, which makes navigation instant. */
+@view-transition { navigation: auto; }
+.site-header { view-transition-name: site-header; }
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root) { animation-duration: 170ms; }
+  ::view-transition-new(root) { animation-duration: 240ms; }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-image-pair(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) { animation: none !important; }
+}
+
+/* ---- Smooth FAQ open/close (progressive; Chrome 129+) ---------------- */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (interpolate-size: allow-keywords) {
+    :root { interpolate-size: allow-keywords; }
+    .faq__item::details-content {
+      block-size: 0;
+      overflow: clip;
+      transition: block-size 280ms var(--ease), content-visibility 280ms allow-discrete;
+    }
+    .faq__item[open]::details-content { block-size: auto; }
+  }
+}
