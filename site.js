@@ -1420,14 +1420,18 @@
 
     function measure() {
       vh = window.innerHeight || 1;
-      var y = window.pageYOffset || 0;
+      // Sum the offsetTop chain: offsets ignore transforms entirely, so the
+      // measurement is immune both to our own translate AND to any ancestor
+      // mid-reveal transform (.js-reveal .reveal { translateY(18px) }).
       items.forEach(function (it) {
-        var prev = it.el.style.translate;
-        it.el.style.translate = ""; // measure at rest
-        var r = it.el.getBoundingClientRect();
-        it.top = r.top + y;
-        it.h = r.height || 1;
-        it.el.style.translate = prev;
+        var top = 0;
+        var n = it.el;
+        while (n) {
+          top += n.offsetTop || 0;
+          n = n.offsetParent;
+        }
+        it.top = top;
+        it.h = it.el.offsetHeight || 1;
       });
     }
 
@@ -1497,8 +1501,12 @@
   /* =================================================================
      FEATURE — 3D CARD TILT  (desktop, fine pointer, motion-gated)
      A subtle perspective tilt following the cursor on the card grids.
-     Uses inline `transform` — safe because these cards animate via the
-     `translate`/`scale` properties, never transform.
+     The scroll-rise animation owns these cards' `translate` property, so
+     the tilt uses inline `transform` — but an inline transform BEATS the
+     CSS `:hover { transform: translateY(-4px) }` lift on .service-card /
+     .trust-item, so the lift is baked into the tilt string here (the
+     workstrip cards have no CSS lift; their image zooms instead).
+     pointerleave clears the inline style, restoring CSS ownership.
      ================================================================= */
   function initCardTilt() {
     if (prefersReducedMotion()) return;
@@ -1516,12 +1524,17 @@
 
     Array.prototype.forEach.call(cards, function (card) {
       card.classList.add("has-tilt");
+      // Preserve the card's own CSS hover lift while the tilt is active.
+      var lift = card.classList.contains("workstrip__item")
+        ? ""
+        : " translateY(-4px)";
       card.addEventListener("pointermove", function (e) {
         var r = card.getBoundingClientRect();
         var px = (e.clientX - r.left) / (r.width || 1) - 0.5;
         var py = (e.clientY - r.top) / (r.height || 1) - 0.5;
         card.style.transform =
-          "perspective(760px) rotateX(" + (-py * MAXDEG).toFixed(2) + "deg)" +
+          "perspective(760px)" + lift +
+          " rotateX(" + (-py * MAXDEG).toFixed(2) + "deg)" +
           " rotateY(" + (px * MAXDEG).toFixed(2) + "deg)";
       });
       card.addEventListener("pointerleave", function () {
@@ -1562,7 +1575,8 @@
         Array.prototype.forEach.call(links, function (a) {
           var on = !!active && a.getAttribute("href") === "#" + active.id;
           a.classList.toggle("is-active", on);
-          if (on) a.setAttribute("aria-current", "true");
+          // "location" is the ARIA token for the current place within a page.
+          if (on) a.setAttribute("aria-current", "location");
           else a.removeAttribute("aria-current");
         });
       },

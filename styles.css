@@ -4015,8 +4015,14 @@ body.db-chat-active #to-top { display: none !important; }
 }
 .workstrip__cta { text-align: center; margin: var(--space-6) 0 0; }
 
-/* ---- 3D card tilt helper (JS sets the transform) -------------------- */
-.has-tilt { transition: transform 180ms var(--ease), box-shadow var(--transition); }
+/* ---- 3D card tilt helper (JS sets the transform) --------------------
+   NOTE: this shorthand overrides the cards' own transition lists (equal
+   specificity, later in the file), so it must carry every property those
+   lists ease — including border-color — or hover tints snap. */
+.has-tilt {
+  transition: transform 180ms var(--ease), box-shadow var(--transition),
+              border-color var(--transition);
+}
 
 /* ---- Services jump-pill scrollspy active state ----------------------- */
 .services-jump__link.is-active {
@@ -4027,43 +4033,14 @@ body.db-chat-active #to-top { display: none !important; }
 }
 .services-jump__link.is-active:hover { color: #fff; background: var(--color-accent-dark); }
 
-/* ---- Primary CTA sheen sweep (hover, motion-gated) ------------------- */
-.btn--primary { position: relative; overflow: hidden; }
-.btn--primary::after {
-  content: "";
-  position: absolute;
-  top: 0; bottom: 0; left: -60%;
-  width: 40%;
-  background: linear-gradient(105deg, transparent, rgba(255, 255, 255, 0.35), transparent);
-  transform: skewX(-18deg);
-  opacity: 0;
-  pointer-events: none;
-}
-@media (prefers-reduced-motion: no-preference) {
-  .btn--primary:hover::after,
-  .btn--primary:focus-visible::after { animation: btn-sheen 650ms var(--ease); }
-}
-@keyframes btn-sheen {
-  from { left: -60%; opacity: 1; }
-  to   { left: 120%; opacity: 0; }
-}
-
-/* ---- Cross-document view transitions (app-like page changes) --------
-   Supporting browsers cross-fade between pages while the (identical)
-   header stays put. Others navigate exactly as before. Under reduced
-   motion the animations are removed, which makes navigation instant. */
-@view-transition { navigation: auto; }
-.site-header { view-transition-name: site-header; }
-@media (prefers-reduced-motion: no-preference) {
-  ::view-transition-old(root) { animation-duration: 170ms; }
-  ::view-transition-new(root) { animation-duration: 240ms; }
-}
-@media (prefers-reduced-motion: reduce) {
-  ::view-transition-group(*),
-  ::view-transition-image-pair(*),
-  ::view-transition-old(*),
-  ::view-transition-new(*) { animation: none !important; }
-}
+/* ---- NO primary-CTA sheen, NO second view-transition block here ------
+   Both were added in an early §22 draft and REMOVED after review:
+   • the sheen (position:relative + overflow:hidden + ::after on
+     .btn--primary) re-introduced the exact pattern §20.3(a) documents as
+     causing Chrome to drop the button's gradient inside composited .reveal
+     sections (white-on-white CTA). §20.3(a)'s decision stands.
+   • cross-document view transitions are ALREADY implemented in §20.1
+     (header + footer morph, reduced-motion resets). One owner only. */
 
 /* ---- Smooth FAQ open/close (progressive; Chrome 129+) ---------------- */
 @media (prefers-reduced-motion: no-preference) {
