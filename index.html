@@ -152,12 +152,14 @@
         <img class="hero-bg__img" src="images/hero-kitchen.jpg" alt="" width="1920" height="1280" loading="eager" fetchpriority="low" decoding="async">
         <div class="hero-bg__glow"></div>
         <div class="hero-bg__dim"></div>
-        <!-- Blueprint edge-trace: a pre-computed white edge-map of the kitchen
-             (exact 1920x1280 registration, images/hero-kitchen-edges.webp).
-             Hidden until hover, then revealed in a circle around the cursor —
-             the kitchen's contours light up white as you trace them. It shares
-             .hero-bg__img so the pan + ambient zoom keep it in register. -->
-        <img class="hero-bg__img hero-bg__img--edges" src="images/hero-kitchen-edges.webp" alt="" width="1920" height="1280" loading="lazy" decoding="async">
+        <!-- Blueprint edge-trace: a pre-computed fine-line edge-map of the
+             kitchen at 2x resolution (3840x2560, same centre-crop as the photo
+             so registration holds). White-on-BLACK luminance image — the
+             mix-blend-mode:screen makes black invisible, which keeps the file
+             ~4x smaller than an alpha PNG/WebP. Hidden until hover, revealed
+             in a circle around the cursor. Shares .hero-bg__img so the pan +
+             ambient zoom keep it in register. -->
+        <img class="hero-bg__img hero-bg__img--edges" src="images/hero-kitchen-edges.webp" alt="" width="3840" height="2560" loading="lazy" decoding="async">
       </div>
       <div class="container hero__inner">
         <div class="hero__content" data-parallax="-0.10" data-parallax-max="90" data-parallax-fade>
