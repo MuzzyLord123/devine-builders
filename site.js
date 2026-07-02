@@ -1527,7 +1527,6 @@
     var bg = document.querySelector(".hero .hero-bg");
     if (!bg) return;
     var img = bg.querySelector(".hero-bg__img");
-    var glow = bg.querySelector(".hero-bg__glow");
     var hero = bg.closest(".hero");
     if (!img || !hero) return;
     if (prefersReducedMotion()) return;
@@ -1537,8 +1536,12 @@
     ) return;
 
     var tx = 0, ty = 0, cx = 0, cy = 0;         // pan target / current (px)
-    var tgx = 60, tgy = 40, gx = 60, gy = 40;   // glow target / current (%)
+    var tgx = 60, tgy = 40, gx = 60, gy = 40;   // light target / current (%)
     var rafId = 0;
+
+    // Every photo layer (base image + the blueprint edge-trace overlay) must
+    // pan in lockstep so the traced contours stay registered on the kitchen.
+    var layers = bg.querySelectorAll(".hero-bg__img");
 
     function onMove(e) {
       var r = hero.getBoundingClientRect();
@@ -1547,13 +1550,18 @@
       var ny = (e.clientY - r.top) / r.height - 0.5;
       tx = nx * -22;                            // pan opposite the pointer
       ty = ny * -14;
-      tgx = (nx + 0.5) * 100;                   // glow follows the pointer
+      tgx = (nx + 0.5) * 100;                   // light + trace follow pointer
       tgy = (ny + 0.5) * 100;
       start();
     }
 
+    function onEnter() {
+      hero.classList.add("is-lit");             // CSS fades the edge-trace in
+    }
+
     function onLeave() {
       tx = 0; ty = 0; tgx = 60; tgy = 40;       // ease back to rest
+      hero.classList.remove("is-lit");
       start();
     }
 
@@ -1562,11 +1570,12 @@
       cy += (ty - cy) * 0.09;
       gx += (tgx - gx) * 0.12;
       gy += (tgy - gy) * 0.12;
-      img.style.translate = cx.toFixed(1) + "px " + cy.toFixed(1) + "px";
-      if (glow) {
-        glow.style.setProperty("--gx", gx.toFixed(1) + "%");
-        glow.style.setProperty("--gy", gy.toFixed(1) + "%");
-      }
+      var t = cx.toFixed(1) + "px " + cy.toFixed(1) + "px";
+      for (var i = 0; i < layers.length; i++) layers[i].style.translate = t;
+      // One write on the container: the glow's gradient AND the edge-trace's
+      // reveal mask both read --gx/--gy via inheritance.
+      bg.style.setProperty("--gx", gx.toFixed(1) + "%");
+      bg.style.setProperty("--gy", gy.toFixed(1) + "%");
       if (
         Math.abs(tx - cx) > 0.15 || Math.abs(ty - cy) > 0.15 ||
         Math.abs(tgx - gx) > 0.2 || Math.abs(tgy - gy) > 0.2
@@ -1581,6 +1590,7 @@
       if (!rafId) rafId = window.requestAnimationFrame(tick);
     }
 
+    hero.addEventListener("pointerenter", onEnter);
     hero.addEventListener("pointermove", onMove);
     hero.addEventListener("pointerleave", onLeave);
     document.addEventListener("visibilitychange", function () {

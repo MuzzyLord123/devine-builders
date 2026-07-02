@@ -4184,6 +4184,32 @@ body.db-chat-active #to-top { display: none !important; }
     linear-gradient(0deg, rgba(7, 11, 20, 0.55) 0%, rgba(7, 11, 20, 0.10) 40%);
 }
 
+/* ---- Hover edge-trace ("blueprint" reveal) ---------------------------
+   A pre-computed white edge-map of the kitchen photo sits above the dim,
+   hidden until the pointer is over the hero (.is-lit). A radial mask
+   following the cursor (--gx/--gy, written on .hero-bg by initHeroBg)
+   reveals the contours around the mouse — the kitchen's outlines light
+   up white as you trace them. Shares .hero-bg__img so the pan translate
+   + ambient `scale` zoom keep it in exact register with the photo.
+   Browsers without mask-image simply fade the whole trace in on hover. */
+.hero-bg__img--edges {
+  position: absolute;
+  inset: 0;
+  z-index: 1;              /* above the dim overlay so the lines read bright */
+  opacity: 0;
+  transition: opacity 380ms var(--ease);
+  mix-blend-mode: screen;
+  -webkit-mask-image: radial-gradient(
+    24rem circle at var(--gx, 60%) var(--gy, 40%),
+    #000 18%, rgba(0, 0, 0, 0.5) 48%, transparent 72%
+  );
+  mask-image: radial-gradient(
+    24rem circle at var(--gx, 60%) var(--gy, 40%),
+    #000 18%, rgba(0, 0, 0, 0.5) 48%, transparent 72%
+  );
+}
+.home .hero.is-lit .hero-bg__img--edges { opacity: 0.95; }
+
 /* ---- Extended single-column hero (the photo plate was removed) -------
    The content card now owns the hero: one column, a wider card, a larger
    display headline, and a capped reading measure on the lead. The base
