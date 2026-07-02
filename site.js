@@ -64,6 +64,7 @@
     initParallax();
     initCardTilt();
     initJumpSpy();
+    initHeroBg();
   });
 
   /* =================================================================
@@ -81,6 +82,14 @@
        `.hero` at all simply gets no wall (the canvas is removed below). */
     var hero = document.querySelector(".hero");
     if (!hero) {
+      if (canvas && canvas.parentNode) canvas.parentNode.removeChild(canvas);
+      return;
+    }
+
+    // A photographic hero backdrop (div.hero-bg — the home page) replaces the
+    // brick wall entirely: remove any canvas and stand down. initHeroBg owns
+    // that hero's motion; the inner pages keep their brick bands.
+    if (hero.querySelector(".hero-bg")) {
       if (canvas && canvas.parentNode) canvas.parentNode.removeChild(canvas);
       return;
     }
@@ -1500,6 +1509,86 @@
 
     measure();
     queue();
+  }
+
+  /* =================================================================
+     FEATURE — PHOTO HERO BACKDROP  (home page)
+     Cursor interactivity for the div.hero-bg kitchen photo that replaced
+     the brick canvas: the photo pans gently towards the pointer and a
+     soft blue "work light" glow follows it (a nod to the old brick-wall
+     light). One lerped rAF loop that goes idle when settled — 0 CPU at
+     rest, exactly like the canvas it replaced. Motion channels compose:
+       • JS pointer pan → img.style.translate  (individual property)
+       • CSS ambient zoom → `scale` keyframes on the img
+       • scroll drift    → initParallax translates the .hero-bg container
+     Gated: markup present, reduced-motion off, fine pointer only.
+     ================================================================= */
+  function initHeroBg() {
+    var bg = document.querySelector(".hero .hero-bg");
+    if (!bg) return;
+    var img = bg.querySelector(".hero-bg__img");
+    var glow = bg.querySelector(".hero-bg__glow");
+    var hero = bg.closest(".hero");
+    if (!img || !hero) return;
+    if (prefersReducedMotion()) return;
+    if (
+      window.matchMedia &&
+      window.matchMedia("(hover: none), (pointer: coarse)").matches
+    ) return;
+
+    var tx = 0, ty = 0, cx = 0, cy = 0;         // pan target / current (px)
+    var tgx = 60, tgy = 40, gx = 60, gy = 40;   // glow target / current (%)
+    var rafId = 0;
+
+    function onMove(e) {
+      var r = hero.getBoundingClientRect();
+      if (!r.width || !r.height) return;
+      var nx = (e.clientX - r.left) / r.width - 0.5;
+      var ny = (e.clientY - r.top) / r.height - 0.5;
+      tx = nx * -22;                            // pan opposite the pointer
+      ty = ny * -14;
+      tgx = (nx + 0.5) * 100;                   // glow follows the pointer
+      tgy = (ny + 0.5) * 100;
+      start();
+    }
+
+    function onLeave() {
+      tx = 0; ty = 0; tgx = 60; tgy = 40;       // ease back to rest
+      start();
+    }
+
+    function tick() {
+      cx += (tx - cx) * 0.09;
+      cy += (ty - cy) * 0.09;
+      gx += (tgx - gx) * 0.12;
+      gy += (tgy - gy) * 0.12;
+      img.style.translate = cx.toFixed(1) + "px " + cy.toFixed(1) + "px";
+      if (glow) {
+        glow.style.setProperty("--gx", gx.toFixed(1) + "%");
+        glow.style.setProperty("--gy", gy.toFixed(1) + "%");
+      }
+      if (
+        Math.abs(tx - cx) > 0.15 || Math.abs(ty - cy) > 0.15 ||
+        Math.abs(tgx - gx) > 0.2 || Math.abs(tgy - gy) > 0.2
+      ) {
+        rafId = window.requestAnimationFrame(tick);
+      } else {
+        rafId = 0;                              // settled — loop idles
+      }
+    }
+
+    function start() {
+      if (!rafId) rafId = window.requestAnimationFrame(tick);
+    }
+
+    hero.addEventListener("pointermove", onMove);
+    hero.addEventListener("pointerleave", onLeave);
+    document.addEventListener("visibilitychange", function () {
+      if (document.hidden && rafId) {
+        window.cancelAnimationFrame(rafId);
+        rafId = 0;
+      }
+    });
   }
 
   /* =================================================================

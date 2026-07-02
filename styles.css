@@ -4125,3 +4125,61 @@ body.db-chat-active #to-top { display: none !important; }
   gap: var(--space-3) var(--space-4);
 }
 .service-detail__cta-note { color: var(--color-ink-faint); font-size: var(--fs-300); }
+
+/* =====================================================================
+   24. PHOTO HERO BACKDROP  (home page — replaces the brick canvas there)
+   A dimmed kitchen photo with three composed motion layers (see the
+   index.html comment / initHeroBg). The hero keeps its solid dark
+   background as the no-image fallback, and the content card keeps its
+   own scrim, so text contrast never depends on the photo.
+   ===================================================================== */
+.hero-bg {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -64px;                 /* slack so the scroll-parallax drift (max 52px) */
+  bottom: -64px;              /* never reveals an edge inside the hero        */
+  z-index: 0;                 /* behind .hero__inner (z-index: 1) */
+  overflow: hidden;
+  pointer-events: none;
+}
+.hero-bg__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 60%;
+  /* Zoom slack for the cursor pan (±22px) — composes with the JS-written
+     `translate` and the keyframed `scale` below (individual properties). */
+  scale: 1.12;
+}
+/* Slow ambient "Ken Burns" zoom — desktop fine-pointer + motion-allowed only
+   (an infinite animation is cheap on the compositor but phones stay static,
+   matching the brick canvas's battery policy). */
+@media (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) {
+  .hero-bg__img { animation: hero-kb 26s var(--ease) infinite alternate; }
+}
+@keyframes hero-kb {
+  from { scale: 1.12; }
+  to   { scale: 1.17; }
+}
+/* The cursor "work light" — a soft blue glow that follows the pointer
+   (initHeroBg drives --gx/--gy). At rest it idles up-right of centre. */
+.hero-bg__glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    46rem circle at var(--gx, 60%) var(--gy, 40%),
+    rgba(147, 197, 253, 0.18),
+    transparent 65%
+  );
+  mix-blend-mode: screen;
+}
+/* Contrast dim: heavier over the text column (left) and the base, lighter
+   where the photo should read through. AA is still owned by the scrim. */
+.hero-bg__dim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(7, 11, 20, 0.62) 0%, rgba(7, 11, 20, 0.30) 55%, rgba(7, 11, 20, 0.45) 100%),
+    linear-gradient(0deg, rgba(7, 11, 20, 0.55) 0%, rgba(7, 11, 20, 0.10) 40%);
+}

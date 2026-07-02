@@ -106,10 +106,10 @@
      ===================================================================== -->
 </head>
 <body>
-  <!-- data-parallax: the brick wall doubles as the slow background layer of
-       the home hero's parallax (initParallax in site.js paints it with ~22%
-       overscan so the drift never shows a gap). -->
-  <canvas class="bg-canvas" aria-hidden="true" data-parallax="0.16" data-parallax-max="52"></canvas>
+  <!-- NOTE: no <canvas class="bg-canvas"> on this page — the home hero uses a
+       photographic backdrop (div.hero-bg below) instead of the brick wall.
+       site.js initBrickBackground detects .hero-bg and stands down; the inner
+       pages keep their brick hero bands. -->
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header">
     <div class="container site-header__inner">
@@ -142,6 +142,17 @@
   <main class="home" id="main" tabindex="-1">
     <!-- HERO -->
     <section class="hero" aria-labelledby="hero-title">
+      <!-- Photographic backdrop (replaces the brick canvas on this page only).
+           Three composed motion layers, all gated for reduced-motion/coarse
+           pointers: cursor pan + "work light" glow (initHeroBg in site.js),
+           scroll drift (data-parallax via initParallax), and a slow ambient
+           zoom (CSS `scale` keyframes). Decorative licensed stock photo,
+           dimmed for contrast — the content card carries its own scrim. -->
+      <div class="hero-bg" aria-hidden="true" data-parallax="0.16" data-parallax-max="52">
+        <img class="hero-bg__img" src="images/hero-kitchen.jpg" alt="" width="1920" height="1280" loading="eager" fetchpriority="low" decoding="async">
+        <div class="hero-bg__glow"></div>
+        <div class="hero-bg__dim"></div>
+      </div>
       <div class="container hero__inner">
         <div class="hero__content" data-parallax="-0.10" data-parallax-max="90" data-parallax-fade>
           <p class="hero__eyebrow">Owner-run &middot; Connah's Quay, North Wales</p>
