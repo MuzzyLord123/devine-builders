@@ -4192,6 +4192,52 @@ body.db-chat-active #to-top { display: none !important; }
     radial-gradient(120% 120% at 78% 12%, rgba(37, 99, 235, 0.28), transparent 58%),
     var(--color-dark);
 }
+.amap__contour path {
+  fill: none;
+  stroke: rgba(147, 197, 253, 0.10);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+.amap__estuary { fill: rgba(96, 165, 250, 0.14); }
+.amap__roads path {
+  fill: none;
+  stroke: rgba(147, 197, 253, 0.16);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.amap__badge rect {
+  fill: rgba(15, 23, 42, 0.92);
+  stroke: rgba(147, 197, 253, 0.35);
+  stroke-width: 0.8;
+}
+.amap__badge text {
+  fill: #93c5fd;
+  font-size: 6.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.amap__border {
+  fill: none;
+  stroke: rgba(148, 163, 184, 0.35);
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+}
+.amap__country {
+  fill: rgba(148, 163, 184, 0.55);
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+}
+.amap__context circle {
+  fill: none;
+  stroke: #64748b;
+  stroke-width: 1.2;
+}
+.amap__context text {
+  fill: #94a3b8;
+  font-size: 8.5px;
+  font-style: italic;
+}
 .amap__river {
   fill: none;
   stroke: rgba(96, 165, 250, 0.16);
