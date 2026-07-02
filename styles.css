@@ -4238,3 +4238,16 @@ body.db-chat-active #to-top { display: none !important; }
 .home .hero__inner { grid-template-columns: 1fr; }
 .home .hero__content { max-width: 50rem; }
 .home .hero__lead { max-width: 60ch; }
+
+/* Full-viewport hero: the kitchen backdrop fills the whole first screen
+   (viewport minus the sticky header) with the content vertically centred,
+   so no white from the next section peeks in above the fold. min-height
+   only ever GROWS the band — on short/landscape viewports the content's
+   natural height still wins, nothing clips. svh (where supported) avoids
+   the iOS address-bar jump; the vh line is the fallback. */
+.home .hero {
+  display: grid;
+  align-items: center;
+  min-height: calc(100vh - var(--header-h));
+  min-height: calc(100svh - var(--header-h));
+}
