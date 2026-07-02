@@ -686,10 +686,14 @@
     }
 
     // Activating any link inside the panel closes it (let navigation run).
+    // tel: links do NOT unload the page, so restore focus to the toggle for
+    // those — otherwise focus dies inside the hidden panel and keyboard
+    // users are dumped back to the top of the document.
     list.addEventListener("click", function (e) {
       var a = e.target.closest ? e.target.closest("a") : null;
       if (a && list.contains(a)) {
-        close(false);
+        var isTel = /^tel:/i.test(a.getAttribute("href") || "");
+        close(isTel);
       }
     });
 

@@ -383,6 +383,7 @@ ol[class] { list-style: none; padding: 0; }
    the default --color-focus, where it already passes. */
 .call-bar :focus-visible,
 .home .hero__actions .btn--secondary:focus-visible,
+.home .hero__phone a:focus-visible,
 .btn--ghost-light:focus-visible,
 .site-footer a:focus-visible,
 .contact-card a:focus-visible,
@@ -2801,6 +2802,7 @@ body.has-call-bar { /* only meaningful with the mobile media query below */ }
   .home .hero__title,
   .home .hero__lead,
   .home .hero__actions,
+  .home .hero__phone,
   .home .hero__trust {
     opacity: 0;
     animation: hero-fade-up 620ms var(--ease) both;
@@ -2809,6 +2811,7 @@ body.has-call-bar { /* only meaningful with the mobile media query below */ }
   .home .hero__title   { animation-delay: 180ms; }
   .home .hero__lead    { animation-delay: 280ms; }
   .home .hero__actions { animation-delay: 380ms; }
+  .home .hero__phone   { animation-delay: 430ms; }
   .home .hero__trust   { animation-delay: 480ms; }
 }
 @keyframes hero-fade-up {
