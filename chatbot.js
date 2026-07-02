@@ -63,53 +63,53 @@
     "Flintshire", "North Wales"
   ];
 
-  // The 8 headline services + the trades in between. `anchor` deep-links to
-  // the matching section on services.html. `tags` drive intent matching.
+  // The 8 headline services + the trades in between. `page` is each
+  // service's landing page; `tags` drive intent matching.
   var SERVICES = [
     {
-      id: "extensions", name: "Extensions", anchor: "extensions", page: "extensions-connahs-quay.html",
+      id: "extensions", name: "Extensions", page: "extensions-connahs-quay.html",
       blurb: "Single- and double-storey extensions, garage and loft conversions, conservatories, porches, garden rooms and outbuildings — built from the groundwork up.",
       items: ["Single- & double-storey extensions", "Garage & loft conversions", "Conservatories, porches & garden rooms", "Outbuildings & new builds"],
       tags: ["extension", "extensions", "extend", "single storey", "double storey", "loft", "loft conversion", "attic", "garage conversion", "conservatory", "conservatories", "porch", "porches", "garden room", "outbuilding", "new build", "new builds", "more space", "extra room"]
     },
     {
-      id: "renovations", name: "Renovations", anchor: "renovations", page: "renovations-connahs-quay.html",
+      id: "renovations", name: "Renovations", page: "renovations-connahs-quay.html",
       blurb: "Full refurbishments and room-by-room renovations, managed from first idea to final finish and kept tidy throughout.",
       items: ["Full home refurbishments", "Kitchens, bathrooms & wet rooms", "Plastering, flooring & joinery", "Structural alterations, RSJs & knock-throughs"],
       tags: ["renovation", "renovations", "renovate", "refurbishment", "refurbish", "refurb", "remodel", "do up", "doing up", "full house", "whole house"]
     },
     {
-      id: "brickwork", name: "Brickwork & Masonry", anchor: "brickwork", page: "brickwork-connahs-quay.html",
+      id: "brickwork", name: "Brickwork & Masonry", page: "brickwork-connahs-quay.html",
       blurb: "Neat, solid brickwork and masonry — new walls, repairs and everything in between, built to keep the weather out.",
       items: ["Bricklaying, blockwork & stonework", "Garden & retaining walls", "Repointing & structural brickwork", "Chimney repairs"],
       tags: ["brick", "bricks", "brickwork", "bricklaying", "bricklayer", "blockwork", "block work", "masonry", "stonework", "stone", "wall", "walls", "garden wall", "retaining wall", "repointing", "pointing", "chimney", "chimneys"]
     },
     {
-      id: "groundworks", name: "Groundworks", anchor: "groundworks", page: "groundworks-connahs-quay.html",
+      id: "groundworks", name: "Groundworks", page: "groundworks-connahs-quay.html",
       blurb: "Foundations, drainage and concrete work done right from the very first dig — the groundwork everything else depends on.",
       items: ["Foundations, footings & underpinning", "Site clearance & excavation", "Drainage installation & drain repairs", "Concrete slabs, kerbing & trenching"],
       tags: ["groundwork", "groundworks", "foundation", "foundations", "footing", "footings", "underpinning", "underpin", "drainage", "drain", "drains", "excavation", "excavate", "digging", "dig", "concrete", "slab", "slabs", "kerbing", "trenching", "site clearance"]
     },
     {
-      id: "roofing", name: "Roofing", anchor: "roofing", page: "roofing-connahs-quay.html",
+      id: "roofing", name: "Roofing", page: "roofing-connahs-quay.html",
       blurb: "New roofs, repairs and watertight detailing for pitched and flat roofs — your home's first line of defence against the weather.",
       items: ["New roofs, repairs & flat roofs", "Roof tiling & slate roofing", "Leadwork & chimney repairs", "Fascias, soffits & guttering"],
       tags: ["roof", "roofs", "roofing", "roofer", "flat roof", "pitched roof", "roof repair", "leak", "leaking roof", "tile", "tiles", "tiling", "slate", "slates", "slating", "leadwork", "lead", "fascia", "fascias", "soffit", "soffits", "gutter", "guttering", "gutters"]
     },
     {
-      id: "driveways", name: "Driveways & Patios", anchor: "driveways-patios", page: "driveways-connahs-quay.html",
+      id: "driveways", name: "Driveways & Patios", page: "driveways-connahs-quay.html",
       blurb: "Hard-wearing driveways and patios laid on a properly prepared base, so they stay level and drain well for years.",
       items: ["Patios, paths & block paving", "Resin & tarmac driveways", "Concrete driveways"],
       tags: ["driveway", "driveways", "drive", "patio", "patios", "paving", "block paving", "paved", "path", "paths", "resin", "tarmac", "tarmacadam", "concrete driveway", "hardstanding", "parking"]
     },
     {
-      id: "landscaping", name: "Landscaping", anchor: "landscaping", page: "landscaping-connahs-quay.html",
+      id: "landscaping", name: "Landscaping", page: "landscaping-connahs-quay.html",
       blurb: "Make the most of your outdoor space with landscaping, decking, fencing and walls built to handle the local weather.",
       items: ["Landscaping & garden walls", "Turfing & artificial grass", "Decking", "Fencing"],
       tags: ["landscaping", "landscape", "garden", "gardens", "decking", "deck", "fence", "fences", "fencing", "turf", "turfing", "lawn", "artificial grass", "astro", "patio garden", "outdoor space"]
     },
     {
-      id: "maintenance", name: "Property Maintenance", anchor: "property-maintenance", page: "maintenance-connahs-quay.html",
+      id: "maintenance", name: "Property Maintenance", page: "maintenance-connahs-quay.html",
       blurb: "Dependable repairs and upkeep — no job too small, with the same care and tidiness as a big project.",
       items: ["General repairs & refurbishments", "Damp & leak repairs", "Insurance, fire & storm damage work", "Interior & exterior decorating"],
       tags: ["maintenance", "repair", "repairs", "fix", "fixing", "handyman", "odd job", "odd jobs", "small job", "small jobs", "damp", "leak", "leaks", "storm damage", "fire damage", "insurance work", "upkeep", "snagging"]
@@ -167,7 +167,7 @@
       p(svc.name + " — " + svc.blurb),
       p("That includes: " + svc.items.join("; ") + "."),
       actions([
-        { label: svc.name + " details", href: svc.page || ("services.html#" + svc.anchor) },
+        { label: svc.name + " details", href: svc.page },
         ACT.quote
       ])
     ];

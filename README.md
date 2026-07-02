@@ -38,6 +38,9 @@ Tip: if a page ever looks unstyled after an edit, hard-refresh once with **Ctrl 
 | `favicon.svg`, `og-cover.svg`, `site.webmanifest` | Icons, social share image, PWA manifest |
 | `robots.txt`, `sitemap.xml` | Search-engine files |
 | `_headers` | Security headers (Netlify / Cloudflare Pages) |
+| `*-connahs-quay.html` (×8) | Per-service landing pages — **hand-maintained**: edit the HTML directly |
+| `chatbot.js` | Free on-site chat assistant (knowledge-based, no APIs) |
+| `tools/db_service_pages.py` | One-shot scaffold that originally generated the 8 landing pages — **do not re-run** (it would revert hand-applied copy fixes; it exits immediately by design) |
 
 ---
 

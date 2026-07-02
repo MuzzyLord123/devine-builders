@@ -152,14 +152,11 @@
         <img class="hero-bg__img" src="images/hero-kitchen.jpg" alt="" width="1920" height="1280" loading="eager" fetchpriority="low" decoding="async">
         <div class="hero-bg__glow"></div>
         <div class="hero-bg__dim"></div>
-        <!-- Blueprint edge-trace: a pre-computed fine-line edge-map of the
-             kitchen at 2x resolution (3840x2560, same centre-crop as the photo
-             so registration holds). White-on-BLACK luminance image — the
-             mix-blend-mode:screen makes black invisible, which keeps the file
-             ~4x smaller than an alpha PNG/WebP. Hidden until hover, revealed
-             in a circle around the cursor. Shares .hero-bg__img so the pan +
-             ambient zoom keep it in register. -->
-        <img class="hero-bg__img hero-bg__img--edges" src="images/hero-kitchen-edges.webp" alt="" width="3840" height="2560" loading="lazy" decoding="async">
+        <!-- The blueprint edge-trace overlay (images/hero-kitchen-edges.webp,
+             a 3840x2560 white-on-black luminance edge-map of the SAME crop —
+             regenerate it whenever the photo changes) is NOT shipped here:
+             initHeroBg in site.js injects it only on fine-pointer,
+             motion-allowed devices, so phones never download the ~390KB. -->
       </div>
       <div class="container hero__inner">
         <div class="hero__content" data-parallax="-0.10" data-parallax-max="90" data-parallax-fade>
@@ -182,9 +179,9 @@
           </ul>
         </div>
         <!-- (The hero photo plate was removed — the kitchen backdrop carries
-             the visuals and the content column now spans the hero. When Phil
-             has real job photos, a plate can return here as a
-             <figure class="hero__media"> — its CSS is still in place.) -->
+             the visuals and the content column now spans the hero. If Phil's
+             real job photos ever warrant a plate here again, restore the
+             <figure class="hero__media"> markup AND its CSS from git history.) -->
       </div>
     </section>
 

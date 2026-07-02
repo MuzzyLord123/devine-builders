@@ -384,6 +384,7 @@ ol[class] { list-style: none; padding: 0; }
 .call-bar :focus-visible,
 .home .hero__actions .btn--secondary:focus-visible,
 .home .hero__phone a:focus-visible,
+.breadcrumb a:focus-visible,
 .btn--ghost-light:focus-visible,
 .site-footer a:focus-visible,
 .contact-card a:focus-visible,
@@ -710,16 +711,8 @@ ol[class] { list-style: none; padding: 0; }
   border-radius: 50%;
   background: var(--color-accent);
 }
-.hero__media {
-  position: relative;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border);
-  background: var(--color-surface-2);
-  box-shadow: var(--shadow-xl);
-  overflow: hidden;
-  aspect-ratio: 4 / 3;
-}
-.hero__media img { width: 100%; height: 100%; object-fit: cover; }
+/* (The hero__media photo-plate rules were removed with the plate itself —
+   restore markup + CSS together from git history if it ever returns.) */
 
 /* ---------------------------------------------------------------------
    8. Services grid (home — 3 cards)
@@ -1541,26 +1534,37 @@ body {
   user-select: none;
 }
 
-/* ---- HERO: showcase the wall ------------------------------------- */
-/* Make the hero transparent so the canvas reads through it, and flip
-   its text to light variants with AA contrast over the dark wall. */
+/* ---- HERO: full-viewport photo band (home) ------------------------ */
+/* ONE block owns the home hero's geometry: a single-column band that
+   fills the first screen (viewport minus the sticky header — min-height
+   only ever GROWS it, so short/landscape viewports keep the content's
+   natural height; svh avoids the iOS address-bar jump, vh is the
+   fallback) over the interactive kitchen backdrop (.hero-bg, §24).
+   The solid dark background is the no-image / no-JS fallback. */
 .home .hero {
-  position: relative;            /* positioning context for the .bg-canvas */
-  overflow: hidden;              /* clip the brick wall to the hero box */
+  position: relative;            /* positioning context for the backdrop */
+  overflow: hidden;              /* clip the backdrop layers to the band */
   isolation: isolate;
-  background: var(--color-dark); /* solid base: readable before/without JS; canvas paints over it */
+  background: var(--color-dark); /* solid fallback under the photo */
   border-bottom-color: rgba(255, 255, 255, 0.08);
+  display: grid;
+  align-items: center;           /* content vertically centred */
+  min-height: calc(100vh - var(--header-h));
+  min-height: calc(100svh - var(--header-h));
 }
-/* Hero content must sit ABOVE the canvas. */
+/* Hero content sits ABOVE the backdrop, as one extended column (the
+   higher-specificity single-column rule overrides the base two-column
+   grid that still serves a future hero__media plate — see git history). */
 .home .hero__inner {
   position: relative;
   z-index: 1;
+  grid-template-columns: 1fr;
 }
-/* The animated brick wall + blue work-light can brighten the area behind the
-   hero text to a lit tone, collapsing contrast for light copy. Give the text
-   column its own dark scrim so contrast is guaranteed independent of the
-   canvas's lit state (AA floor holds even under the brightest lit+glow pixel). */
+/* The photo (and its cursor glow) can brighten the area behind the hero
+   text. Give the text column its own dark scrim so contrast is guaranteed
+   independent of the backdrop (AA floor holds over the brightest pixel). */
 .home .hero__content {
+  max-width: 50rem;
   background: linear-gradient(180deg, rgba(7, 11, 20, 0.84), rgba(7, 11, 20, 0.68));
   padding: var(--space-6);
   border-radius: var(--radius-lg);
@@ -1584,7 +1588,7 @@ body {
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
 }
 .home .hero__title { color: #f8fafc; }            /* >=7.6:1 even over the brightest lit pixel */
-.home .hero__lead { color: #e2e8f0; }             /* --color-on-dark; >=6.4:1 over the scrim */
+.home .hero__lead { color: #e2e8f0; max-width: 60ch; } /* --color-on-dark; >=6.4:1; capped reading measure */
 .home .hero__trust { color: var(--color-on-dark); } /* bumped from #cbd5e1 for AA headroom (>=6.4:1) */
 .home .hero__trust li::before {
   background: #93c5fd;                              /* brighter blue dot */
@@ -1605,20 +1609,11 @@ body {
   border-color: #ffffff;
   color: #ffffff;
 }
-/* The hero photo card still needs a solid surface so the image reads. */
-.home .hero__media {
-  border-color: rgba(255, 255, 255, 0.14);
-  background: rgba(15, 23, 42, 0.6);
-}
-
 /* ---- Subtle, accessible scroll-down cue --------------------------------
    Decorative only (a pseudo-element, never announced to assistive tech and
-   pointer-events:none so it can't intercept clicks). Drawn above the canvas
-   (z-index:1) at the bottom-centre of the hero. Hidden on short/small
-   viewports to avoid crowding, and any motion is fully gated. */
-.home .hero {
-  position: relative;
-}
+   pointer-events:none so it can't intercept clicks). Drawn above the
+   backdrop (z-index:1) at the bottom-centre of the hero. Hidden on
+   short/small viewports to avoid crowding, and any motion is fully gated. */
 @media (min-width: 56em) {
   .home .hero::after {
     content: "";
@@ -1645,12 +1640,6 @@ body {
 @keyframes hero-scroll-cue {
   0%, 100% { transform: rotate(45deg) translate(0, 0); opacity: 0.55; }
   50%      { transform: rotate(45deg) translate(4px, 4px); opacity: 0.9; }
-}
-
-/* Gentle hover lift on the hero photo card (desktop, motion-gated) */
-.hero__media { transition: transform var(--transition), box-shadow var(--transition); }
-@media (min-width: 56em) and (prefers-reduced-motion: no-preference) {
-  .home .hero__media:hover { transform: translateY(-4px); }
 }
 
 /* ---------------------------------------------------------------------
@@ -3328,43 +3317,14 @@ body.has-call-bar { /* only meaningful with the mobile media query below */ }
 /* ---- Areas chips: refined lit pill ---------------------------------- */
 .areas-list__chip { box-shadow: var(--shadow-xs), inset 0 1px 0 rgba(255, 255, 255, 0.7); }
 
-/* ---- Hero: two-tone accent clause + designed "blueprint plate" media - */
+/* ---- Hero: two-tone accent clause --------------------------------- */
 .home .hero__title {
   line-height: var(--lh-tight);
   letter-spacing: var(--tracking-tight);
 }
 .hero__title-accent { color: #93c5fd; }              /* light blue, AA over the dark scrim */
-.home .hero__media {
-  position: relative;
-  border: var(--hairline-strong);
-  box-shadow: var(--shadow-xl), inset 0 1px 0 rgba(255, 255, 255, 0.10);
-}
-.home .hero__media::before {                          /* accent rule along the top edge */
-  content: "";
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 3px;
-  z-index: 2;
-  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-dark));
-}
-/* Honest "illustration" caption on the hero plate */
-.media-note {
-  position: absolute;
-  left: var(--space-3);
-  bottom: var(--space-3);
-  z-index: 2;
-  margin: 0;
-  padding: 0.25rem 0.6rem;
-  font-size: var(--fs-300);
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  color: #e2e8f0;
-  background: rgba(7, 11, 20, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: var(--radius-pill);
-  -webkit-backdrop-filter: saturate(120%);
-  backdrop-filter: saturate(120%);
-}
+/* (The "blueprint plate" hero__media/.media-note styling left with the
+   plate — restore from git history alongside the markup if it returns.) */
 
 /* ---- Bigger lead measure/scale (kept inside the existing cap) ------- */
 .hero__lead,
@@ -4225,29 +4185,12 @@ body.db-chat-active #to-top { display: none !important; }
 }
 .breadcrumb a { color: #93c5fd; text-decoration: none; }
 .breadcrumb a:hover { text-decoration: underline; }
-.breadcrumb a:focus-visible { outline-color: #93c5fd; }
+/* (focus ring: covered by the central dark-band outline list in §4) */
 .breadcrumb [aria-current] { color: var(--color-on-dark); }
 
-/* ---- Extended single-column hero (the photo plate was removed) -------
-   The content card now owns the hero: one column, a wider card, and a
-   capped reading measure on the lead. The title keeps the standard
-   --fs-fluid-900 hero scale (a larger display override was tried and
-   reverted at the owner's request). The base two-column grid rule
-   (≥56em, .hero__inner) still serves any future return of a
-   <figure class="hero__media"> plate. */
-.home .hero__inner { grid-template-columns: 1fr; }
-.home .hero__content { max-width: 50rem; }
-.home .hero__lead { max-width: 60ch; }
-
-/* Full-viewport hero: the kitchen backdrop fills the whole first screen
-   (viewport minus the sticky header) with the content vertically centred,
-   so no white from the next section peeks in above the fold. min-height
-   only ever GROWS the band — on short/landscape viewports the content's
-   natural height still wins, nothing clips. svh (where supported) avoids
-   the iOS address-bar jump; the vh line is the fallback. */
-.home .hero {
-  display: grid;
-  align-items: center;
-  min-height: calc(100vh - var(--header-h));
-  min-height: calc(100svh - var(--header-h));
-}
+/* ---- Home hero layout lives in ONE place --------------------------
+   The full-viewport, single-column geometry (display:grid, min-height,
+   grid-template-columns:1fr, content max-width, lead measure) is all in
+   the "HERO: full-viewport photo band" section — not here. NOTE: the
+   title keeps the standard --fs-fluid-900 scale (a larger display
+   override was tried and reverted at the owner's request). */

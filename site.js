@@ -50,6 +50,16 @@
     );
   }
 
+  /* Coarse/no-hover pointer (phones, tablets): the shared gate for every
+     pointer-driven flourish — parallax, tilt, the hero backdrop. One source
+     of truth so the motion policy can't drift between features. */
+  function coarsePointer() {
+    return !!(
+      window.matchMedia &&
+      window.matchMedia("(hover: none), (pointer: coarse)").matches
+    );
+  }
+
   ready(function () {
     initBrickBackground();
     initMobileNav();
@@ -80,16 +90,11 @@
        the home hero on index, or a `.hero hero--inner` band at the top of the
        interior pages (services/gallery/quote/thank-you/404). A page with no
        `.hero` at all simply gets no wall (the canvas is removed below). */
+    // No hero at all, OR a photographic hero backdrop (div.hero-bg — the home
+    // page) that replaces the brick wall entirely: remove any canvas and stand
+    // down. initHeroBg owns the photo hero; inner pages keep their brick bands.
     var hero = document.querySelector(".hero");
-    if (!hero) {
-      if (canvas && canvas.parentNode) canvas.parentNode.removeChild(canvas);
-      return;
-    }
-
-    // A photographic hero backdrop (div.hero-bg — the home page) replaces the
-    // brick wall entirely: remove any canvas and stand down. initHeroBg owns
-    // that hero's motion; the inner pages keep their brick bands.
-    if (hero.querySelector(".hero-bg")) {
+    if (!hero || hero.querySelector(".hero-bg")) {
       if (canvas && canvas.parentNode) canvas.parentNode.removeChild(canvas);
       return;
     }
@@ -110,18 +115,6 @@
     if (!ctx) return; // No 2D context — bail gracefully, CSS bg remains.
 
     var reduce = prefersReducedMotion();
-
-    /* Parallax overscan: when the canvas doubles as a parallax layer (it
-       carries data-parallax on the home page) AND the environment will
-       actually run the parallax (fine pointer, motion allowed), paint ~22%
-       extra wall height and centre the slack, so vertical drift can never
-       reveal a gap at the hero's top/bottom edge. Everywhere else the wall
-       stays exactly hero-sized (no extra paint cost on phones). */
-    var OVERSCAN =
-      canvas.hasAttribute("data-parallax") &&
-      !reduce &&
-      !!(window.matchMedia &&
-         window.matchMedia("(hover: hover) and (pointer: fine)").matches);
 
     /* ----- tunables ----- */
     var DPR = 1;                 // set per resize, capped at 2
@@ -260,15 +253,6 @@
       W = Math.max(1, Math.round(rect.width));
       H = Math.max(1, Math.round(hero.offsetHeight || rect.height));
       DPR = Math.min(window.devicePixelRatio || 1, 2);
-
-      // Parallax slack (see OVERSCAN above): taller wall, centred on the hero.
-      if (OVERSCAN) {
-        var baseH = H;
-        H = Math.round(baseH * 1.22);
-        canvas.style.top = Math.round((baseH - H) / 2) + "px";
-      } else {
-        canvas.style.top = "";
-      }
 
       canvas.width = Math.round(W * DPR);
       canvas.height = Math.round(H * DPR);
@@ -563,9 +547,7 @@
     // scrolling — wasted battery + jank on phones. Skip the touch bindings on
     // coarse / no-hover devices; the one-time build reveal still plays via the
     // idle drift, then the loop settles to idle and stays there.
-    var coarsePointer = !!(window.matchMedia &&
-      window.matchMedia("(hover: none), (pointer: coarse)").matches);
-    if (!coarsePointer) {
+    if (!coarsePointer()) {
       window.addEventListener("touchmove", onTouchMove, { passive: true });
       window.addEventListener("touchstart", onTouchMove, { passive: true });
     }
@@ -1402,11 +1384,7 @@
      on coarse pointers (same policy as the brick canvas).
      ================================================================= */
   function initParallax() {
-    if (prefersReducedMotion()) return;
-    if (
-      window.matchMedia &&
-      window.matchMedia("(hover: none), (pointer: coarse)").matches
-    ) return;
+    if (prefersReducedMotion() || coarsePointer()) return;
     if (!("translate" in document.documentElement.style)) return;
 
     var nodes = document.querySelectorAll("[data-parallax]");
@@ -1526,22 +1504,32 @@
   function initHeroBg() {
     var bg = document.querySelector(".hero .hero-bg");
     if (!bg) return;
-    var img = bg.querySelector(".hero-bg__img");
     var hero = bg.closest(".hero");
-    if (!img || !hero) return;
-    if (prefersReducedMotion()) return;
-    if (
-      window.matchMedia &&
-      window.matchMedia("(hover: none), (pointer: coarse)").matches
-    ) return;
+    if (prefersReducedMotion() || coarsePointer()) return;
+
+    // The blueprint edge-trace overlay (~390KB) is only useful where this
+    // interactivity runs, so it is injected HERE — behind the gates above —
+    // rather than shipped in the markup. Phones and reduced-motion visitors
+    // never download it.
+    if (!bg.querySelector(".hero-bg__img--edges")) {
+      var trace = document.createElement("img");
+      trace.className = "hero-bg__img hero-bg__img--edges";
+      trace.src = "images/hero-kitchen-edges.webp";
+      trace.alt = "";
+      trace.width = 3840;
+      trace.height = 2560;
+      trace.decoding = "async";
+      bg.appendChild(trace);
+    }
 
     var tx = 0, ty = 0, cx = 0, cy = 0;         // pan target / current (px)
     var tgx = 60, tgy = 40, gx = 60, gy = 40;   // light target / current (%)
     var rafId = 0;
 
-    // Every photo layer (base image + the blueprint edge-trace overlay) must
-    // pan in lockstep so the traced contours stay registered on the kitchen.
+    // Every photo layer (base image + the injected edge-trace) must pan in
+    // lockstep so the traced contours stay registered on the kitchen.
     var layers = bg.querySelectorAll(".hero-bg__img");
+    if (!layers.length) return;
 
     function onMove(e) {
       var r = hero.getBoundingClientRect();
@@ -1593,12 +1581,8 @@
     hero.addEventListener("pointerenter", onEnter);
     hero.addEventListener("pointermove", onMove);
     hero.addEventListener("pointerleave", onLeave);
-    document.addEventListener("visibilitychange", function () {
-      if (document.hidden && rafId) {
-        window.cancelAnimationFrame(rafId);
-        rafId = 0;
-      }
-    });
+    // (No visibilitychange handling needed: browsers suspend rAF in hidden
+    // tabs, and the loop re-arms from the next pointer event regardless.)
   }
 
   /* =================================================================
@@ -1612,11 +1596,7 @@
      pointerleave clears the inline style, restoring CSS ownership.
      ================================================================= */
   function initCardTilt() {
-    if (prefersReducedMotion()) return;
-    if (
-      window.matchMedia &&
-      window.matchMedia("(hover: none), (pointer: coarse)").matches
-    ) return;
+    if (prefersReducedMotion() || coarsePointer()) return;
 
     var cards = document.querySelectorAll(
       ".service-card, .trust-item, .workstrip__item"
