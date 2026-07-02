@@ -4211,13 +4211,12 @@ body.db-chat-active #to-top { display: none !important; }
 .home .hero.is-lit .hero-bg__img--edges { opacity: 0.95; }
 
 /* ---- Extended single-column hero (the photo plate was removed) -------
-   The content card now owns the hero: one column, a wider card, a larger
-   display headline, and a capped reading measure on the lead. The base
-   two-column grid rule (≥56em, .hero__inner) still serves any future
-   return of a <figure class="hero__media"> plate. */
+   The content card now owns the hero: one column, a wider card, and a
+   capped reading measure on the lead. The title keeps the standard
+   --fs-fluid-900 hero scale (a larger display override was tried and
+   reverted at the owner's request). The base two-column grid rule
+   (≥56em, .hero__inner) still serves any future return of a
+   <figure class="hero__media"> plate. */
 .home .hero__inner { grid-template-columns: 1fr; }
 .home .hero__content { max-width: 50rem; }
 .home .hero__lead { max-width: 60ch; }
-@media (min-width: 56em) {
-  .home .hero__title { font-size: clamp(2.75rem, 1.9rem + 3.4vw, 4rem); }
-}
