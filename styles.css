@@ -4210,6 +4210,24 @@ body.db-chat-active #to-top { display: none !important; }
 }
 .home .hero.is-lit .hero-bg__img--edges { opacity: 0.95; }
 
+/* ---- Service landing pages: breadcrumb on the dark hero band ---------
+   Sits inside the .hero--inner scrim card; light-blue links match the
+   established on-dark link pairing, incl. the dark-band focus ring. */
+.breadcrumb {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: var(--space-4);
+  font-size: var(--fs-300);
+  font-weight: 600;
+  color: var(--color-on-dark-mut);
+}
+.breadcrumb a { color: #93c5fd; text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+.breadcrumb a:focus-visible { outline-color: #93c5fd; }
+.breadcrumb [aria-current] { color: var(--color-on-dark); }
+
 /* ---- Extended single-column hero (the photo plate was removed) -------
    The content card now owns the hero: one column, a wider card, and a
    capped reading measure on the lead. The title keeps the standard
