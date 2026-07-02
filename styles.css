@@ -4170,6 +4170,109 @@ body.db-chat-active #to-top { display: none !important; }
 }
 .home .hero.is-lit .hero-bg__img--edges { opacity: 0.95; }
 
+/* =====================================================================
+   26. SERVICE-AREA MAP  (home "Areas we cover" — inline SVG blueprint)
+   Navy blueprint panel, River Dee, dashed service boundary, glowing
+   town bubbles at real relative positions and a pulsing home marker.
+   Decorative (aria-hidden in the markup); the chips below carry the
+   same list accessibly. All motion is reduced-motion gated.
+   ===================================================================== */
+.area-map {
+  max-width: 42rem;
+  margin: 0 auto var(--space-6);
+}
+.area-map svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  background:
+    radial-gradient(120% 120% at 78% 12%, rgba(37, 99, 235, 0.28), transparent 58%),
+    var(--color-dark);
+}
+.amap__river {
+  fill: none;
+  stroke: rgba(96, 165, 250, 0.16);
+  stroke-width: 13;
+  stroke-linecap: round;
+}
+.amap__river-line {
+  fill: none;
+  stroke: rgba(147, 197, 253, 0.35);
+  stroke-width: 1.1;
+}
+.amap__water {
+  fill: rgba(147, 197, 253, 0.55);
+  font-size: 8px;
+  font-style: italic;
+  letter-spacing: 0.08em;
+}
+.amap__blob {
+  fill: rgba(37, 99, 235, 0.06);
+  stroke: rgba(147, 197, 253, 0.38);
+  stroke-width: 1.2;
+  stroke-dasharray: 5 6;
+}
+.amap__compass path { fill: none; stroke: #93c5fd; stroke-width: 1.4; opacity: 0.6; }
+.amap__compass text { fill: #93c5fd; font-size: 8px; font-weight: 700; opacity: 0.7; }
+.amap__dot {
+  fill: #60a5fa;
+  stroke: rgba(255, 255, 255, 0.85);
+  stroke-width: 1.3;
+  transition: transform 180ms var(--ease), fill 180ms var(--ease);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.amap__town:hover .amap__dot { transform: scale(1.5); fill: #93c5fd; }
+.amap__town:hover .amap__label { fill: #fff; }
+.amap__dot--home { fill: var(--color-accent); stroke: #fff; stroke-width: 1.6; }
+/* Sonar ping on the home marker (motion-gated). */
+.amap__pulse {
+  fill: none;
+  stroke: #60a5fa;
+  stroke-width: 1.5;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .amap__pulse { animation: amap-pulse 2.6s var(--ease) infinite; }
+}
+@keyframes amap-pulse {
+  0%   { transform: scale(0.5); opacity: 0.8; }
+  70%  { transform: scale(2.4); opacity: 0; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+/* Labels get a navy halo (paint-order) so they stay crisp over the river. */
+.amap__label {
+  fill: #e2e8f0;
+  font-size: 10px;
+  font-weight: 600;
+  paint-order: stroke;
+  stroke: rgba(7, 11, 20, 0.9);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+  transition: fill 180ms var(--ease);
+}
+.amap__label--home { fill: #fff; font-size: 11px; font-weight: 800; }
+.amap__sub {
+  fill: #93c5fd;
+  font-size: 7.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.amap__region circle {
+  fill: rgba(147, 197, 253, 0.10);
+  stroke: #93c5fd;
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+}
+.amap__label--region { fill: #93c5fd; font-style: italic; font-weight: 600; }
+.amap__caption { fill: #94a3b8; font-size: 8px; letter-spacing: 0.05em; }
+
 /* ---- Service landing pages: breadcrumb on the dark hero band ---------
    Sits inside the .hero--inner scrim card; light-blue links match the
    established on-dark link pairing, incl. the dark-band focus ring. */

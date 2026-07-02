@@ -482,6 +482,65 @@
           <h2 class="section__title" id="areas-title">Areas we cover</h2>
           <p class="section__lead">Based in Connah's Quay, we work across Flintshire and the wider North Wales area. Here are some of the towns and villages we regularly cover — if you're nearby and not listed, just <a href="quote.html">get in touch</a> and we'll let you know.</p>
         </div>
+
+        <!-- SERVICE-AREA MAP — a hand-drawn "blueprint" of Deeside/Flintshire.
+             Every town bubble sits at its real relative geographic position
+             (simple equirectangular projection), with the River Dee and a
+             dashed service-area boundary. Pure inline SVG: no map service, no
+             API keys, fully offline, styled by styles.css §26. Decorative
+             (aria-hidden) — the chips below carry the same list accessibly. -->
+        <figure class="area-map" aria-hidden="true">
+          <svg viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg" focusable="false">
+            <defs>
+              <pattern id="amap-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                <path d="M20 0H0V20" fill="none" stroke="rgba(147,197,253,0.07)" stroke-width="1"/>
+              </pattern>
+            </defs>
+            <rect x="0" y="0" width="400" height="250" fill="url(#amap-grid)"/>
+
+            <!-- River Dee (Connah's Quay really does sit on it) -->
+            <path class="amap__river" d="M52 14 C 80 28, 120 62, 168 88 C 200 105, 225 118, 248 134 C 285 158, 330 170, 400 184"/>
+            <path class="amap__river-line" d="M52 14 C 80 28, 120 62, 168 88 C 200 105, 225 118, 248 134 C 285 158, 330 170, 400 184"/>
+            <text class="amap__water" x="112" y="50" transform="rotate(27 112 50)">River Dee</text>
+
+            <!-- dashed service-area boundary -->
+            <ellipse class="amap__blob" cx="222" cy="146" rx="186" ry="122"/>
+
+            <!-- compass -->
+            <g class="amap__compass" transform="translate(376,26)">
+              <path d="M0 8 L0 -8 M0 -8 L-4 -1 M0 -8 L4 -1"/>
+              <text x="0" y="19" text-anchor="middle">N</text>
+            </g>
+
+            <!-- HOME: Connah's Quay -->
+            <g class="amap__town amap__town--home">
+              <circle class="amap__pulse" cx="191" cy="110" r="6"/>
+              <circle class="amap__dot amap__dot--home" cx="191" cy="110" r="6"/>
+              <text class="amap__label amap__label--home" x="191" y="92" text-anchor="middle">Connah's Quay</text>
+              <text class="amap__sub" x="191" y="101" text-anchor="middle">Our base</text>
+            </g>
+
+            <!-- Deeside (the area along the river) -->
+            <g class="amap__region">
+              <circle cx="256" cy="90" r="5"/>
+              <text class="amap__label amap__label--region" x="256" y="78" text-anchor="middle">Deeside</text>
+            </g>
+
+            <!-- towns -->
+            <g class="amap__town"><circle class="amap__dot" cx="95" cy="52" r="4"/><text class="amap__label" x="88" y="56" text-anchor="end">Flint</text></g>
+            <g class="amap__town"><circle class="amap__dot" cx="217" cy="121" r="4"/><text class="amap__label" x="224" y="118">Shotton</text></g>
+            <g class="amap__town"><circle class="amap__dot" cx="240" cy="142" r="4"/><text class="amap__label" x="247" y="141">Queensferry</text></g>
+            <g class="amap__town"><circle class="amap__dot" cx="261" cy="148" r="4"/><text class="amap__label" x="268" y="157">Mancot</text></g>
+            <g class="amap__town"><circle class="amap__dot" cx="226" cy="173" r="4"/><text class="amap__label" x="233" y="178">Hawarden</text></g>
+            <g class="amap__town"><circle class="amap__dot" cx="176" cy="177" r="4"/><text class="amap__label" x="169" y="184" text-anchor="end">Ewloe</text></g>
+            <g class="amap__town"><circle class="amap__dot" cx="155" cy="198" r="4"/><text class="amap__label" x="148" y="203" text-anchor="end">Buckley</text></g>
+            <g class="amap__town"><circle class="amap__dot" cx="82" cy="208" r="4"/><text class="amap__label" x="90" y="213">Mold</text></g>
+            <g class="amap__town"><circle class="amap__dot" cx="366" cy="190" r="4"/><text class="amap__label" x="359" y="187" text-anchor="end">Saltney</text></g>
+
+            <text class="amap__caption" x="200" y="243" text-anchor="middle">Flintshire &amp; Deeside — where we work</text>
+          </svg>
+        </figure>
+
         <ul class="areas-list" aria-label="Towns and areas we cover">
           <li class="areas-list__chip">Connah's Quay</li>
           <li class="areas-list__chip">Shotton</li>
