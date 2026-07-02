@@ -4192,13 +4192,12 @@ body.db-chat-active #to-top { display: none !important; }
     radial-gradient(120% 120% at 78% 12%, rgba(37, 99, 235, 0.28), transparent 58%),
     var(--color-dark);
 }
-.amap__contour path {
-  fill: none;
-  stroke: rgba(147, 197, 253, 0.10);
-  stroke-width: 1.5;
-  stroke-linecap: round;
-}
-.amap__estuary { fill: rgba(96, 165, 250, 0.14); }
+/* Satellite base layer (real Sentinel-2 imagery, same bbox as the
+   projection) — desaturated + dimmed, then tinted navy so the blueprint
+   layers above stay legible and on-brand. */
+.amap__sat { filter: saturate(0.72) brightness(0.9); }
+.amap__tint { fill: rgba(9, 14, 26, 0.58); }
+.amap__credit { fill: rgba(148, 163, 184, 0.55); font-size: 4.5px; letter-spacing: 0.02em; }
 .amap__roads path {
   fill: none;
   stroke: rgba(147, 197, 253, 0.16);

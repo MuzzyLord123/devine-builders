@@ -496,17 +496,16 @@
                 <path d="M20 0H0V20" fill="none" stroke="rgba(147,197,253,0.07)" stroke-width="1"/>
               </pattern>
             </defs>
+            <!-- REAL satellite base layer: Copernicus Sentinel-2/HLS imagery
+                 (2026-04-30, cloud-free) fetched for EXACTLY this projection's
+                 bounding box (lon -3.21..-2.89, lat 53.145..53.275), so every
+                 dot/road/river drawn above it is automatically in register.
+                 Free for commercial use with the credit line below. -->
+            <image class="amap__sat" href="images/area-map-sat.jpg" x="0" y="0" width="400" height="250" preserveAspectRatio="none"/>
+            <rect class="amap__tint" x="0" y="0" width="400" height="250"/>
             <rect x="0" y="0" width="400" height="250" fill="url(#amap-grid)"/>
 
-            <!-- Clwydian foothills (subtle contours, west) -->
-            <g class="amap__contour">
-              <path d="M8 128 C 28 118, 46 120, 62 130"/>
-              <path d="M2 152 C 26 140, 52 142, 72 154"/>
-              <path d="M10 178 C 32 166, 54 170, 70 182"/>
-            </g>
-
-            <!-- Dee Estuary opening out to the north-west -->
-            <path class="amap__estuary" d="M0 0 L112 0 C 98 24, 80 40, 60 50 C 40 38, 18 20, 0 8 Z"/>
+            <!-- Dee Estuary label (the estuary itself is visible in the imagery) -->
             <text class="amap__water" x="42" y="24" transform="rotate(24 42 24)">Dee Estuary</text>
 
             <!-- River Dee (Connah's Quay really does sit on it) -->
@@ -570,6 +569,8 @@
             <g class="amap__town"><circle class="amap__dot" cx="366" cy="190" r="4"/><text class="amap__label" x="359" y="187" text-anchor="end">Saltney</text></g>
 
             <text class="amap__caption" x="200" y="243" text-anchor="middle">Flintshire &amp; Deeside — where we work</text>
+            <!-- Sentinel data licence requires this attribution -->
+            <text class="amap__credit" x="397" y="247" text-anchor="end">Contains modified Copernicus Sentinel data (2026) · NASA GIBS</text>
           </svg>
         </figure>
 
