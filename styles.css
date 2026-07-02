@@ -4054,3 +4054,71 @@ body.db-chat-active #to-top { display: none !important; }
     .faq__item[open]::details-content { block-size: auto; }
   }
 }
+
+/* =====================================================================
+   23. CONVERSION POLISH — header phone, hero CTA hierarchy, contextual
+   service links & per-service quote CTAs. Honesty-safe copy throughout.
+   ===================================================================== */
+
+/* Always-visible phone in the header (desktop row + inside the mobile
+   menu). accent-dark on white = ~5.9:1 AA. */
+.primary-nav__phone {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-weight: 800;
+  color: var(--color-accent-dark);
+  white-space: nowrap;
+}
+.primary-nav__phone svg { width: 1.05rem; height: 1.05rem; flex: none; }
+.primary-nav__phone:hover { color: var(--color-accent-darker); }
+/* On tight desktop widths drop the phone from the row so the nav never
+   wraps — the mobile menu (<48em) and wide desktops (>=64em) keep it. */
+@media (min-width: 48em) and (max-width: 63.99em) {
+  .primary-nav__phone-item { display: none; }
+}
+
+/* Hero: quiet call-Phil line under the (now two) CTA buttons. #93c5fd on
+   the dark scrim is the established hero-accent pairing (AA). */
+.hero__phone {
+  margin-top: var(--space-4);
+  color: var(--color-on-dark);
+  font-weight: 600;
+}
+.hero__phone a {
+  color: #93c5fd;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+.hero__phone a:hover { color: #dbeafe; }
+
+/* Homepage service cards: contextual "More about X" link. */
+.service-card__more {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: var(--space-3);
+  font-size: var(--fs-300);
+  font-weight: 700;
+  color: var(--color-accent-dark);
+  text-decoration: none;
+}
+.service-card__more::after { content: "→" / ""; }
+.service-card__more:hover,
+.service-card__more:focus-visible { color: var(--color-accent-darker); text-decoration: underline; }
+@media (prefers-reduced-motion: no-preference) {
+  .service-card__more::after { transition: translate var(--transition-fast); }
+  .service-card__more:hover::after { translate: 3px 0; }
+}
+
+/* Services page: per-service quote CTA row at the end of each detail. */
+.service-detail__cta {
+  margin-top: var(--space-5);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-4);
+}
+.service-detail__cta-note { color: var(--color-ink-faint); font-size: var(--fs-300); }
