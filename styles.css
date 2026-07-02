@@ -4183,3 +4183,15 @@ body.db-chat-active #to-top { display: none !important; }
     linear-gradient(90deg, rgba(7, 11, 20, 0.62) 0%, rgba(7, 11, 20, 0.30) 55%, rgba(7, 11, 20, 0.45) 100%),
     linear-gradient(0deg, rgba(7, 11, 20, 0.55) 0%, rgba(7, 11, 20, 0.10) 40%);
 }
+
+/* ---- Extended single-column hero (the photo plate was removed) -------
+   The content card now owns the hero: one column, a wider card, a larger
+   display headline, and a capped reading measure on the lead. The base
+   two-column grid rule (≥56em, .hero__inner) still serves any future
+   return of a <figure class="hero__media"> plate. */
+.home .hero__inner { grid-template-columns: 1fr; }
+.home .hero__content { max-width: 50rem; }
+.home .hero__lead { max-width: 60ch; }
+@media (min-width: 56em) {
+  .home .hero__title { font-size: clamp(2.75rem, 1.9rem + 3.4vw, 4rem); }
+}
