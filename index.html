@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Devine Builders | Extensions, Renovations, Brickwork, Roofing &amp; Building Services in Connah's Quay, North Wales</title>
-  <meta name="description" content="Devine Builders, led by Phil Devine, is a local, owner-run builder in Connah's Quay, Flintshire, North Wales. Extensions, renovations, brickwork, groundworks, roofing, driveways, landscaping and property maintenance. Call +44 7956 547040 for a free quote.">
+  <title>Builders in Connah's Quay &amp; North Wales | Devine Builders</title>
+  <meta name="description" content="Local, owner-run builder in Connah's Quay, Flintshire. Extensions, renovations, brickwork, roofing and more across North Wales. Call 07956 547040 for a free quote.">
   <meta name="author" content="Devine Builders">
   <meta name="theme-color" content="#1d4ed8">
   <!-- Open Graph (optional but recommended) -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Devine Builders | Extensions, Renovations, Brickwork, Roofing &amp; Building Services in Connah's Quay, North Wales">
-  <meta property="og:description" content="Devine Builders, led by Phil Devine, is a local, owner-run builder in Connah's Quay, Flintshire, North Wales. Extensions, renovations, brickwork, groundworks, roofing, driveways, landscaping and property maintenance. Call +44 7956 547040 for a free quote.">
+  <meta property="og:title" content="Builders in Connah's Quay &amp; North Wales | Devine Builders">
+  <meta property="og:description" content="Local, owner-run builder in Connah's Quay, Flintshire. Extensions, renovations, brickwork, roofing and more across North Wales. Call 07956 547040 for a free quote.">
 
   <!-- ============================================================
   SEO / SOCIAL HEAD ADDITIONS — paste inside <head>, AFTER the
@@ -55,14 +55,10 @@
 <meta name="twitter:description" content="Local, owner-run builder in Connah's Quay. Extensions, renovations, brickwork, groundworks, roofing, driveways, landscaping and property maintenance across North Wales. Free, no-obligation quotes.">
 <meta name="twitter:image" content="https://muzzylord123.github.io/devine-builders/images/og-cover.png">
 
-<!-- Favicon (SVG, scalable, ships with the site) + manifest -->
+<!-- Icons & manifest -->
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16.png">
-<!-- OWNER (optional): add a favicon.ico fallback for very old browsers:
-     <link rel="icon" href="favicon.ico" sizes="any"> -->
-<!-- Apple touch icon: SVG works in modern Safari; OWNER may add a 180x180 PNG:
-     <link rel="apple-touch-icon" href="apple-touch-icon.png"> -->
 <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
 <link rel="manifest" href="site.webmanifest">
 
@@ -87,6 +83,7 @@
 </noscript>
 
   <link rel="stylesheet" href="styles.css">
+  <link rel="preload" as="image" href="images/hero-kitchen.jpg" imagesrcset="images/hero-kitchen-960.jpg 960w, images/hero-kitchen.jpg 1920w" imagesizes="100vw" fetchpriority="high">
 <!-- =====================================================================
      PRIVACY-FRIENDLY, COOKIE-FREE ANALYTICS  (disabled by default)
      ---------------------------------------------------------------------
@@ -149,14 +146,16 @@
            zoom (CSS `scale` keyframes). Decorative licensed stock photo,
            dimmed for contrast — the content card carries its own scrim. -->
       <div class="hero-bg" aria-hidden="true" data-parallax="0.16" data-parallax-max="52">
-        <img class="hero-bg__img" src="images/hero-kitchen.jpg" alt="" width="1920" height="1280" loading="eager" fetchpriority="low" decoding="async">
+        <img class="hero-bg__img" src="images/hero-kitchen.jpg" srcset="images/hero-kitchen-960.jpg 960w, images/hero-kitchen.jpg 1920w" sizes="100vw" alt="" width="1920" height="1280" loading="eager" fetchpriority="high" decoding="async">
         <div class="hero-bg__glow"></div>
         <div class="hero-bg__dim"></div>
         <!-- The blueprint edge-trace overlay (images/hero-kitchen-edges.webp,
              a 3840x2560 white-on-black luminance edge-map of the SAME crop —
              regenerate it whenever the photo changes) is NOT shipped here:
              initHeroBg in site.js injects it only on fine-pointer,
-             motion-allowed devices, so phones never download the ~390KB. -->
+             motion-allowed devices, so phones never download the ~390KB.
+             hero-kitchen-960.jpg is a same-crop 960w downscale for the
+             srcset — regenerate it too whenever the photo changes. -->
       </div>
       <div class="container hero__inner">
         <div class="hero__content" data-parallax="-0.10" data-parallax-max="90" data-parallax-fade>
@@ -169,7 +168,7 @@
           </p>
           <div class="hero__actions">
             <a class="btn btn--primary btn--lg" href="quote.html">Get a free quote</a>
-            <a class="btn btn--secondary btn--lg" href="gallery.html">View our work</a>
+            <a class="btn btn--secondary btn--lg" href="gallery.html">See the kind of work we do</a>
           </div>
           <p class="hero__phone">Or talk it through first &mdash; call Phil on <a href="tel:+447956547040">07956&nbsp;547040</a></p>
           <ul class="hero__trust">
@@ -177,6 +176,7 @@
             <li>Free, no-obligation quotes</li>
             <li>Local &amp; reliable</li>
           </ul>
+          <p class="hero__note">Backdrop photo is an illustrative stock image &mdash; real job photos coming soon.</p>
         </div>
         <!-- (The hero photo plate was removed — the kitchen backdrop carries
              the visuals and the content column now spans the hero. If Phil's
@@ -358,7 +358,7 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/></svg>
             </span>
             <h3 class="trust-item__title">A direct line to Phil</h3>
-            <p class="trust-item__text">Call or email and speak to Phil himself — straight answers, fair pricing and a price you can plan around. He usually gets back to you within a day or two.</p>
+            <p class="trust-item__text">Call or email and speak to Phil himself — straight answers and a fair price you can plan around. He usually gets back to you within a day or two.</p>
           </li>
           <li class="trust-item">
             <span class="trust-item__icon" aria-hidden="true">
@@ -656,7 +656,7 @@
               </span>
             </summary>
             <div class="faq__a">
-              <p>We take on a wide range of building work: extensions, renovations, brickwork, groundworks, roofing, driveways and patios, landscaping and property maintenance. That spans everything from kitchens, bathrooms and full refurbishments to new walls, roofs and driveways, right down to everyday repairs. See our Services page for the full list.</p>
+              <p>We take on a wide range of building work: extensions, renovations, brickwork, groundworks, roofing, driveways and patios, landscaping and property maintenance. That spans everything from kitchens, bathrooms and full refurbishments to new walls, roofs and driveways, right down to everyday repairs. See our <a href="services.html">Services page</a> for the full list.</p>
             </div>
           </details>
           <details class="faq__item">
@@ -668,6 +668,17 @@
             </summary>
             <div class="faq__a">
               <p>Yes. Every quote is free and with no obligation. Tell us about your project and Phil will get back to you with a friendly, no-pressure quote.</p>
+            </div>
+          </details>
+          <details class="faq__item">
+            <summary class="faq__q">
+              How much does building work cost?
+              <span class="faq__chevron" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+              </span>
+            </summary>
+            <div class="faq__a">
+              <p>Every job is different, so there are no fixed price lists — instead every quote is free and comes with no obligation. Tell Phil what you have in mind (photos help) — he usually replies within a day or two with a clear, fair price you can plan around.</p>
             </div>
           </details>
           <details class="faq__item">
@@ -762,8 +773,8 @@
     All URLs use the PLACEHOLDER domain — Phil must update them.
 
     GEO (optional): a "geo" GeoCoordinates member is included below with
-    APPROXIMATE coordinates for Connah's Quay (latitude 53.2167,
-    longitude -3.0333). UPDATE these to an exact point if you want, or
+    APPROXIMATE coordinates for Connah's Quay town centre (latitude 53.2180,
+    longitude -3.0570). UPDATE these to an exact point if you want, or
     remove the "geo" member entirely. JSON does not allow comments inside
     the <script> below, so keep all notes out here in HTML comments.
   ============================================================ -->
@@ -874,7 +885,7 @@
     "sameAs": [
       "https://www.facebook.com/phillip.devine1/"
     ],
-    "geo": { "@type": "GeoCoordinates", "latitude": 53.2167, "longitude": -3.0333 }
+    "geo": { "@type": "GeoCoordinates", "latitude": 53.2180, "longitude": -3.0570 }
   }
   </script>
 
@@ -912,6 +923,14 @@
         "acceptedAnswer": {
           "@type": "Answer",
           "text": "Yes. Every quote is free and with no obligation. Tell us about your project and Phil will get back to you with a friendly, no-pressure quote."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How much does building work cost?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Every job is different, so there are no fixed price lists — instead every quote is free and comes with no obligation. Tell Phil what you have in mind (photos help) — he usually replies within a day or two with a clear, fair price you can plan around."
         }
       },
       {

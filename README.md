@@ -35,7 +35,7 @@ Tip: if a page ever looks unstyled after an edit, hard-refresh once with **Ctrl 
 | `images/gallery/` | Your photos go here (placeholders included) |
 | `devine-builders-services.pdf` | Downloadable services brochure |
 | `devine-builders.vcf` | "Save Phil's number" contact card |
-| `favicon.svg`, `og-cover.svg`, `site.webmanifest` | Icons, social share image, PWA manifest |
+| `favicon.ico`, `images/favicon-16/32.png`, `images/og-cover.png`, `site.webmanifest` | Icons, social share image, PWA manifest (`favicon.svg` / `og-cover.svg` are unlinked design sources) |
 | `robots.txt`, `sitemap.xml` | Search-engine files |
 | `_headers` | Security headers (Netlify / Cloudflare Pages) |
 | `*-connahs-quay.html` (×8) | Per-service landing pages — **hand-maintained**: edit the HTML directly |
@@ -48,7 +48,7 @@ Tip: if a page ever looks unstyled after an edit, hard-refresh once with **Ctrl 
 
 1. **Add your photos** → drop images into `images/gallery/`:
    - Gallery grid: `project-1.jpg` … `project-6.jpg` (until then, tidy placeholders show).
-   - Before/after slider (`gallery.html`): replace `before-1/2.svg` and `after-1/2.svg` with real paired photos (same view, same crop).
+   - Before/after slider (`gallery.html`): replace the illustrative `ba-kitchen-before/after.jpg` and `ba-bathroom-before/after.jpg` pairs with real paired photos (same view, same crop).
    - Home hero (`index.html`): add `images/gallery/hero.jpg` and point the hero `<img>` at it.
    - See `images/gallery/README.txt` for the full how-to.
 

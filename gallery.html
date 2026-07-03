@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Our Work | Devine Builders — Connah's Quay, North Wales</title>
-  <meta name="description" content="Browse recent projects completed by Devine Builders across Connah's Quay, Flintshire and North Wales.">
+  <title>Gallery | Devine Builders — Connah's Quay, North Wales</title>
+  <meta name="description" content="See the kind of work Devine Builders takes on across Connah's Quay, Flintshire and North Wales — kitchens, extensions, brickwork, roofing, driveways and more.">
   <meta name="author" content="Devine Builders">
   <meta name="theme-color" content="#1d4ed8">
   <!-- Open Graph (optional but recommended) -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Our Work | Devine Builders — Connah's Quay, North Wales">
-  <meta property="og:description" content="Browse recent projects completed by Devine Builders across Connah's Quay, Flintshire and North Wales.">
+  <meta property="og:title" content="Gallery | Devine Builders — Connah's Quay, North Wales">
+  <meta property="og:description" content="See the kind of work Devine Builders takes on across Connah's Quay, Flintshire and North Wales — kitchens, extensions, brickwork, roofing, driveways and more.">
 
 <!-- ============================================================
   SEO / SOCIAL HEAD ADDITIONS — paste inside <head>, AFTER the
@@ -51,18 +51,14 @@
 
 <!-- Twitter / X card -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Devine Builders | Connah's Quay, North Wales">
-<meta name="twitter:description" content="Local, owner-run builder in Connah's Quay. Extensions, renovations, brickwork, groundworks, roofing, driveways, landscaping and property maintenance across North Wales. Free, no-obligation quotes.">
+<meta name="twitter:title" content="Gallery | Devine Builders — Connah's Quay, North Wales">
+<meta name="twitter:description" content="See the kind of work Devine Builders takes on across Connah's Quay, Flintshire and North Wales — kitchens, extensions, brickwork, roofing, driveways and more.">
 <meta name="twitter:image" content="https://muzzylord123.github.io/devine-builders/images/og-cover.png">
 
-<!-- Favicon (SVG, scalable, ships with the site) + manifest -->
+<!-- Icons & manifest -->
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16.png">
-<!-- OWNER (optional): add a favicon.ico fallback for very old browsers:
-     <link rel="icon" href="favicon.ico" sizes="any"> -->
-<!-- Apple touch icon: SVG works in modern Safari; OWNER may add a 180x180 PNG:
-     <link rel="apple-touch-icon" href="apple-touch-icon.png"> -->
 <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
 <link rel="manifest" href="site.webmanifest">
 
@@ -140,8 +136,8 @@
     <section class="hero hero--inner">
       <div class="container">
         <div class="section__head section__head--center">
-          <p class="section__eyebrow">Our Work</p>
-          <h1 class="section__title">Recent projects across North Wales</h1>
+          <p class="section__eyebrow">Gallery</p>
+          <h1 class="section__title">The kind of work we do across North Wales</h1>
           <p class="section__lead">A look at the kinds of work Devine Builders takes on across Connah's Quay, Flintshire and the wider North Wales area &mdash; from kitchens and extensions to brickwork, roofing, driveways and landscaping. The images below are <strong>illustrative examples</strong> of the type of work; real photos of Phil's own recent jobs are coming soon. Select any photo to view it larger.</p>
         </div>
       </div>
@@ -155,16 +151,23 @@
           HOW TO ADD OR REPLACE GALLERY PHOTOS
           ============================================================
           Photos live in:  images/gallery/
-          Expected filenames used below:  project-1.jpg … project-6.jpg
+          Filenames used below (all stock, labelled "Illustrative"):
+            photo-kitchen.jpg, photo-bathroom.jpg, photo-extension.jpg,
+            photo-brickwork.jpg, photo-roofing.jpg, photo-driveway.jpg,
+            photo-landscaping.jpg — plus, in the Before & After section,
+            ba-kitchen-before.jpg / ba-kitchen-after.jpg and
+            ba-bathroom-before.jpg / ba-bathroom-after.jpg.
 
-          TO REPLACE A PHOTO
-            Save your image into images/gallery/ using the matching
-            filename (e.g. project-1.jpg). It then appears automatically —
-            no code changes needed. JPG, PNG and WebP all work.
+          TO REPLACE A STOCK PHOTO WITH A REAL ONE
+            Save your image over the matching filename (same name, same
+            folder, e.g. photo-kitchen.jpg). It then appears automatically —
+            no code changes needed. JPG, PNG and WebP all work. Then also
+            update that slot's alt text and remove its "Illustrative" tag,
+            since it becomes a real job photo.
 
           IF A PHOTO IS MISSING
             The page is resilient: gallery.js detects a missing/broken
-            image and swaps in a tidy "Devine Builders — Project Photo"
+            image and swaps in a tidy "Devine Builders — Photo coming soon"
             placeholder, so the gallery never looks broken. (Bundled
             placeholder-1.svg … placeholder-6.svg are also available if you
             want to point a figure at one directly.)
@@ -174,14 +177,14 @@
             paste it, then update:
               - src          → the new image filename in images/gallery/
               - alt          → a short, accurate description (screen readers)
-              - <figcaption> → the short caption shown under the thumbnail
+              - <span>       → the short caption shown under the thumbnail
             Optionally set on the <button>:
               - data-full    → a larger image for the lightbox view
               - data-caption → a longer caption shown in the lightbox
 
           KEEP THESE INTACT (gallery.js relies on them)
             - the clickable element MUST be <button class="gallery__btn" type="button">
-            - each button wraps ONE <img class="gallery__img"> + ONE <figcaption class="gallery__caption">
+            - each button wraps ONE <img class="gallery__img"> + ONE <span class="gallery__caption">
             - keep width="800" height="600" so the 4:3 space is reserved (no layout shift)
           ============================================================
         -->
@@ -194,7 +197,7 @@
               <span class="gallery__tag" aria-hidden="true">Illustrative</span>
               <img class="gallery__img" src="images/gallery/photo-kitchen.jpg"
                    alt="A modern fitted kitchen with wood units and a stone worktop" loading="lazy" width="800" height="600">
-              <figcaption class="gallery__caption">Fitted kitchens</figcaption>
+              <span class="gallery__caption">Fitted kitchens</span>
             </button>
           </li>
 
@@ -205,7 +208,7 @@
               <span class="gallery__tag" aria-hidden="true">Illustrative</span>
               <img class="gallery__img" src="images/gallery/photo-bathroom.jpg"
                    alt="A modern tiled bathroom with a walk-in shower and vanity unit" loading="lazy" width="800" height="600">
-              <figcaption class="gallery__caption">Bathrooms &amp; wet rooms</figcaption>
+              <span class="gallery__caption">Bathrooms &amp; wet rooms</span>
             </button>
           </li>
 
@@ -216,7 +219,7 @@
               <span class="gallery__tag" aria-hidden="true">Illustrative</span>
               <img class="gallery__img" src="images/gallery/photo-extension.jpg"
                    alt="A rear house extension under construction with blockwork and scaffolding" loading="lazy" width="800" height="600">
-              <figcaption class="gallery__caption">Extensions</figcaption>
+              <span class="gallery__caption">Extensions</span>
             </button>
           </li>
 
@@ -227,7 +230,7 @@
               <span class="gallery__tag" aria-hidden="true">Illustrative</span>
               <img class="gallery__img" src="images/gallery/photo-brickwork.jpg"
                    alt="A bricklayer building a new brick wall" loading="lazy" width="800" height="600">
-              <figcaption class="gallery__caption">Brickwork &amp; masonry</figcaption>
+              <span class="gallery__caption">Brickwork &amp; masonry</span>
             </button>
           </li>
 
@@ -238,7 +241,7 @@
               <span class="gallery__tag" aria-hidden="true">Illustrative</span>
               <img class="gallery__img" src="images/gallery/photo-roofing.jpg"
                    alt="A tiled pitched roof with fascias and soffits" loading="lazy" width="800" height="600">
-              <figcaption class="gallery__caption">Roofing</figcaption>
+              <span class="gallery__caption">Roofing</span>
             </button>
           </li>
 
@@ -249,7 +252,7 @@
               <span class="gallery__tag" aria-hidden="true">Illustrative</span>
               <img class="gallery__img" src="images/gallery/photo-driveway.jpg"
                    alt="A large block-paved driveway in front of a modern home" loading="lazy" width="800" height="600">
-              <figcaption class="gallery__caption">Driveways &amp; paving</figcaption>
+              <span class="gallery__caption">Driveways &amp; paving</span>
             </button>
           </li>
 
@@ -260,7 +263,7 @@
               <span class="gallery__tag" aria-hidden="true">Illustrative</span>
               <img class="gallery__img" src="images/gallery/photo-landscaping.jpg"
                    alt="A landscaped garden with a timber pergola and paved patio" loading="lazy" width="800" height="600">
-              <figcaption class="gallery__caption">Landscaping &amp; patios</figcaption>
+              <span class="gallery__caption">Landscaping &amp; patios</span>
             </button>
           </li>
         </ul>
@@ -361,6 +364,20 @@
           </li>
         </ul>
         <p class="ba-grid__note">Illustrative before &amp; after examples &mdash; Phil will add real photos of his own completed jobs soon.</p>
+      </div>
+    </section>
+
+    <section class="section section--tight" aria-labelledby="gallery-cta-title">
+      <div class="container">
+        <div class="service-area">
+          <div class="service-area__body">
+            <h2 class="service-area__title" id="gallery-cta-title">Picturing your own project?</h2>
+            <p class="service-area__text">Tell Phil what you've got in mind and get a free, no-obligation quote &mdash; he usually replies within a day or two.</p>
+          </div>
+          <div class="hero__actions">
+            <a class="btn btn--ghost-light btn--lg" href="quote.html">Get a free quote</a>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -474,15 +491,15 @@
         {
           "@type": "ListItem",
           "position": 2,
-          "name": "Our Work",
+          "name": "Gallery",
           "item": "https://muzzylord123.github.io/devine-builders/gallery.html"
         }
       ]
     },
     {
       "@type": "CollectionPage",
-      "name": "Our Work | Devine Builders",
-      "description": "A selection of recent projects completed by Devine Builders in Connah's Quay, Flintshire and across North Wales.",
+      "name": "Gallery | Devine Builders",
+      "description": "Illustrative examples of the kind of building work Devine Builders takes on in Connah's Quay, Flintshire and across North Wales.",
       "url": "https://muzzylord123.github.io/devine-builders/gallery.html",
       "isPartOf": { "@id": "https://muzzylord123.github.io/devine-builders/#business" },
       "about": { "@id": "https://muzzylord123.github.io/devine-builders/#business" }

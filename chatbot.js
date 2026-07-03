@@ -524,7 +524,7 @@
   //   single word present (with word boundaries) → light
   function scoreTag(norm, tag) {
     if (tag.indexOf(" ") !== -1) {
-      return norm.indexOf(tag) !== -1 ? 3 + tag.split(" ").length : 0;
+      return norm.indexOf(" " + tag + " ") !== -1 ? 3 + tag.split(" ").length : 0;
     }
     return norm.indexOf(" " + tag + " ") !== -1 ? 2 : 0;
   }
@@ -661,7 +661,7 @@
       var data = JSON.parse(raw);
       if (data && Array.isArray(data.messages)) {
         state.messages = data.messages.filter(validMessage).slice(-40);
-        state.chips = Array.isArray(data.chips) ? data.chips : [];
+        state.chips = Array.isArray(data.chips) ? data.chips.filter(function (c) { return c && typeof c === "object" && typeof c.label === "string"; }) : [];
         state.open = !!data.open;
       }
     } catch (e) { /* private mode / disabled storage — ignore */ }
@@ -855,8 +855,10 @@
     var f = focusablesIn(els.panel);
     if (!f.length) return;
     var first = f[0], last = f[f.length - 1];
-    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    var active = document.activeElement;
+    if (!els.panel.contains(active)) { e.preventDefault(); (e.shiftKey ? last : first).focus(); return; }
+    if (e.shiftKey && active === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && active === last) { e.preventDefault(); first.focus(); }
   }
 
   function openPanel(silent) {

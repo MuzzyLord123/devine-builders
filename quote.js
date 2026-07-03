@@ -65,7 +65,7 @@
       label: "your phone number",
       validate: function (v) {
         if (!v) return "Please enter a contact phone number.";
-        if (!PHONE_RE.test(v)) return "Please enter a valid phone number.";
+        if (!PHONE_RE.test(v) || v.replace(/\D/g, "").length < 7) return "Please enter a valid phone number.";
         return "";
       }
     },
@@ -214,6 +214,7 @@
       if (fileInput && fileInput.files && fileInput.files.length) {
         if (status) setStatus(status, "Sending your enquiry…", "");
         if (submitBtn) submitBtn.disabled = true;
+        form.enctype = "multipart/form-data"; // belt-and-braces: files need multipart
         form.submit();
         return;
       }
@@ -272,9 +273,19 @@
           // so the enquiry can still reach Phil, without losing typed details.
           fallbackToEmailApp(
             "We couldn't send it directly just now — your email app should be open as a backup, " +
-            "or call or email us using the details opposite."
+            "or call Phil on 07956 547040."
           );
         });
+    });
+
+    // If the browser restores this page from the bfcache after a native
+    // submit (Back from thank-you.html in Safari/Firefox), re-enable the
+    // submit button and clear the stale "Sending…" status.
+    window.addEventListener("pageshow", function (e) {
+      if (!e.persisted) return;
+      var b = document.getElementById("quote-submit");
+      if (b) b.disabled = false;
+      clearStatus(status);
     });
   });
 

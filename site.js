@@ -115,6 +115,7 @@
     if (!ctx) return; // No 2D context — bail gracefully, CSS bg remains.
 
     var reduce = prefersReducedMotion();
+    var coarse = coarsePointer();
 
     /* ----- tunables ----- */
     var DPR = 1;                 // set per resize, capped at 2
@@ -471,6 +472,9 @@
     }
 
     function onPointerMove(e) {
+      // Touch taps/scrolls also dispatch pointer events — honour the same
+      // coarse-pointer battery gate as the touch bindings below.
+      if (coarse && e.pointerType === "touch") return;
       var p = toLocal(e.clientX, e.clientY);
       if (!p) return;
       pointer.has = true;
@@ -547,7 +551,7 @@
     // scrolling — wasted battery + jank on phones. Skip the touch bindings on
     // coarse / no-hover devices; the one-time build reveal still plays via the
     // idle drift, then the loop settles to idle and stays there.
-    if (!coarsePointer()) {
+    if (!coarse) {
       window.addEventListener("touchmove", onTouchMove, { passive: true });
       window.addEventListener("touchstart", onTouchMove, { passive: true });
     }
@@ -994,6 +998,7 @@
     document.addEventListener("click", function (e) {
       var a = e.target.closest ? e.target.closest('a[href^="#"]') : null;
       if (!a) return;
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 
       var id = a.getAttribute("href").slice(1);
       if (!id) return;
@@ -1001,8 +1006,9 @@
       var target = document.getElementById(id);
       if (!target) return;
 
-      e.preventDefault();
-      target.scrollIntoView({ behavior: "smooth", block: "start" });
+      // Native fragment navigation supplies the smooth scroll (CSS
+      // scroll-behavior), the :target sticky-header offset, and the
+      // hash/history update — we only add focus management on top.
 
       // Focus management for keyboard users. Only add a temporary tabindex
       // when the target isn't already focusable, and remove it again on blur
@@ -1519,6 +1525,7 @@
       trace.width = 3840;
       trace.height = 2560;
       trace.decoding = "async";
+      trace.fetchPriority = "low"; // invisible until hover — don't compete with the visible photo
       bg.appendChild(trace);
     }
 

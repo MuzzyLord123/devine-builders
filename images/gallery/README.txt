@@ -9,41 +9,36 @@ ADDING YOUR OWN PHOTOS
    (C:\Users\Fortn\Downloads\devinebuilders\images\gallery\).
    Supported formats: JPG / JPEG, PNG, or WebP.
 
-2. Recommended naming so they map cleanly to the page:
-       project-1.jpg
-       project-2.jpg
-       project-3.jpg
-       project-4.jpg
-       project-5.jpg
-       project-6.jpg
-   (Any name works — just match the src in gallery.html.)
+2. gallery.html loads these exact filenames from this folder:
+       photo-kitchen.jpg
+       photo-bathroom.jpg
+       photo-extension.jpg
+       photo-driveway.jpg
+       photo-brickwork.jpg
+       photo-roofing.jpg
+       photo-landscaping.jpg
+   plus the Before & After pairs:
+       ba-kitchen-before.jpg / ba-kitchen-after.jpg
+       ba-bathroom-before.jpg / ba-bathroom-after.jpg
 
-3. Each example slot in gallery.html already points at one of these
-   filenames, e.g.:
-
-       <img class="gallery__img"
-            src="images/gallery/project-1.jpg"
-            alt="Describe the photo here" ...>
-
-   So if you save a photo as "project-1.jpg" it appears automatically —
-   no code changes needed.
+3. To replace a stock photo with your own, save your photo over the
+   matching filename above (same name, same folder) and it appears
+   automatically. To use a different filename, also update the src
+   (and data-full) in gallery.html — and update the alt text and
+   remove the "Illustrative" label for that slot, since it will then
+   be a real job photo.
 
 HOMEPAGE HERO IMAGE
 -------------------
-The large photo at the top of the home page (index.html) currently shows
-a bundled placeholder (placeholder-1.svg) so the page never looks broken.
-To use a real photo, drop a landscape image into THIS folder named:
-
-       hero.jpg
-
-then open index.html and change the hero <img> src from
-"images/gallery/placeholder-1.svg" to "images/gallery/hero.jpg".
-(Aim for roughly 1600px on the long edge — it's shown large.)
+The photo backdrop at the top of the home page is images/hero-kitchen.jpg,
+referenced directly in index.html. To change it, replace that file
+(roughly 1920px wide) and regenerate its companion files noted in
+index.html's comments (the 960w downscale and the edge-trace overlay).
 
 IF A PHOTO IS MISSING
 ---------------------
 The page is resilient. gallery.js detects a missing/broken image and
-swaps in a tidy "Devine Builders — Project Photo" placeholder so the
+swaps in a tidy "Devine Builders — Photo coming soon" placeholder so the
 gallery never looks broken. The bundled placeholder-1.svg ... -6.svg
 files are also available if you'd rather point a figure at one of them
 directly (e.g. src="images/gallery/placeholder-1.svg").

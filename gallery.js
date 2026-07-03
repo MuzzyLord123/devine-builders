@@ -14,17 +14,20 @@
    <ul class="gallery" id="gallery">                      <!-- grid container -->
      <li class="gallery__item">
        <button class="gallery__btn" type="button"
-               data-full="images/gallery/project-1.jpg"   <!-- optional: full-size src; falls back to the <img> src -->
-               data-caption="Full kitchen renovation, Connah's Quay">
+               data-full="images/gallery/photo-kitchen.jpg" <!-- optional: full-size src; falls back to the <img> src -->
+               data-caption="Fitted kitchens — an illustrative example of the kitchen installations we carry out.">
          <img class="gallery__img"
-              src="images/gallery/project-1.jpg"
-              alt="Newly renovated kitchen with fitted units"
+              src="images/gallery/photo-kitchen.jpg"
+              alt="A modern fitted kitchen with wood units and a stone worktop"
               loading="lazy" width="800" height="600">
-         <figcaption class="gallery__caption">Kitchen renovation</figcaption>
+         <span class="gallery__caption">Fitted kitchens</span>
        </button>
      </li>
      ... more .gallery__item entries ...
    </ul>
+
+   Keep captions type-of-work only — no project/location claims while
+   photos are illustrative.
 
    And ONE lightbox shell present in gallery.html (hidden by default):
 
@@ -62,7 +65,7 @@
     'data:image/svg+xml;charset=UTF-8,' +
     encodeURIComponent(
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" ' +
-      'role="img" aria-label="Devine Builders project photo placeholder">' +
+      'role="img" aria-label="Devine Builders photo placeholder">' +
       '<rect width="800" height="600" fill="#f1f5f9"/>' +
       '<rect x="1" y="1" width="798" height="598" fill="none" ' +
       'stroke="#cbd5e1" stroke-width="2"/>' +
@@ -75,7 +78,7 @@
       'font-weight="700" fill="#475569">Devine Builders</text>' +
       '<text x="400" y="492" text-anchor="middle" ' +
       'font-family="system-ui,Segoe UI,Arial,sans-serif" font-size="24" ' +
-      'fill="#94a3b8">Project Photo</text></svg>'
+      'fill="#94a3b8">Photo coming soon</text></svg>'
     );
 
   function ready(fn) {
@@ -123,7 +126,7 @@
     // Build a model of each slide from the existing DOM.
     var slides = triggers.map(function (btn) {
       var img = btn.querySelector("img");
-      var capEl = btn.querySelector("figcaption");
+      var capEl = btn.querySelector(".gallery__caption");
       var full =
         btn.getAttribute("data-full") ||
         (img && img.getAttribute("src")) ||
@@ -139,6 +142,8 @@
     var current = -1;
     var lastFocused = null;
     var isOpen = false;
+    var closeTimer = 0;       // pending close() safety timeout
+    var pendingFinish = null; // pending close() transitionend listener
 
     /* ---------------- open / close ---------------- */
 
@@ -147,6 +152,17 @@
       lastFocused = document.activeElement;
 
       render(current);
+
+      // Cancel any in-flight close() cleanup so a quick close→reopen can't
+      // hide the just-reopened lightbox (which would leave scroll locked).
+      if (pendingFinish) {
+        lightbox.removeEventListener("transitionend", pendingFinish);
+        pendingFinish = null;
+      }
+      if (closeTimer) {
+        window.clearTimeout(closeTimer);
+        closeTimer = 0;
+      }
 
       lightbox.hidden = false;
       // Force reflow so the opacity transition runs from 0 → 1.
@@ -175,9 +191,12 @@
       setBackgroundHidden(false);
       lockScroll(false);
 
-      var finish = function () {
+      var finish = function (e) {
+        if (e && e.target !== lightbox) return; // ignore bubbled child transitions
+        if (isOpen) return;                     // a reopen superseded this close
         lightbox.hidden = true;
         lightbox.removeEventListener("transitionend", finish);
+        pendingFinish = null;
         // Restore focus to the thumbnail that opened the viewer.
         if (lastFocused && typeof lastFocused.focus === "function") {
           lastFocused.focus();
@@ -187,10 +206,12 @@
       // Respect reduced-motion / no-transition environments.
       var dur = prefersReducedMotion() ? 0 : transitionMs(lightbox);
       if (dur > 0) {
+        pendingFinish = finish;
         lightbox.addEventListener("transitionend", finish);
         // Safety net if transitionend doesn't fire.
-        window.setTimeout(function () {
-          if (lightbox.hidden === false) finish();
+        closeTimer = window.setTimeout(function () {
+          closeTimer = 0;
+          if (lightbox.hidden === false && !isOpen) finish();
         }, dur + 80);
       } else {
         finish();
