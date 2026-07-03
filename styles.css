@@ -4171,11 +4171,11 @@ body.db-chat-active #to-top { display: none !important; }
 .home .hero.is-lit .hero-bg__img--edges { opacity: 0.95; }
 
 /* =====================================================================
-   26. SERVICE-AREA MAP  (home "Areas we cover" — inline SVG blueprint)
-   Navy blueprint panel, River Dee, dashed service boundary, glowing
-   town bubbles at real relative positions and a pulsing home marker.
-   Decorative (aria-hidden in the markup); the chips below carry the
-   same list accessibly. All motion is reduced-motion gated.
+   26. SERVICE-AREA MAP  (home "Areas we cover" — inline SVG)
+   Real satellite imagery with town markers at real relative positions
+   and a pulsing home marker. Decorative (aria-hidden in the markup);
+   the chips below carry the same list accessibly. All motion is
+   reduced-motion gated.
    ===================================================================== */
 .area-map {
   max-width: 42rem;
@@ -4193,75 +4193,30 @@ body.db-chat-active #to-top { display: none !important; }
     var(--color-dark);
 }
 /* Satellite base layer (real Sentinel-2 imagery, same bbox as the
-   projection) — desaturated + dimmed, then tinted navy so the blueprint
-   layers above stay legible and on-brand. */
-.amap__sat { filter: saturate(0.72) brightness(0.9); }
-.amap__tint { fill: rgba(9, 14, 26, 0.58); }
-.amap__credit { fill: rgba(148, 163, 184, 0.55); font-size: 4.5px; letter-spacing: 0.02em; }
-.amap__roads path {
-  fill: none;
-  stroke: rgba(147, 197, 253, 0.16);
-  stroke-width: 2;
-  stroke-linecap: round;
-}
-.amap__badge rect {
-  fill: rgba(15, 23, 42, 0.92);
-  stroke: rgba(147, 197, 253, 0.35);
-  stroke-width: 0.8;
-}
-.amap__badge text {
-  fill: #93c5fd;
-  font-size: 6.5px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-}
-.amap__border {
-  fill: none;
-  stroke: rgba(148, 163, 184, 0.35);
-  stroke-width: 1;
-  stroke-dasharray: 3 4;
-}
-.amap__country {
-  fill: rgba(148, 163, 184, 0.55);
-  font-size: 7px;
-  font-weight: 700;
-  letter-spacing: 0.22em;
+   projection) — shown untouched; labels get halos for legibility. */
+.amap__credit {
+  fill: rgba(203, 213, 225, 0.75);
+  font-size: 4.5px;
+  letter-spacing: 0.02em;
+  paint-order: stroke;
+  stroke: rgba(7, 11, 20, 0.7);
+  stroke-width: 1.5px;
+  stroke-linejoin: round;
 }
 .amap__context circle {
   fill: none;
-  stroke: #64748b;
+  stroke: #cbd5e1;
   stroke-width: 1.2;
 }
 .amap__context text {
-  fill: #94a3b8;
+  fill: #e2e8f0;
   font-size: 8.5px;
   font-style: italic;
+  paint-order: stroke;
+  stroke: rgba(7, 11, 20, 0.9);
+  stroke-width: 2.5px;
+  stroke-linejoin: round;
 }
-.amap__river {
-  fill: none;
-  stroke: rgba(96, 165, 250, 0.16);
-  stroke-width: 13;
-  stroke-linecap: round;
-}
-.amap__river-line {
-  fill: none;
-  stroke: rgba(147, 197, 253, 0.35);
-  stroke-width: 1.1;
-}
-.amap__water {
-  fill: rgba(147, 197, 253, 0.55);
-  font-size: 8px;
-  font-style: italic;
-  letter-spacing: 0.08em;
-}
-.amap__blob {
-  fill: rgba(37, 99, 235, 0.06);
-  stroke: rgba(147, 197, 253, 0.38);
-  stroke-width: 1.2;
-  stroke-dasharray: 5 6;
-}
-.amap__compass path { fill: none; stroke: #93c5fd; stroke-width: 1.4; opacity: 0.6; }
-.amap__compass text { fill: #93c5fd; font-size: 8px; font-weight: 700; opacity: 0.7; }
 .amap__dot {
   fill: #60a5fa;
   stroke: rgba(255, 255, 255, 0.85);
@@ -4308,6 +4263,10 @@ body.db-chat-active #to-top { display: none !important; }
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+  paint-order: stroke;
+  stroke: rgba(7, 11, 20, 0.9);
+  stroke-width: 2.5px;
+  stroke-linejoin: round;
 }
 .amap__region circle {
   fill: rgba(147, 197, 253, 0.10);
@@ -4316,7 +4275,6 @@ body.db-chat-active #to-top { display: none !important; }
   stroke-dasharray: 2 3;
 }
 .amap__label--region { fill: #93c5fd; font-style: italic; font-weight: 600; }
-.amap__caption { fill: #94a3b8; font-size: 8px; letter-spacing: 0.05em; }
 
 /* ---- Service landing pages: breadcrumb on the dark hero band ---------
    Sits inside the .hero--inner scrim card; light-blue links match the
