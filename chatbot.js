@@ -14,8 +14,23 @@
         and an authored reply (paragraphs + action links + quick replies).
      2) A lightweight INTENT ENGINE: normalise → expand synonyms → score
         every intent → pick the best above a threshold, else a helpful
-        fallback that always routes to Phil.
-     3) An accessible, themed UI built entirely with DOM APIs (user text is
+        fallback that always routes to Phil. On top of that:
+        - TYPO TOLERANCE: if nothing matches exactly, a second scoring pass
+          allows close misspellings (bounded Damerau-Levenshtein, same first
+          two letters) so "drivway" or "extenshion" still land.
+        - CONTEXT MEMORY: the last service discussed is remembered, so
+          follow-ups like "how much would that cost?" answer in context and
+          deep-link the quote form to the right project type.
+        - MULTI-TOPIC: "do you do roofing AND driveways?" answers both.
+        - POSTCODE AWARENESS: a typed postcode gets the same honest area
+          advisory as the quote form (CH4-CH8 / LL covered; ask Phil
+          otherwise) — road numbers like the A55 are ignored.
+     3) A GUIDED QUOTE FLOW ("Start my quote"): three chip-driven questions
+        (job type → location → brief details) that hand off to quote.html
+        with the project type pre-selected and the details pre-filled via
+        sessionStorage (quote.js only fills fields the visitor left empty).
+        It never promises anything beyond the site's established wording.
+     4) An accessible, themed UI built entirely with DOM APIs (user text is
         only ever inserted via textContent, so it is XSS-safe).
 
    Progressive enhancement: a single no-op-safe init. Honours
@@ -70,7 +85,7 @@
       id: "extensions", name: "Extensions", page: "extensions-connahs-quay.html",
       blurb: "Single- and double-storey extensions, garage and loft conversions, conservatories, porches, garden rooms and outbuildings — built from the groundwork up.",
       items: ["Single- & double-storey extensions", "Garage & loft conversions", "Conservatories, porches & garden rooms", "Outbuildings & new builds"],
-      tags: ["extension", "extensions", "extend", "single storey", "double storey", "loft", "loft conversion", "attic", "garage conversion", "conservatory", "conservatories", "porch", "porches", "garden room", "outbuilding", "new build", "new builds", "more space", "extra room"]
+      tags: ["extension", "extensions", "extend", "single storey", "double storey", "loft", "loft conversion", "attic", "garage", "garage conversion", "conservatory", "conservatories", "porch", "porches", "garden room", "outbuilding", "new build", "new builds", "more space", "extra room"]
     },
     {
       id: "renovations", name: "Renovations", page: "renovations-connahs-quay.html",
@@ -120,13 +135,13 @@
   // grid on services.html). Each maps a topic to the parent service so
   // "do you do plastering?" gets a confident, accurate yes.
   var TRADES = [
-    { name: "Kitchens", parent: "renovations", tags: ["kitchen", "kitchens", "kitchen fitting", "worktop", "worktops"] },
+    { name: "Kitchens", parent: "renovations", tags: ["kitchen", "kitchens", "kitchen fitting", "worktop", "worktops", "appliance", "appliances", "appliance fitting"] },
     { name: "Bathrooms & wet rooms", parent: "renovations", tags: ["bathroom", "bathrooms", "wet room", "wetroom", "ensuite", "en-suite", "shower room"] },
-    { name: "Plastering & rendering", parent: "renovations", tags: ["plaster", "plastering", "plasterer", "skim", "skimming", "render", "rendering", "dry lining", "drylining", "coving", "pebble dash", "pebbledash"] },
-    { name: "Carpentry & joinery", parent: "renovations", tags: ["carpentry", "carpenter", "joinery", "joiner", "stud wall", "timber frame", "door", "doors", "staircase", "stairs", "skirting", "architrave", "first fix", "second fix"] },
-    { name: "Flooring", parent: "renovations", tags: ["floor", "floors", "flooring", "screed", "screeding", "laminate", "engineered floor", "hardwood floor", "vinyl", "floor tiling"] },
+    { name: "Plastering & rendering", parent: "renovations", tags: ["plaster", "plastering", "plasterer", "skim", "skimming", "render", "rendering", "dry lining", "drylining", "boarding", "plasterboard", "coving", "pebble dash", "pebbledash", "silicone render", "silicone rendering"] },
+    { name: "Carpentry & joinery", parent: "renovations", tags: ["carpentry", "carpenter", "joinery", "joiner", "stud wall", "stud walls", "timber frame", "timber framing", "door", "doors", "door frame", "door frames", "staircase", "staircases", "stairs", "skirting", "architrave", "architraves", "first fix", "second fix"] },
+    { name: "Flooring", parent: "renovations", tags: ["floor", "floors", "flooring", "screed", "screeding", "laminate", "engineered floor", "engineered flooring", "hardwood floor", "hardwood flooring", "vinyl", "floor tiling"] },
     { name: "Tiling", parent: "renovations", tags: ["tiling", "tiler", "wall tiles", "floor tiles"] },
-    { name: "Decorating", parent: "maintenance", tags: ["decorating", "decorator", "painting", "painter", "paint", "wallpaper", "wallpapering", "wood staining"] },
+    { name: "Decorating", parent: "maintenance", tags: ["decorating", "decorator", "painting", "painter", "paint", "wallpaper", "wallpapering", "wood staining", "interior painting", "exterior painting", "wood treatment", "staining"] },
     { name: "Structural work", parent: "renovations", tags: ["structural", "rsj", "rsjs", "steel beam", "steels", "knock through", "knock-through", "knockthrough", "load bearing", "load-bearing", "remove wall", "removing a wall", "open plan"] },
     { name: "Commercial building", parent: "maintenance", tags: ["commercial", "shop fit", "shopfitting", "shop fitting", "office refurbishment", "warehouse", "industrial", "business premises"] }
   ];
@@ -156,7 +171,7 @@
   // Quick-reply chip sets.
   var STARTER_CHIPS = [
     { label: "What services do you offer?", send: "What services do you offer?" },
-    { label: "Get a free quote", send: "How do I get a quote?" },
+    { label: "Start a free quote", send: "Start my quote" },
     { label: "Areas you cover", send: "What areas do you cover?" },
     { label: "Contact Phil", send: "How do I contact you?" }
   ];
@@ -175,7 +190,7 @@
     return {
       blocks: blocks,
       chips: [
-        { label: "Get a free quote", send: "I'd like a quote for " + svc.name.toLowerCase() },
+        { label: "Start my quote", send: "Start my quote" },
         { label: "Areas you cover", send: "What areas do you cover?" },
         { label: "Other services", send: "What services do you offer?" }
       ]
@@ -226,7 +241,7 @@
     },
     {
       id: "services-overview",
-      tags: ["service", "services", "what do you do", "what do you offer", "what can you do", "what work", "type of work", "types of work", "kind of work", "what jobs", "offer", "capabilities", "trades", "everything you do"],
+      tags: ["service", "services", "what do you do", "what do you offer", "what can you do", "what work", "type of work", "types of work", "kind of work", "what jobs", "offer", "capabilities", "trades", "everything you do", "what else do you", "anything else you"],
       reply: function () {
         return {
           blocks: [
@@ -248,17 +263,21 @@
     {
       id: "quote",
       tags: ["quote", "quotation", "quotes", "estimate", "estimates", "get a quote", "free quote", "enquire", "enquiry", "inquiry", "book", "booking", "get started", "interested", "contact form", "request a quote"],
-      reply: function () {
+      reply: function (ctx) {
+        var svc = ctx && ctx.svc;
+        var quoteAct = svc
+          ? { label: "Quote form — " + svc.name, href: "quote.html?service=" + svc.id, primary: true }
+          : ACT.quote;
         return {
           blocks: [
             p("Getting a free quote is easy — and there's never any obligation:"),
             p("1) Tell us about the job · 2) Phil comes back with a clear, no-pressure quote and a sensible plan · 3) we do the work and keep the site tidy."),
-            p("You can fill in the quote form, or call/email Phil directly — he usually gets back to you within a day or two."),
-            actions([ACT.quote, ACT.call, ACT.email])
+            p("You can fill in the quote form, or call/email Phil directly — he usually gets back to you within a day or two. Or answer three quick questions right here and I'll set the form up for you."),
+            actions([quoteAct, ACT.call, ACT.email])
           ],
           chips: [
-            { label: "What areas do you cover?", send: "What areas do you cover?" },
-            { label: "What services do you offer?", send: "What services do you offer?" }
+            { label: "Start my quote here", send: "Start my quote" },
+            { label: "What areas do you cover?", send: "What areas do you cover?" }
           ]
         };
       }
@@ -266,15 +285,19 @@
     {
       id: "pricing",
       tags: ["price", "prices", "pricing", "cost", "costs", "how much", "expensive", "cheap", "fee", "fees", "charge", "charges", "rate", "rates", "budget", "ballpark", "day rate", "hourly", "afford"],
-      reply: function () {
+      reply: function (ctx) {
+        var svc = ctx && ctx.svc;
+        var quoteAct = svc
+          ? { label: "Get a " + svc.name.toLowerCase() + " quote", href: "quote.html?service=" + svc.id, primary: true }
+          : ACT.quote;
         return {
           blocks: [
-            p("Every quote is free and with no obligation. We don't list fixed prices because every job is different — Phil works out a clear, fair price once he understands exactly what you need."),
+            p("Every quote is free and with no obligation. We don't list fixed prices because every job is different — Phil works out a clear, fair price once he understands exactly what you need." + (svc ? " That goes for " + svc.name.toLowerCase() + " too: the size and spec make all the difference." : "")),
             p("Tell us about your project and he'll come back to you, usually within a day or two."),
-            actions([ACT.quote, ACT.call])
+            actions([quoteAct, ACT.call])
           ],
           chips: [
-            { label: "How do I get a quote?", send: "How do I get a quote?" },
+            { label: "Start my quote", send: "Start my quote" },
             { label: "What services do you offer?", send: "What services do you offer?" }
           ]
         };
@@ -316,11 +339,15 @@
     {
       id: "timescale",
       tags: ["how long", "timescale", "timeframe", "time frame", "duration", "lead time", "when can you start", "start date", "how quickly", "turnaround", "how many weeks", "how many days"],
-      reply: function () {
+      reply: function (ctx) {
+        var svc = ctx && ctx.svc;
+        var quoteAct = svc
+          ? { label: "Get a " + svc.name.toLowerCase() + " quote", href: "quote.html?service=" + svc.id, primary: true }
+          : ACT.quote;
         return {
           blocks: [
-            p("It really depends on the size of the job — a small repair is very different from a full extension. Phil will give you a realistic timescale along with your free quote, once he's seen what's involved."),
-            actions([ACT.quote, ACT.call])
+            p("It really depends on the size of the job — a small repair is very different from a full extension. Phil will give you a realistic timescale along with your free quote, once he's seen what's involved." + (svc ? " For " + svc.name.toLowerCase() + ", just tell him what you have in mind and he'll be straight with you about timing." : "")),
+            actions([quoteAct, ACT.call])
           ],
           chips: [
             { label: "Get a free quote", send: "How do I get a quote?" },
@@ -443,6 +470,30 @@
           chips: STARTER_CHIPS
         };
       }
+    },
+    {
+      // Short follow-up like "tell me more" — expands on the last service
+      // discussed (conversation context), else asks which topic.
+      id: "more",
+      tags: ["more", "tell me more", "more info", "more details", "more information", "go on", "what else"],
+      onlyShort: true,
+      reply: function (ctx) {
+        if (ctx && ctx.svc) {
+          return serviceReply(ctx.svc, { lead: "Happy to — here's more on our " + ctx.svc.name.toLowerCase() + " work." });
+        }
+        return {
+          blocks: [p("Happy to! Which topic — one of our services, the areas we cover, or how free quotes work?")],
+          chips: STARTER_CHIPS
+        };
+      }
+    },
+    {
+      // Kicks off the guided quote flow (handled in deliver()).
+      id: "quote-start",
+      tags: ["start my quote", "start a quote", "start quote", "start my quote here", "quote in chat", "quick questions", "three questions", "3 questions"],
+      reply: function () {
+        return { startFlow: "quote" };
+      }
     }
   ];
 
@@ -463,6 +514,7 @@
     INTENTS.push({
       id: "trade-" + trade.name.toLowerCase().replace(/[^a-z]+/g, "-"),
       tags: trade.tags,
+      tradeParent: trade.parent,
       reply: function () {
         var parent = serviceById(trade.parent);
         return serviceReply(parent, {
@@ -500,7 +552,15 @@
     [["wet wall", "damp wall", "rising damp"], "damp"],
     [["block paved", "blockpaved"], "block paving"],
     [["fence panel", "fence panels", "new fence"], "fencing"],
-    [["who do i", "who can i", "speak to a person", "talk to a human"], "contact"]
+    [["who do i", "who can i", "speak to a person", "talk to a human"], "contact"],
+    [["lino", "linoleum"], "vinyl"],
+    [["annexe", "annex", "granny flat"], "extension"],
+    [["re roof", "reroof", "reroofing"], "roofing"],
+    [["resurface", "resurfacing"], "driveway"],
+    // "mould"/"mouldy" (and explicit mold-on-wall phrasings) mean damp, not
+    // the town of Mold — weight with two maintenance words so the damp
+    // answer outscores the areas intent's town match.
+    [["mould", "mouldy", "mold on the wall", "mold on my wall", "mold in the"], "damp leak"]
   ];
 
   function applySynonyms(norm) {
@@ -522,20 +582,65 @@
   // Score a single tag against normalised text.
   //   multi-word phrase present  → strong (scaled by word count)
   //   single word present (with word boundaries) → light
-  function scoreTag(norm, tag) {
+  //   fuzzy pass only: a close misspelling of a single-word tag → light
+  function scoreTag(norm, tag, words, fuzzy) {
     if (tag.indexOf(" ") !== -1) {
       return norm.indexOf(" " + tag + " ") !== -1 ? 3 + tag.split(" ").length : 0;
     }
-    return norm.indexOf(" " + tag + " ") !== -1 ? 2 : 0;
+    if (norm.indexOf(" " + tag + " ") !== -1) return 2;
+    if (fuzzy && words) {
+      for (var i = 0; i < words.length; i++) {
+        if (isCloseMisspelling(words[i], tag)) return 2;
+      }
+    }
+    return 0;
   }
 
-  function scoreIntent(intent, norm, wordCount) {
+  // "Is this word a typo of that tag?" — bounded Damerau-Levenshtein with
+  // guard rails: both reasonably long, SAME FIRST TWO LETTERS (typos rarely
+  // hit the start of a word, and it keeps e.g. glass/grass apart), length
+  // within budget, then distance ≤ 1 (≤ 2 for tags of 8+ letters).
+  function isCloseMisspelling(word, tag) {
+    if (word === tag || word.length < 4 || tag.length < 5) return false;
+    if (word.charAt(0) !== tag.charAt(0) || word.charAt(1) !== tag.charAt(1)) return false;
+    var max = tag.length >= 8 ? 2 : 1;
+    if (Math.abs(word.length - tag.length) > max) return false;
+    return damerau(word, tag, max) <= max;
+  }
+
+  // Damerau-Levenshtein distance (optimal string alignment), bailing out
+  // early once a whole row exceeds `max`.
+  function damerau(a, b, max) {
+    var al = a.length, bl = b.length;
+    var prev2 = null, prev = [], curr, i, j;
+    for (j = 0; j <= bl; j++) prev[j] = j;
+    for (i = 1; i <= al; i++) {
+      curr = [i];
+      var rowMin = i;
+      for (j = 1; j <= bl; j++) {
+        var cost = a.charAt(i - 1) === b.charAt(j - 1) ? 0 : 1;
+        var v = Math.min(prev[j] + 1, curr[j - 1] + 1, prev[j - 1] + cost);
+        if (prev2 && i > 1 && j > 1 &&
+            a.charAt(i - 1) === b.charAt(j - 2) &&
+            a.charAt(i - 2) === b.charAt(j - 1)) {
+          v = Math.min(v, prev2[j - 2] + 1);
+        }
+        curr[j] = v;
+        if (v < rowMin) rowMin = v;
+      }
+      if (rowMin > max) return max + 1;
+      prev2 = prev; prev = curr;
+    }
+    return prev[bl];
+  }
+
+  function scoreIntent(intent, norm, wordCount, words, fuzzy) {
     // Greetings/thanks only fire on short messages so they don't hijack
     // a longer, more specific question that happens to start with "hi".
     if (intent.onlyShort && wordCount > 4) return 0;
     var total = 0;
     for (var i = 0; i < intent.tags.length; i++) {
-      total += scoreTag(norm, intent.tags[i]);
+      total += scoreTag(norm, intent.tags[i], words, fuzzy);
     }
     return total;
   }
@@ -557,6 +662,97 @@
     return SERVICES[0];
   }
 
+  // Strict variant for validating stored/context ids — no fallback.
+  function serviceByIdStrict(id) {
+    for (var i = 0; i < SERVICES.length; i++) {
+      if (SERVICES[i].id === id) return SERVICES[i];
+    }
+    return null;
+  }
+
+  // The service a given intent is "about" (headline service or a trade's
+  // parent), or null for general intents like pricing/contact.
+  function serviceForIntent(intent) {
+    if (!intent) return null;
+    if (intent.service) return intent.service;
+    if (intent.tradeParent) return serviceById(intent.tradeParent);
+    return null;
+  }
+
+  /* ---- conversation context (last service discussed) ---------------- */
+
+  function rememberService(id) {
+    if (state.context) { state.context.service = id; saveState(); }
+  }
+
+  function contextService() {
+    return state.context && state.context.service
+      ? serviceByIdStrict(state.context.service)
+      : null;
+  }
+
+  /* ---- postcode awareness -------------------------------------------
+     Same honest rule as the quote form's advisory: CH4–CH8 and any LL
+     district are "within the area we cover"; anything else defers to
+     Phil. Road numbers (A55, B5125, M56…) are explicitly not postcodes. */
+
+  function findPostcode(text) {
+    var m = String(text || "").toUpperCase().match(/\b([A-Z]{1,2}[0-9][0-9A-Z]?)\s*([0-9][A-Z]{2})?\b/);
+    if (!m) return null;
+    var outward = m[1];
+    if (!m[2] && /^[ABM][0-9]+$/.test(outward)) return null; // a road, not a postcode
+    return {
+      code: outward + (m[2] ? " " + m[2] : ""),
+      covered: /^CH[4-8]$/.test(outward) || /^LL[0-9]{1,2}[A-Z]?$/.test(outward)
+    };
+  }
+
+  function postcodeReply(pc) {
+    var blocks;
+    if (pc.covered) {
+      blocks = [
+        p("Great — " + pc.code + " is within the area we cover. We're based in Connah's Quay and work across Flintshire and the wider North Wales area. Phil will confirm when he's in touch."),
+        actions([ACT.quote, ACT.call])
+      ];
+    } else {
+      blocks = [
+        p(pc.code + " looks outside our usual patch — we're based in Connah's Quay and cover Flintshire and the wider North Wales area. It's still worth asking though: Phil will tell you straight away, either way."),
+        actions([ACT.call, ACT.quote])
+      ];
+    }
+    return {
+      blocks: blocks,
+      chips: [
+        { label: "Start my quote", send: "Start my quote" },
+        { label: "What services do you offer?", send: "What services do you offer?" }
+      ]
+    };
+  }
+
+  // "Do you do roofing AND driveways?" — answer every clearly-named
+  // service (capped at three) instead of picking one arbitrarily.
+  function multiServiceReply(list) {
+    var blocks = [p(list.length === 2
+      ? "We can help with both of those:"
+      : "We can help with all of those:")];
+    var acts = [];
+    for (var i = 0; i < list.length; i++) {
+      var svc = serviceById(list[i].id);
+      blocks.push(p(svc.name + " — " + svc.blurb));
+      acts.push({ label: svc.name + " details", href: svc.page });
+    }
+    blocks.push(p("One enquiry can cover the lot — tell Phil what you're planning and he'll quote it as a whole job."));
+    acts.push(ACT.quote);
+    blocks.push(actions(acts));
+    return {
+      blocks: blocks,
+      chips: [
+        { label: "Start my quote", send: "Start my quote" },
+        { label: "Areas you cover", send: "What areas do you cover?" }
+      ]
+    };
+  }
+
   function fallbackReply() {
     return {
       blocks: [
@@ -568,21 +764,79 @@
     };
   }
 
+  // One scoring sweep over every intent. Also collects, per headline
+  // service, the strongest service/trade intent score — used both for the
+  // multi-topic answer and for the guided flow's job-type matcher.
+  function scoreAll(norm, words, wordCount, fuzzy) {
+    var best = null, bestScore = 0;
+    var perService = {};
+    for (var i = 0; i < INTENTS.length; i++) {
+      var s = scoreIntent(INTENTS[i], norm, wordCount, words, fuzzy);
+      if (s > bestScore) { bestScore = s; best = INTENTS[i]; }
+      if (s >= 2) {
+        var svc = serviceForIntent(INTENTS[i]);
+        if (svc && (!perService[svc.id] || s > perService[svc.id].score)) {
+          perService[svc.id] = { id: svc.id, score: s };
+        }
+      }
+    }
+    var services = [];
+    for (var k in perService) {
+      if (perService.hasOwnProperty(k)) services.push(perService[k]);
+    }
+    services.sort(function (a, b) { return b.score - a.score; });
+    // Drop weak also-rans (e.g. "garden wall" shouldn't drag landscaping
+    // in on the generic word "garden" when brickwork matched the phrase,
+    // and one strong match beats two incidental single-word ones).
+    if (services.length > 1) {
+      var top = services[0].score;
+      services = services.filter(function (x) { return x.score * 2 > top; });
+    }
+    return { best: best, bestScore: bestScore, services: services };
+  }
+
   function respondTo(text) {
     var norm = applySynonyms(normalize(text));
-    var wordCount = norm.trim().split(" ").length;
+    var words = norm.trim().split(" ");
+    var wordCount = words.length;
 
-    var best = null;
-    var bestScore = 0;
-    for (var i = 0; i < INTENTS.length; i++) {
-      var s = scoreIntent(INTENTS[i], norm, wordCount);
-      if (s > bestScore) { bestScore = s; best = INTENTS[i]; }
-    }
+    // Pass 1: exact matching. Pass 2 (only when nothing lands): allow
+    // close misspellings, so a typo never beats a genuine exact match.
+    var scored = scoreAll(norm, words, wordCount, false);
+    if (scored.bestScore < 2) scored = scoreAll(norm, words, wordCount, true);
+    var best = scored.best;
+    var bestScore = scored.bestScore;
+
+    // A typed postcode answers "do you cover me?" directly — take over
+    // when the message is area-flavoured or nothing else matched.
+    var pc = findPostcode(text);
+    if (pc && (bestScore < 2 || best.id === "areas")) return postcodeReply(pc);
 
     if (!best || bestScore < 2) return fallbackReply();
 
-    // Build context for intents that look closer at the message.
-    var ctx = { norm: norm };
+    // "Tell me about extensions" is a question about the SERVICE, not the
+    // firm — when the about intent outscores on its "tell me about" phrase
+    // but a service was clearly named, answer for the service instead.
+    if (best.id === "about" && scored.services.length) {
+      var svcAsked = serviceById(scored.services[0].id);
+      rememberService(svcAsked.id);
+      return scored.services.length >= 2
+        ? multiServiceReply(scored.services.slice(0, 3))
+        : serviceReply(svcAsked);
+    }
+
+    // Two or more different services clearly named → answer them all.
+    if (scored.services.length >= 2 && serviceForIntent(best)) {
+      rememberService(scored.services[0].id);
+      return multiServiceReply(scored.services.slice(0, 3));
+    }
+
+    var mentioned = serviceForIntent(best);
+    if (mentioned) rememberService(mentioned.id);
+
+    // Build context for intents that look closer at the message. `svc` is
+    // the last service discussed, so follow-ups can answer in context.
+    var ctx = { norm: norm, svc: contextService() };
     if (best.id === "areas") {
       var named = findArea(norm);
       if (!named) {
@@ -600,6 +854,174 @@
       }
     }
     return best.reply(ctx);
+  }
+
+  /* =================================================================
+     4b. GUIDED QUOTE FLOW — three quick questions (job type → location
+         → brief details), then a handoff to quote.html with the project
+         type in the URL (the existing ?service= deep link) and the rest
+         stashed in sessionStorage for quote.js to pre-fill. Chip-driven
+         but free text works at every step; "cancel" backs out anywhere.
+     ================================================================= */
+
+  var FLOW_STEPS = { type: 1, where: 1, details: 1 };
+  var PREFILL_KEY = "db-chat-prefill";
+
+  function isSkipMsg(norm) { return /^ skip( this)?( one)? $/.test(norm); }
+
+  function isCancelMsg(norm) {
+    if (norm.indexOf(" cancel ") !== -1) return true;
+    var EXACT = [" stop ", " quit ", " exit ", " never mind ", " nevermind ", " forget it ", " no thanks "];
+    for (var i = 0; i < EXACT.length; i++) {
+      if (norm === EXACT[i]) return true;
+    }
+    return false;
+  }
+
+  // Best-effort mapping of a free-text job description (or a chip label)
+  // onto one of the 8 headline services; null → keep their own words.
+  function guessService(text) {
+    var norm = applySynonyms(normalize(text));
+    var words = norm.trim().split(" ");
+    var pass = scoreAll(norm, words, words.length, false);
+    if (!pass.services.length) pass = scoreAll(norm, words, words.length, true);
+    if (pass.services.length) return serviceById(pass.services[0].id);
+    for (var i = 0; i < SERVICES.length; i++) {
+      if (normalize(SERVICES[i].name) === norm) return SERVICES[i];
+    }
+    return null;
+  }
+
+  function flowCancelReply() {
+    state.flow = null;
+    saveState();
+    return {
+      blocks: [
+        p("No problem — I've dropped that. The normal quote form is there whenever you want it, and I'm happy to help with anything else."),
+        actions([ACT.quote, ACT.call])
+      ],
+      chips: STARTER_CHIPS
+    };
+  }
+
+  function beginQuoteFlow() {
+    state.flow = { id: "quote", step: "type", data: { service: "", serviceLabel: "", place: "", details: "" } };
+    saveState();
+    say({
+      blocks: [
+        p("Brilliant — three quick questions and I'll set the quote form up for you. No obligation, and Phil reads every enquiry himself."),
+        p("First: what type of job is it?")
+      ],
+      chips: SERVICES.map(function (svc) {
+        return { label: svc.name, send: svc.name };
+      }).concat([
+        { label: "Something else", send: "Something else" },
+        { label: "Cancel", send: "cancel" }
+      ])
+    });
+  }
+
+  function flowRespond(text) {
+    var flow = state.flow;
+    var norm = normalize(text);
+    if (isCancelMsg(norm)) return flowCancelReply();
+    var skipped = isSkipMsg(norm) || norm === " something else ";
+
+    if (flow.step === "type") {
+      var ack;
+      if (skipped) {
+        ack = "No problem — you can describe it in a moment.";
+      } else {
+        var guess = guessService(text);
+        if (guess) {
+          flow.data.service = guess.id;
+          flow.data.serviceLabel = guess.name;
+          rememberService(guess.id);
+          ack = "Got it — " + guess.name + ".";
+        } else {
+          flow.data.serviceLabel = String(text).trim().slice(0, 60);
+          ack = "Got it — I'll pass that on in your own words.";
+        }
+      }
+      flow.step = "where";
+      saveState();
+      return {
+        blocks: [p(ack), p("Next: whereabouts is the property? A town or postcode is perfect.")],
+        chips: [
+          { label: "Skip", send: "skip" },
+          { label: "Cancel", send: "cancel" }
+        ]
+      };
+    }
+
+    if (flow.step === "where") {
+      var ack2;
+      if (skipped) {
+        ack2 = "No problem.";
+      } else {
+        flow.data.place = String(text).trim().slice(0, 80);
+        var area = findArea(norm);
+        var pc = findPostcode(text);
+        if (area || (pc && pc.covered)) {
+          ack2 = "Great — that's right in the area we cover.";
+        } else {
+          ack2 = "Noted — and if it turns out to be outside Phil's patch, he'll tell you straight away.";
+        }
+      }
+      flow.step = "details";
+      saveState();
+      return {
+        blocks: [p(ack2), p("Last one: tell me a bit about the job — a sentence or two is plenty.")],
+        chips: [
+          { label: "Skip", send: "skip" },
+          { label: "Cancel", send: "cancel" }
+        ]
+      };
+    }
+
+    // step === "details"
+    if (!skipped) flow.data.details = String(text).trim().slice(0, 400);
+    return finishQuoteFlow();
+  }
+
+  function finishQuoteFlow() {
+    var d = state.flow.data;
+    state.flow = null;
+
+    // Hand the answers to quote.js: the service travels in the URL, the
+    // rest via sessionStorage. quote.js only ever fills fields the
+    // visitor has left empty, and clears the key immediately.
+    var pc = d.place ? findPostcode(d.place) : null;
+    var parts = [];
+    if (!d.service && d.serviceLabel) parts.push("Job type: " + d.serviceLabel + ".");
+    if (d.details) parts.push(d.details);
+    if (d.place && !pc) parts.push("(Property in " + d.place + ".)");
+    try {
+      window.sessionStorage.setItem(PREFILL_KEY, JSON.stringify({
+        details: parts.join(" "),
+        postcode: pc ? pc.code : ""
+      }));
+    } catch (e) { /* private mode — the form still works, just unfilled */ }
+    saveState();
+
+    var summary = "Job: " + (d.serviceLabel || "—") +
+      "  ·  Where: " + (d.place || "—") +
+      "  ·  Notes: " + (d.details ? (d.details.length > 90 ? d.details.slice(0, 87) + "…" : d.details) : "—");
+    return {
+      blocks: [
+        p("Perfect, that's everything. Here's what I've got:"),
+        p(summary),
+        p("Tap continue and the quote form will be pre-filled — just add your name and contact details, check it over, and send. Phil usually replies within a day or two."),
+        actions([
+          { label: "Continue to the quote form", href: "quote.html" + (d.service ? "?service=" + d.service : ""), primary: true },
+          ACT.call
+        ])
+      ],
+      chips: [
+        { label: "Start again", send: "Start my quote" },
+        { label: "Areas you cover", send: "What areas do you cover?" }
+      ]
+    };
   }
 
   /* =================================================================
@@ -633,7 +1055,8 @@
   var ICONS = {
     chat: ["M21 11.5a8.4 8.4 0 0 1-8.5 8.4 8.6 8.6 0 0 1-3.9-.9L3 20.5l1.6-5a8.4 8.4 0 0 1-.9-3.8A8.4 8.4 0 0 1 12.2 3a8.4 8.4 0 0 1 8.8 8.5Z"],
     close: ["M18 6 6 18", "M6 6l12 12"],
-    send: ["M22 2 11 13", "M22 2 15 22l-4-9-9-4 20-7Z"]
+    send: ["M22 2 11 13", "M22 2 15 22l-4-9-9-4 20-7Z"],
+    restart: ["M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8", "M21 3v5h-5"]
   };
 
   var state = {
@@ -641,7 +1064,9 @@
     messages: [],   // [{ from:'bot'|'user', blocks:[…] }]
     chips: [],
     built: false,
-    busy: false
+    busy: false,
+    context: { service: "" },  // last service discussed (id, or "")
+    flow: null                 // active guided-quote-flow state, or null
   };
 
   var els = {};   // DOM references
@@ -663,6 +1088,24 @@
         state.messages = data.messages.filter(validMessage).slice(-40);
         state.chips = Array.isArray(data.chips) ? data.chips.filter(function (c) { return c && typeof c === "object" && typeof c.label === "string"; }) : [];
         state.open = !!data.open;
+        // Conversation context + any in-progress guided flow survive page
+        // navigation, but only if they still validate against the KB.
+        if (data.context && typeof data.context.service === "string" && serviceByIdStrict(data.context.service)) {
+          state.context.service = data.context.service;
+        }
+        var f = data.flow;
+        if (f && f.id === "quote" && FLOW_STEPS[f.step] === 1 && f.data && typeof f.data === "object") {
+          state.flow = {
+            id: "quote",
+            step: f.step,
+            data: {
+              service: typeof f.data.service === "string" && serviceByIdStrict(f.data.service) ? f.data.service : "",
+              serviceLabel: typeof f.data.serviceLabel === "string" ? f.data.serviceLabel.slice(0, 60) : "",
+              place: typeof f.data.place === "string" ? f.data.place.slice(0, 80) : "",
+              details: typeof f.data.details === "string" ? f.data.details.slice(0, 400) : ""
+            }
+          };
+        }
       }
     } catch (e) { /* private mode / disabled storage — ignore */ }
   }
@@ -672,7 +1115,9 @@
       window.sessionStorage.setItem(STORE_KEY, JSON.stringify({
         messages: state.messages.slice(-40),
         chips: state.chips,
-        open: state.open
+        open: state.open,
+        context: state.context,
+        flow: state.flow
       }));
     } catch (e) { /* ignore */ }
   }
@@ -806,7 +1251,8 @@
     state.chips = [];
     if (els.chips) { els.chips.remove(); els.chips = null; }
 
-    var reply = respondTo(text);
+    // An active guided flow consumes the message; otherwise the engine.
+    var reply = state.flow ? flowRespond(text) : respondTo(text);
     var delay = prefersReducedMotion() ? 0 : 360 + Math.min(text.length * 6, 320);
 
     if (delay === 0) {
@@ -822,10 +1268,16 @@
     }
   }
 
-  function deliver(reply) {
+  // Plain "post this reply" (also used directly by the guided flow).
+  function say(reply) {
     state.chips = reply.chips || [];
     addMessage({ from: "bot", blocks: reply.blocks });
     // addMessage re-renders chips because state.chips is now set
+  }
+
+  function deliver(reply) {
+    if (reply && reply.startFlow === "quote") { beginQuoteFlow(); return; }
+    say(reply);
   }
 
   function onSubmit(e) {
@@ -872,14 +1324,7 @@
     swapLauncherIcon(true);
     // First-ever open: greet.
     if (!state.messages.length) {
-      state.chips = STARTER_CHIPS;
-      addMessage({
-        from: "bot",
-        blocks: [
-          p("Hi! 👋 I'm the Devine Builders assistant. I can help with our services, the areas we cover, or getting a free, no-obligation quote from Phil."),
-          p("What can I help you with?")
-        ]
-      });
+      greet();
     } else {
       scrollToBottom();
     }
@@ -909,6 +1354,32 @@
   }
 
   function togglePanel() { state.open ? closePanel() : openPanel(); }
+
+  function greet() {
+    state.chips = STARTER_CHIPS;
+    addMessage({
+      from: "bot",
+      blocks: [
+        p("Hi! 👋 I'm the Devine Builders assistant. I can help with our services, the areas we cover, or getting a free, no-obligation quote from Phil."),
+        p("What can I help you with?")
+      ]
+    });
+  }
+
+  // Header "restart" button: wipe the conversation (and any in-progress
+  // guided flow / remembered context) and greet afresh.
+  function resetConversation() {
+    state.messages = [];
+    state.chips = [];
+    state.flow = null;
+    state.context = { service: "" };
+    hideTyping();
+    state.busy = false;
+    saveState();
+    renderAll();
+    greet();
+    try { els.input.focus({ preventScroll: true }); } catch (e) { /* ignore */ }
+  }
 
   function swapLauncherIcon(isOpen) {
     if (!els.launcherIcon) return;
@@ -956,6 +1427,14 @@
     var avatar = el("span", "db-chat__avatar");
     avatar.setAttribute("aria-hidden", "true");
     avatar.textContent = "DB";
+    var restartBtn = el("button", "db-chat__close db-chat__restart");
+    restartBtn.type = "button";
+    restartBtn.setAttribute("aria-label", "Restart conversation");
+    restartBtn.title = "Restart conversation";
+    var rIcon = svgIcon(ICONS.restart);
+    rIcon.setAttribute("class", "db-chat__close-icon");
+    restartBtn.appendChild(rIcon);
+    restartBtn.addEventListener("click", resetConversation);
     var closeBtn = el("button", "db-chat__close");
     closeBtn.type = "button";
     closeBtn.setAttribute("aria-label", "Close chat");
@@ -965,6 +1444,7 @@
     closeBtn.addEventListener("click", function () { closePanel(); });
     header.appendChild(avatar);
     header.appendChild(hText);
+    header.appendChild(restartBtn);
     header.appendChild(closeBtn);
 
     // message log

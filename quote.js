@@ -162,6 +162,27 @@
       }
     } catch (e) { /* URLSearchParams unsupported — ignore */ }
 
+    // Prefill handed over from the chat assistant's guided quote flow
+    // (chatbot.js stashes it in sessionStorage just before linking here).
+    // Only ever fills fields the visitor hasn't already typed in, then
+    // clears the key so a refresh doesn't re-apply it.
+    try {
+      var handoff = window.sessionStorage.getItem("db-chat-prefill");
+      if (handoff) {
+        window.sessionStorage.removeItem("db-chat-prefill");
+        var pre = JSON.parse(handoff);
+        var detailsField = document.getElementById("details");
+        if (pre && detailsField && !detailsField.value && typeof pre.details === "string" && pre.details) {
+          detailsField.value = pre.details.slice(0, 2000);
+          detailsField.dispatchEvent(new Event("input", { bubbles: true }));
+        }
+        if (pre && postcode && !postcode.value && typeof pre.postcode === "string" && pre.postcode) {
+          postcode.value = pre.postcode.toUpperCase().slice(0, 10);
+          postcode.dispatchEvent(new Event("input", { bubbles: true }));
+        }
+      }
+    } catch (e) { /* storage/JSON issues — the form still works, just unfilled */ }
+
     // Clear a field's error as the user fixes it (on input/change).
     refs.forEach(function (r) {
       var evt = r.control.tagName === "SELECT" ? "change" : "input";
