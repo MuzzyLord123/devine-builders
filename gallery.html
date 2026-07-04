@@ -2,7 +2,7 @@
 <html lang="en-GB">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Gallery | Devine Builders — Connah's Quay, North Wales</title>
   <meta name="description" content="See the kind of work Devine Builders takes on across Connah's Quay, Flintshire and North Wales — kitchens, extensions, brickwork, roofing, driveways and more.">
   <meta name="author" content="Devine Builders">
@@ -157,6 +157,11 @@
             photo-landscaping.jpg — plus, in the Before & After section,
             ba-kitchen-before.jpg / ba-kitchen-after.jpg and
             ba-bathroom-before.jpg / ba-bathroom-after.jpg.
+            NOTE: the two Before & After "after" slots currently point at
+            photo-kitchen.jpg / photo-bathroom.jpg (byte-identical to the
+            ba-*-after.jpg files, so the browser reuses the cached grid
+            image instead of downloading a duplicate). When Phil supplies
+            real before/after pairs, restore the ba-*-after.jpg filenames.
 
           TO REPLACE A STOCK PHOTO WITH A REAL ONE
             Save your image over the matching filename (same name, same
@@ -270,9 +275,10 @@
 
         <p class="ba-grid__note">Illustrative examples of the type of work we do &mdash; real photos of Phil's own completed jobs are coming soon.</p>
 
-        <p class="section__lead" style="margin-top:var(--space-7)">
+        <p class="section__lead section__lead--push">
           Like what you see? <a href="quote.html">Get a free, no-obligation quote</a> for your own project, or
           <a href="tel:+447956547040">call Phil on +44&nbsp;7956&nbsp;547040</a>.
+          You can also read more about our <a href="extensions-connahs-quay.html">extensions</a>, <a href="renovations-connahs-quay.html">renovations</a>, <a href="brickwork-connahs-quay.html">brickwork</a>, <a href="roofing-connahs-quay.html">roofing</a>, <a href="driveways-connahs-quay.html">driveway and patio</a> and <a href="landscaping-connahs-quay.html">landscaping</a> work.
         </p>
       </div>
     </section>
@@ -322,7 +328,7 @@
                      width="800" height="600" loading="lazy">
                 <div class="ba-slider__after" data-ba-after>
                   <img class="ba-slider__img ba-slider__img--after"
-                       src="images/gallery/ba-kitchen-after.jpg"
+                       src="images/gallery/photo-kitchen.jpg"
                        alt="A modern fitted kitchen after renovation"
                        width="800" height="600" loading="lazy">
                 </div>
@@ -347,7 +353,7 @@
                      width="800" height="600" loading="lazy">
                 <div class="ba-slider__after" data-ba-after>
                   <img class="ba-slider__img ba-slider__img--after"
-                       src="images/gallery/ba-bathroom-after.jpg"
+                       src="images/gallery/photo-bathroom.jpg"
                        alt="A modern tiled bathroom after renovation"
                        width="800" height="600" loading="lazy">
                 </div>
@@ -412,7 +418,7 @@
   <footer class="site-footer">
     <div class="container site-footer__inner">
       <div class="footer-brand">
-        <img class="footer-brand__logo" src="images/logo-mark-white.png" width="60" height="40" alt="" aria-hidden="true">
+        <img class="footer-brand__logo" src="images/logo-mark-white.png" width="60" height="40" alt="" aria-hidden="true" loading="lazy">
         <p class="footer-brand__name">Devine Builders</p>
         <p class="footer-brand__text">Extensions, renovations, brickwork, groundworks, roofing, driveways, landscaping and property maintenance across Connah's Quay, Flintshire and North Wales. Run by Phil Devine.</p>
       </div>
@@ -501,8 +507,22 @@
       "name": "Gallery | Devine Builders",
       "description": "Illustrative examples of the kind of building work Devine Builders takes on in Connah's Quay, Flintshire and across North Wales.",
       "url": "https://muzzylord123.github.io/devine-builders/gallery.html",
-      "isPartOf": { "@id": "https://muzzylord123.github.io/devine-builders/#business" },
-      "about": { "@id": "https://muzzylord123.github.io/devine-builders/#business" }
+      "isPartOf": { "@id": "https://muzzylord123.github.io/devine-builders/#website" },
+      "about": {
+        "@id": "https://muzzylord123.github.io/devine-builders/#business",
+        "@type": "GeneralContractor",
+        "name": "Devine Builders",
+        "url": "https://muzzylord123.github.io/devine-builders/",
+        "telephone": "+447956547040"
+      }
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://muzzylord123.github.io/devine-builders/#website",
+      "name": "Devine Builders",
+      "url": "https://muzzylord123.github.io/devine-builders/",
+      "inLanguage": "en-GB",
+      "publisher": { "@id": "https://muzzylord123.github.io/devine-builders/#business" }
     }
   ]
 }

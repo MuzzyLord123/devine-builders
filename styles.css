@@ -263,10 +263,10 @@ ol[class] { list-style: none; padding: 0; }
   width: 100%;
   max-width: var(--container);
   margin-inline: auto;
-  padding-inline: var(--space-4);
+  padding-inline: max(var(--space-4), env(safe-area-inset-left, 0px)) max(var(--space-4), env(safe-area-inset-right, 0px));
 }
 @media (min-width: 40em) {
-  .container { padding-inline: var(--space-5); }
+  .container { padding-inline: max(var(--space-5), env(safe-area-inset-left, 0px)) max(var(--space-5), env(safe-area-inset-right, 0px)); }
 }
 
 .section { padding-block: var(--space-7); }
@@ -323,6 +323,8 @@ ol[class] { list-style: none; padding: 0; }
   line-height: var(--lh-base);
 }
 .section__head--center .section__lead { margin-inline: auto; max-width: 60ch; }
+/* Extra breathing room above a closing CTA lead (gallery) */
+.section__lead--push { margin-top: var(--space-7); }
 
 /* Visually hidden but available to assistive tech */
 .visually-hidden {
@@ -1594,11 +1596,13 @@ body {
 .hero--inner .btn--secondary {
   background: rgba(255, 255, 255, 0.06);
   color: #ffffff;
+  border-width: 2px;             /* match .btn--ghost-light (Trowel & Slate hairline shrinks it) */
   border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: none;              /* no inset hairline on the dark band */
 }
 .home .hero__actions .btn--secondary:hover,
 .hero--inner .btn--secondary:hover {
-  background: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.16);
   border-color: #ffffff;
   color: #ffffff;
 }
@@ -1884,6 +1888,8 @@ body {
 }
 @media (min-width: 64em) {
   .trust-strip { grid-template-columns: repeat(4, 1fr); }
+  /* Home "Our promise" strip has exactly three cards — fill the row evenly */
+  .trust-strip--three { grid-template-columns: repeat(3, 1fr); }
 }
 .trust-item {
   display: flex;
@@ -2122,6 +2128,8 @@ body {
   gap: var(--space-2);
   padding: var(--space-2) var(--space-3);
   padding-bottom: calc(var(--space-2) + env(safe-area-inset-bottom, 0px));
+  padding-left: calc(var(--space-3) + env(safe-area-inset-left, 0px));
+  padding-right: calc(var(--space-3) + env(safe-area-inset-right, 0px));
   background: var(--color-dark);   /* solid (no backdrop-filter) — this bar is fixed during scroll */
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 0 -4px 12px rgba(15, 23, 42, 0.25);
@@ -2414,7 +2422,7 @@ body.has-call-bar { /* only meaningful with the mobile media query below */ }
    capped by the global .prose max-width. */
 .service-detail__block.prose { max-width: none; }
 .service-detail__subtitle {
-  font-size: var(--fs-600);
+  font-size: var(--fs-fluid-600);
   color: var(--color-ink);
 }
 .service-detail__block p { color: var(--color-ink-soft); }
@@ -3180,6 +3188,9 @@ body.has-call-bar { /* only meaningful with the mobile media query below */ }
   border-radius: var(--radius);
 }
 .field-tip[hidden] { display: none; }
+/* The tip stays in the accessibility tree (live region) and is driven by
+   text content only — collapse it fully whenever it is empty */
+.field-tip:empty { display: none; }
 
 /* =====================================================================
    "TROWEL & SLATE" PREMIUM ELEVATION
@@ -3669,6 +3680,11 @@ body.db-chat-active #to-top { display: none !important; }
   /* Back-to-top stacks above the launcher on mobile too */
   #to-top { bottom: calc(8.75rem + env(safe-area-inset-bottom, 0px)); }
 
+  /* Landscape phones: three stacked FABs would cover half the short viewport —
+     drop the least essential one (scrolling back up is cheap at this height).
+     Call bar + chat launcher stay. */
+  @media (max-width: 47.99em) and (max-height: 30em) { #to-top { display: none; } }
+
   /* Panel becomes a near-full-height bottom sheet */
   .db-chat__panel {
     right: 0;
@@ -3676,12 +3692,17 @@ body.db-chat-active #to-top { display: none !important; }
     bottom: 0;
     width: 100%;
     height: min(86vh, 40rem);
+    height: min(86svh, 40rem);   /* small-viewport unit: header stays visible with the iOS toolbar expanded (vh line above is the fallback) */
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     border-bottom: 0;
     transform-origin: bottom center;
     transform: translateY(16px);
   }
   .db-chat.is-open .db-chat__panel { transform: none; }
+
+  /* Bottom sheet sits at bottom:0 (call bar hidden) — keep the send row
+     clear of the iOS home indicator */
+  .db-chat__composer { padding-bottom: calc(0.7rem + env(safe-area-inset-bottom, 0px)); }
 
   /* With the sheet open, hide the call-bar so it can't peek through */
   body.db-chat-active .call-bar { display: none !important; }
@@ -3979,6 +4000,8 @@ body.db-chat-active #to-top { display: none !important; }
   white-space: nowrap;
 }
 .primary-nav__phone svg { width: 1.05rem; height: 1.05rem; flex: none; }
+/* Icon inside a hero CTA button (quote hero call button) */
+.hero__actions .btn svg { width: 1.05rem; height: 1.05rem; flex: none; }
 .primary-nav__phone:hover { color: var(--color-accent-darker); }
 /* On tight desktop widths drop the phone from the row so the nav never
    wraps — the mobile menu (<48em) and wide desktops (>=64em) keep it. */
@@ -4140,11 +4163,11 @@ body.db-chat-active #to-top { display: none !important; }
 /* Satellite base layer (real Sentinel-2 imagery, same bbox as the
    projection) — shown untouched; labels get halos for legibility. */
 .amap__credit {
-  fill: rgba(203, 213, 225, 0.75);
-  font-size: 4.5px;
+  fill: rgba(226, 232, 240, 0.92);
+  font-size: 6px;
   letter-spacing: 0.02em;
   paint-order: stroke;
-  stroke: rgba(7, 11, 20, 0.7);
+  stroke: rgba(7, 11, 20, 0.85);
   stroke-width: 1.5px;
   stroke-linejoin: round;
 }
@@ -4221,6 +4244,16 @@ body.db-chat-active #to-top { display: none !important; }
 }
 .amap__label--region { fill: #93c5fd; font-style: italic; font-weight: 600; }
 
+/* Phones: the fixed SVG text sizes scale down by ~0.86 at 375px — bump them
+   so the 19 town names stay legible. Clearances checked against the tightest
+   label pairs; the paint-order halo isolates labels from the satellite base. */
+@media (max-width: 40em) {
+  .amap__label { font-size: 11.5px; }
+  .amap__label--home { font-size: 12.5px; }
+  .amap__sub { font-size: 8.5px; }
+  .amap__context text { font-size: 9.5px; }
+}
+
 /* ---- Service landing pages: breadcrumb on the dark hero band ---------
    Sits inside the .hero--inner scrim card; light-blue links match the
    established on-dark link pairing, incl. the dark-band focus ring. */
@@ -4238,6 +4271,9 @@ body.db-chat-active #to-top { display: none !important; }
 .breadcrumb a:hover { text-decoration: underline; }
 /* (focus ring: covered by the central dark-band outline list in §4) */
 .breadcrumb [aria-current] { color: var(--color-on-dark); }
+/* Bigger tap targets without moving anything: padding grows the hit box to
+   ~40px tall, the matching negative margin cancels the visual shift. */
+.breadcrumb a { display: inline-block; padding: 0.55rem 0.3rem; margin: -0.55rem -0.3rem; border-radius: var(--radius-sm); }
 
 /* ---- Home hero layout lives in ONE place --------------------------
    The full-viewport, single-column geometry (display:grid, min-height,

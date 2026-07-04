@@ -131,9 +131,8 @@
     var light = { x: 0, y: 0 }; // eased light position
     var drift = { t: Math.random() * 1000 };
 
-    /* Animation/scheduling state. */
+    /* Animation/scheduling state. rafId !== 0 ⇔ a frame is scheduled. */
     var rafId = 0;
-    var running = false;
     var buildStart = 0;
     var buildDur = reduce ? 0 : 1200; // ms, bottom-up reveal
 
@@ -330,9 +329,9 @@
 
     function frame(now) {
       rafId = 0;
-      if (document.hidden) { running = false; return; }
+      if (document.hidden) return;
       // Don't draw an off-screen hero; the IntersectionObserver resumes us.
-      if (!heroVisible) { running = false; return; }
+      if (!heroVisible) return;
 
       // Reveal progress 0..1 across the whole build (computed early so the
       // idle drift can run while the wall is still building in).
@@ -406,11 +405,9 @@
         Math.abs(light.x - tx) > 0.4 || Math.abs(light.y - ty) > 0.4;
       var alive = building || moving;
 
+      // Settled → simply stop scheduling. Pointer/visibility handlers resume us.
       if (alive) {
         schedule();
-      } else {
-        // Settle: stop scheduling. Pointer/visibility handlers resume us.
-        running = false;
       }
     }
 
@@ -432,7 +429,6 @@
 
     function schedule() {
       if (rafId || document.hidden) return;
-      running = true;
       rafId = window.requestAnimationFrame(frame);
     }
 
@@ -520,7 +516,6 @@
     function onVisibility() {
       if (document.hidden) {
         if (rafId) { window.cancelAnimationFrame(rafId); rafId = 0; }
-        running = false;
       } else if (!reduce) {
         // Resume; if the build was mid-flight, let it finish from now.
         schedule();
@@ -562,7 +557,7 @@
     // visitor is reading the white content), resume it the moment it returns.
     if ("IntersectionObserver" in window) {
       var io = new IntersectionObserver(function (entries) {
-        heroVisible = entries[0].isIntersecting;
+        heroVisible = entries[entries.length - 1].isIntersecting;
         if (heroVisible) schedule();
       }, { threshold: 0 });
       io.observe(hero);
@@ -966,8 +961,13 @@
         "M9 13h6",
         "M9 17h4"
       ]);
+      // Reuse the page's own nav-CTA href so the 404 page (which uses
+      // root-absolute links — GitHub Pages serves it for arbitrary nested
+      // paths) doesn't get a relative link that 404s again.
+      var navQuote = document.querySelector(".primary-nav__cta") || document.querySelector('.primary-nav a[href*="quote.html"]');
+      var quoteHref = navQuote ? navQuote.getAttribute("href") : "quote.html";
       bar.appendChild(
-        btn("quote", "quote.html", "Get a quote — free, no obligation", quoteSvg, "Get a quote")
+        btn("quote", quoteHref, "Get a quote — free, no obligation", quoteSvg, "Get a quote")
       );
     }
 
@@ -989,12 +989,12 @@
   }
 
   /* ---- (c) smooth scroll for in-page anchors ----------------------- *
-   * Optional; reduced-motion safe. The global CSS already sets
-   * scroll-behavior:smooth (and resets it under reduced motion), so
-   * this only adds focus management for keyboard users.               */
+   * The global CSS already sets scroll-behavior:smooth (and resets it
+   * to auto under reduced motion), so this handler is entirely
+   * motion-free: it never preventDefaults — native fragment navigation
+   * supplies the scroll — and only adds focus management for keyboard
+   * users, so it runs regardless of the reduced-motion preference.    */
   function initSmoothScroll() {
-    if (prefersReducedMotion()) return;
-
     document.addEventListener("click", function (e) {
       var a = e.target.closest ? e.target.closest('a[href^="#"]') : null;
       if (!a) return;
@@ -1066,6 +1066,8 @@
         // Drive the single CSS custom property the CSS reads for BOTH the
         // clip wrapper width/clip-path AND the divider position.
         root.style.setProperty("--ba-pos", v + "%");
+        // Give AT a meaningful value instead of a bare number.
+        range.setAttribute("aria-valuetext", Math.round(v) + "% of the finished result shown");
       }
 
       // 'input' fires continuously while dragging (pointer) and on every
@@ -1206,7 +1208,7 @@
     var io = new IntersectionObserver(function (entries) {
       // Sentinel OUT of view → scrolled down → compact state on.
       // Sentinel back IN view → at the top → compact state off.
-      header.classList.toggle("is-scrolled", !entries[0].isIntersecting);
+      header.classList.toggle("is-scrolled", !entries[entries.length - 1].isIntersecting);
     }, { threshold: 0 });
 
     io.observe(sentinel);
@@ -1325,7 +1327,7 @@
         if (match) shown++;
       }
       if (emptyEl) emptyEl.hidden = (shown !== 0);
-      if (countEl) countEl.textContent = q ? ("Showing " + shown + " of " + total) : "";
+      if (countEl) countEl.textContent = q ? ("Showing " + shown + " of " + total + " service categories" + (shown === 0 ? " — no matches" : "")) : "";
       if (clearBtn) clearBtn.hidden = !input.value;
     }
 
@@ -1362,9 +1364,9 @@
     };
 
     function update() {
-      var msg = tips[select.value];
-      if (msg) { tip.textContent = msg; tip.hidden = false; }
-      else { tip.hidden = true; tip.textContent = ""; }
+      /* The tip is a permanent polite live region — drive it by text content
+         only (CSS :empty collapses it visually when there is no message). */
+      tip.textContent = tips[select.value] || "";
     }
     select.addEventListener("change", update);
     update();   // in case the browser restored a previous selection
@@ -1539,6 +1541,9 @@
     if (!layers.length) return;
 
     function onMove(e) {
+      // Taps on fine-pointer touchscreen laptops also dispatch pointer
+      // events — don't let them pan the photo / flash the edge-trace.
+      if (e.pointerType === "touch") return;
       var r = hero.getBoundingClientRect();
       if (!r.width || !r.height) return;
       var nx = (e.clientX - r.left) / r.width - 0.5;
@@ -1550,11 +1555,13 @@
       start();
     }
 
-    function onEnter() {
+    function onEnter(e) {
+      if (e.pointerType === "touch") return;
       hero.classList.add("is-lit");             // CSS fades the edge-trace in
     }
 
-    function onLeave() {
+    function onLeave(e) {
+      if (e && e.pointerType === "touch") return;
       tx = 0; ty = 0; tgx = 60; tgy = 40;       // ease back to rest
       hero.classList.remove("is-lit");
       start();
@@ -1619,6 +1626,8 @@
         ? ""
         : " translateY(-4px)";
       card.addEventListener("pointermove", function (e) {
+        // Taps on fine-pointer touchscreens shouldn't twitch the tilt.
+        if (e.pointerType === "touch") return;
         var r = card.getBoundingClientRect();
         var px = (e.clientX - r.left) / (r.width || 1) - 0.5;
         var py = (e.clientY - r.top) / (r.height || 1) - 0.5;

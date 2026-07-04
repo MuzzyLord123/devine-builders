@@ -231,8 +231,11 @@
       lbImg.alt = slide.alt;
       lbImg.src = slide.full || PLACEHOLDER_SVG;
 
-      lbCaption.textContent = slide.caption || "";
-      lbCaption.hidden = slide.caption === "";
+      // The dialog is named via aria-labelledby="lightbox-caption", so the
+      // caption must never be emptied/hidden — fall back to the alt text.
+      var cap = slide.caption || slide.alt || "Gallery photo";
+      lbCaption.textContent = cap;
+      lbCaption.hidden = false;
 
       lbCounter.textContent = (index + 1) + " of " + slides.length;
     }

@@ -647,10 +647,16 @@
 
   function findArea(norm) {
     if (!norm) return null;
+    // Apostrophe-stripped copy so "connahs quay" still matches "Connah's
+    // Quay" (dropping an apostrophe never shortens a town name into a
+    // substring of another word, so the boundary guarantee holds).
+    var flat = norm.replace(/'/g, "");
     // Word-boundary match against the space-padded norm, so a short name like
     // "Mold" never matches inside "mouldy" (which would wrongly confirm cover).
     for (var i = 0; i < AREAS.length; i++) {
-      if (norm.indexOf(" " + AREAS[i].toLowerCase() + " ") !== -1) return AREAS[i];
+      var a = AREAS[i].toLowerCase();
+      if (norm.indexOf(" " + a + " ") !== -1) return AREAS[i];
+      if (a.indexOf("'") !== -1 && flat.indexOf(" " + a.replace(/'/g, "") + " ") !== -1) return AREAS[i];
     }
     return null;
   }
@@ -697,14 +703,17 @@
      Phil. Road numbers (A55, B5125, M56…) are explicitly not postcodes. */
 
   function findPostcode(text) {
-    var m = String(text || "").toUpperCase().match(/\b([A-Z]{1,2}[0-9][0-9A-Z]?)\s*([0-9][A-Z]{2})?\b/);
-    if (!m) return null;
-    var outward = m[1];
-    if (!m[2] && /^[ABM][0-9]+$/.test(outward)) return null; // a road, not a postcode
-    return {
-      code: outward + (m[2] ? " " + m[2] : ""),
-      covered: /^CH[4-8]$/.test(outward) || /^LL[0-9]{1,2}[A-Z]?$/.test(outward)
-    };
+    var up = String(text || "").toUpperCase();
+    var re = /\b([A-Z]{1,2}[0-9][0-9A-Z]?)\s*([0-9][A-Z]{2})?\b/g;
+    var m;
+    while ((m = re.exec(up))) {
+      if (!m[2] && /^[ABM][0-9]+$/.test(m[1])) continue; // a road (A55, M56…), not a postcode — keep looking
+      return {
+        code: m[1] + (m[2] ? " " + m[2] : ""),
+        covered: /^CH[4-8]$/.test(m[1]) || /^LL[0-9]{1,2}[A-Z]?$/.test(m[1])
+      };
+    }
+    return null;
   }
 
   function postcodeReply(pc) {
@@ -756,7 +765,7 @@
   function fallbackReply() {
     return {
       blocks: [
-        p("I'm a simple assistant, so I may have missed that — sorry! I can help with our services, the areas we cover, how free quotes work, or how to reach Phil."),
+        p("I'm a simple assistant, so I may have missed that — sorry! Short and plain works best with me — try something like 'garden wall cost', 'do you cover CH6?' or 'start a quote'."),
         p("For anything specific, the best thing is to call Phil on " + CONTACT.telDisplay + " or get a free quote."),
         actions([ACT.quote, ACT.call, ACT.services])
       ],
@@ -842,7 +851,7 @@
       if (!named) {
         // A capitalised place-ish word the user typed that we don't cover.
         // Skip common sentence words so "Can you cover…" isn't read as a place.
-        var STOP = " do does can could will would are is am the my we you i how what where when why who hi hey hello there your please cover area areas near ";
+        var STOP = " do does can could will would are is am the my we you i how what whats which whereabouts where when why who hi hey hiya hello there your please cover covers covered coverage area areas near just looking list towns anywhere everywhere ";
         var matches = String(text).match(/\b[A-Z][a-z]{2,}\b/g) || [];
         for (var k = 0; k < matches.length; k++) {
           var w = matches[k];
@@ -894,6 +903,8 @@
 
   function flowCancelReply() {
     state.flow = null;
+    lastPrefill = null;
+    try { window.sessionStorage.removeItem(PREFILL_KEY); } catch (e) { /* ignore */ }
     saveState();
     return {
       blocks: [
@@ -905,7 +916,11 @@
   }
 
   function beginQuoteFlow() {
-    state.flow = { id: "quote", step: "type", data: { service: "", serviceLabel: "", place: "", details: "" } };
+    state.flow = { id: "quote", step: "type", data: { service: "", serviceLabel: "", typeText: "", place: "", details: "" } };
+    // A fresh flow invalidates any earlier handoff payload — a stale one
+    // must never prefill an unrelated later visit to quote.html.
+    lastPrefill = null;
+    try { window.sessionStorage.removeItem(PREFILL_KEY); } catch (e) { /* ignore */ }
     saveState();
     say({
       blocks: [
@@ -936,6 +951,9 @@
         if (guess) {
           flow.data.service = guess.id;
           flow.data.serviceLabel = guess.name;
+          // Keep their own wording too — "loft conversion with a dormer"
+          // guesses Extensions, but that detail shouldn't be lost.
+          if (normalize(text) !== normalize(guess.name)) flow.data.typeText = String(text).trim().slice(0, 60);
           rememberService(guess.id);
           ack = "Got it — " + guess.name + ".";
         } else {
@@ -963,7 +981,7 @@
         var area = findArea(norm);
         var pc = findPostcode(text);
         if (area || (pc && pc.covered)) {
-          ack2 = "Great — that's right in the area we cover.";
+          ack2 = "Great — that's right in the area we cover. Phil will confirm when he's in touch.";
         } else {
           ack2 = "Noted — and if it turns out to be outside Phil's patch, he'll tell you straight away.";
         }
@@ -993,14 +1011,14 @@
     // visitor has left empty, and clears the key immediately.
     var pc = d.place ? findPostcode(d.place) : null;
     var parts = [];
+    if (d.service && d.typeText) parts.push("Job type (in their words): " + d.typeText + ".");
     if (!d.service && d.serviceLabel) parts.push("Job type: " + d.serviceLabel + ".");
     if (d.details) parts.push(d.details);
     if (d.place && !pc) parts.push("(Property in " + d.place + ".)");
+    var payload = { details: parts.join(" "), postcode: pc ? pc.code : "" };
+    lastPrefill = payload;
     try {
-      window.sessionStorage.setItem(PREFILL_KEY, JSON.stringify({
-        details: parts.join(" "),
-        postcode: pc ? pc.code : ""
-      }));
+      window.sessionStorage.setItem(PREFILL_KEY, JSON.stringify(payload));
     } catch (e) { /* private mode — the form still works, just unfilled */ }
     saveState();
 
@@ -1069,6 +1087,14 @@
     flow: null                 // active guided-quote-flow state, or null
   };
 
+  // Pending assistant-reply timer — cancelled by Restart so a stale reply
+  // can't surface after the transcript has been wiped.
+  var replyTimer = null;
+
+  // Last completed guided-flow handoff payload — re-stashed on bfcache
+  // restores (quote.js consumes the key destructively on load).
+  var lastPrefill = null;
+
   var els = {};   // DOM references
 
   var STORE_KEY = "db-chat-v1";
@@ -1101,6 +1127,7 @@
             data: {
               service: typeof f.data.service === "string" && serviceByIdStrict(f.data.service) ? f.data.service : "",
               serviceLabel: typeof f.data.serviceLabel === "string" ? f.data.serviceLabel.slice(0, 60) : "",
+              typeText: typeof f.data.typeText === "string" ? f.data.typeText.slice(0, 60) : "",
               place: typeof f.data.place === "string" ? f.data.place.slice(0, 80) : "",
               details: typeof f.data.details === "string" ? f.data.details.slice(0, 400) : ""
             }
@@ -1170,6 +1197,7 @@
     var wrap = el("div", "db-chat__chips");
     wrap.setAttribute("role", "group");
     wrap.setAttribute("aria-label", "Suggested questions");
+    wrap.setAttribute("aria-live", "off"); // don't pad the log's announcements with chip labels
     state.chips.forEach(function (chip) {
       if (chip.href) {
         var a = el("a", "db-chat__chip db-chat__chip--link");
@@ -1182,8 +1210,13 @@
         btn.type = "button";
         btn.addEventListener("click", function () {
           handleUserText(chip.send || chip.label);
-          // Keep keyboard users in flow — return focus to the composer.
-          try { els.input.focus({ preventScroll: true }); } catch (e) { /* ignore */ }
+          // Keep keyboard users in flow. The tapped chip is gone from the
+          // DOM now, so focus must land somewhere INSIDE the dialog: the
+          // composer on desktop; on the phone sheet the Close button (like
+          // openPanel), so the keyboard doesn't pop over the sheet.
+          try {
+            (isMobileSheet() ? els.close : els.input).focus({ preventScroll: true });
+          } catch (e) { /* ignore */ }
         });
         wrap.appendChild(btn);
       }
@@ -1252,18 +1285,22 @@
     if (els.chips) { els.chips.remove(); els.chips = null; }
 
     // An active guided flow consumes the message; otherwise the engine.
-    var reply = state.flow ? flowRespond(text) : respondTo(text);
+    // Computed at DELIVERY time (not now) so a Restart during the typing
+    // delay can't resurface a stale reply, and flowRespond doesn't mutate
+    // flow state before its question is actually rendered.
     var delay = prefersReducedMotion() ? 0 : 360 + Math.min(text.length * 6, 320);
+    function produce() { return state.flow ? flowRespond(text) : respondTo(text); }
 
     if (delay === 0) {
-      deliver(reply);
+      deliver(produce());
     } else {
       state.busy = true;
       showTyping();
-      window.setTimeout(function () {
+      replyTimer = window.setTimeout(function () {
+        replyTimer = null;
         hideTyping();
         state.busy = false;
-        deliver(reply);
+        deliver(produce());
       }, delay);
     }
   }
@@ -1282,6 +1319,8 @@
 
   function onSubmit(e) {
     e.preventDefault();
+    if (state.busy) return; // keep the draft — it would be silently dropped
+    if (!els.input.value.trim()) return;
     var val = els.input.value;
     els.input.value = "";
     handleUserText(val);
@@ -1332,7 +1371,13 @@
     // Skipped when silently restoring an already-open panel on page load.
     if (!silent) {
       window.setTimeout(function () {
-        try { els.input.focus({ preventScroll: true }); } catch (e) { els.input.focus(); }
+        if (!isMobileSheet()) {
+          try { els.input.focus({ preventScroll: true }); } catch (e) { els.input.focus(); }
+        } else {
+          // Don't pop the phone keyboard over the bottom sheet — the header
+          // Close button keeps focus inside the panel for Esc / the tab trap.
+          try { els.close.focus({ preventScroll: true }); } catch (e) { /* ignore */ }
+        }
       }, prefersReducedMotion() ? 0 : 120);
     }
     saveState();
@@ -1373,12 +1418,15 @@
     state.chips = [];
     state.flow = null;
     state.context = { service: "" };
+    if (replyTimer) { window.clearTimeout(replyTimer); replyTimer = null; }
     hideTyping();
     state.busy = false;
     saveState();
     renderAll();
+    // Announce the reset via the polite log (the next renderAll sweeps it).
+    els.log.appendChild(el("div", "db-chat__sr", "Conversation restarted."));
     greet();
-    try { els.input.focus({ preventScroll: true }); } catch (e) { /* ignore */ }
+    if (!isMobileSheet()) { try { els.input.focus({ preventScroll: true }); } catch (e) { /* ignore */ } }
   }
 
   function swapLauncherIcon(isOpen) {
@@ -1434,7 +1482,11 @@
     var rIcon = svgIcon(ICONS.restart);
     rIcon.setAttribute("class", "db-chat__close-icon");
     restartBtn.appendChild(rIcon);
-    restartBtn.addEventListener("click", resetConversation);
+    restartBtn.addEventListener("click", function () {
+      // Skip the prompt when only the greeting exists — nothing to lose.
+      if (state.messages.length > 1 && !window.confirm("Restart the conversation? This clears the chat.")) return;
+      resetConversation();
+    });
     var closeBtn = el("button", "db-chat__close");
     closeBtn.type = "button";
     closeBtn.setAttribute("aria-label", "Close chat");
@@ -1488,20 +1540,23 @@
 
     els = {
       root: root, launcher: launcher, launcherIcon: lIcon,
-      panel: panel, log: log, form: form, input: input, chips: null, typing: null
+      panel: panel, log: log, form: form, input: input, close: closeBtn, chips: null, typing: null
     };
 
     // Esc closes the panel; Tab is trapped while the mobile sheet is open.
-    root.addEventListener("keydown", function (e) {
-      if (!state.open) return;
+    // Document-level so it still fires when focus has strayed OUTSIDE the
+    // aria-modal mobile sheet (trapTab's recovery branch pulls it back in).
+    // The 'inside || isMobileSheet()' guard means the non-modal desktop
+    // panel never steals Escape from the page, and the nav-open guard skips
+    // it while the widget is display:none under the open mobile nav.
+    document.addEventListener("keydown", function (e) {
+      if (!state.open || root.classList.contains("db-chat--nav-open")) return;
+      var inside = root.contains(document.activeElement);
       if (e.key === "Escape" || e.keyCode === 27) {
-        e.stopPropagation();
-        closePanel();
+        if (inside || isMobileSheet()) { e.stopPropagation(); closePanel(); }
         return;
       }
-      if ((e.key === "Tab" || e.keyCode === 9) && isMobileSheet()) {
-        trapTab(e);
-      }
+      if ((e.key === "Tab" || e.keyCode === 9) && isMobileSheet()) trapTab(e);
     });
 
     // Restore any prior conversation for this browser session.
@@ -1526,6 +1581,20 @@
       });
       lbo.observe(lightbox, { attributes: true, attributeFilter: ["hidden"] });
     }
+
+    // quote.js consumes the prefill key destructively on load, so after
+    // browser-back the transcript's "tap continue and the form will be
+    // pre-filled" promise would be false. bfcache restores keep JS memory
+    // alive — re-stash so a second "Continue" tap still works.
+    window.addEventListener("pageshow", function (e) {
+      if (e.persisted && lastPrefill) {
+        try { window.sessionStorage.setItem(PREFILL_KEY, JSON.stringify(lastPrefill)); } catch (err) { /* ignore */ }
+        // One re-stash only: without this, the payload lives for the page's
+        // whole lifetime and could silently prefill a later, unrelated
+        // quote-form visit with stale chat data.
+        lastPrefill = null;
+      }
+    });
 
     // Re-open automatically if it was open before navigating (same session),
     // but silently — don't grab focus / scroll on a fresh page load.
