@@ -75,6 +75,7 @@
     initCardTilt();
     initJumpSpy();
     initHeroBg();
+    initPromiseCarousel();
   });
 
   /* =================================================================
@@ -1683,5 +1684,191 @@
       { rootMargin: "-30% 0px -55% 0px" }
     );
     sections.forEach(function (s) { io.observe(s); });
+  }
+
+  /* =================================================================
+     FEATURE 15 — Promise carousel (home "Our promise")
+
+     Turns the three static "Our promise" cards into an auto-rotating
+     carousel: one card at a time, swapping every 8s, with a countdown
+     progress line that fills up to each swap. Progressive enhancement —
+     with no JS the cards stay a normal grid (see styles.css). The swap
+     is driven by the progress bar's own CSS animation loop, so the line
+     and the rotation can never drift apart and both freeze together when
+     paused. Pauses on hover, keyboard focus and hidden tab, and carries a
+     play/pause toggle + dot controls so the motion is always stoppable
+     (WCAG 2.2.2) and every card is reachable. All three cards stay in the
+     DOM and in reading order, so assistive tech still gets the full set.
+
+     Skipped entirely under prefers-reduced-motion (the honest static grid
+     remains). No-op on pages without the promise strip. Idempotent.
+     ================================================================= */
+  function initPromiseCarousel() {
+    var strip = document.querySelector(".trust-strip--three");
+    if (!strip) return;                                   // only the home promise section
+    if (strip.getAttribute("data-carousel-ready")) return; // idempotent
+    var slides = Array.prototype.slice.call(strip.children);
+    if (slides.length < 2) return;
+    // Honour reduced motion: leave the static grid (every card visible), no auto-motion.
+    if (prefersReducedMotion()) return;
+
+    strip.setAttribute("data-carousel-ready", "true");
+
+    var SVG_NS = "http://www.w3.org/2000/svg";
+    function svg(paths) {
+      var s = document.createElementNS(SVG_NS, "svg");
+      s.setAttribute("viewBox", "0 0 24 24");
+      s.setAttribute("fill", "currentColor");
+      s.setAttribute("aria-hidden", "true");
+      for (var i = 0; i < paths.length; i++) {
+        var p = document.createElementNS(SVG_NS, "path");
+        p.setAttribute("d", paths[i]);
+        s.appendChild(p);
+      }
+      return s;
+    }
+    var ICON_PAUSE = ["M6 5h3.5v14H6z", "M14.5 5H18v14h-3.5z"];
+    var ICON_PLAY = ["M8 5v14l11-7z"];
+
+    /* ---- build the scaffold around the existing <ul> ---- */
+    var carousel = document.createElement("div");
+    carousel.className = "promise-carousel";
+    carousel.setAttribute("role", "group");
+    carousel.setAttribute("aria-roledescription", "carousel");
+    carousel.setAttribute("aria-label", "What you can expect from Phil");
+
+    var viewport = document.createElement("div");
+    viewport.className = "promise-carousel__viewport";
+
+    var parent = strip.parentNode;
+    parent.insertBefore(carousel, strip);
+    carousel.appendChild(viewport);
+    viewport.appendChild(strip);            // move the <ul> into the viewport
+    strip.classList.add("is-carousel");
+
+    slides.forEach(function (li, i) {
+      li.setAttribute("role", "group");
+      li.setAttribute("aria-roledescription", "slide");
+      li.setAttribute("aria-label", (i + 1) + " of " + slides.length);
+    });
+
+    // progress line (decorative; the dots/toggle carry the semantics)
+    var progress = document.createElement("div");
+    progress.className = "promise-carousel__progress";
+    progress.setAttribute("aria-hidden", "true");
+    var bar = document.createElement("span");
+    bar.className = "promise-carousel__bar";
+    progress.appendChild(bar);
+    carousel.appendChild(progress);
+
+    // controls: dots + play/pause
+    var controls = document.createElement("div");
+    controls.className = "promise-carousel__controls";
+    var dotWrap = document.createElement("div");
+    dotWrap.className = "promise-carousel__dots";
+    dotWrap.setAttribute("role", "group");
+    dotWrap.setAttribute("aria-label", "Choose a card");
+    var dots = slides.map(function (li, i) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "promise-carousel__dot";
+      b.setAttribute("aria-label", "Show card " + (i + 1) + " of " + slides.length);
+      b.addEventListener("click", function () { goTo(i, true); });
+      dotWrap.appendChild(b);
+      return b;
+    });
+    var playBtn = document.createElement("button");
+    playBtn.type = "button";
+    playBtn.className = "promise-carousel__play";
+    playBtn.appendChild(svg(ICON_PAUSE));
+    playBtn.addEventListener("click", toggleManualPause);
+    controls.appendChild(dotWrap);
+    controls.appendChild(playBtn);
+    carousel.appendChild(controls);
+
+    // polite live region — announces the active card on MANUAL nav only
+    // (staying silent during auto-rotation so it never chatters).
+    var live = document.createElement("div");
+    live.className = "promise-carousel__sr";
+    live.setAttribute("aria-live", "polite");
+    carousel.appendChild(live);
+
+    /* ---- state ---- */
+    var index = 0;
+    var pause = { hover: false, focus: false, hidden: false, manual: false };
+
+    function isPaused() {
+      return pause.hover || pause.focus || pause.hidden || pause.manual;
+    }
+    function syncPaused() {
+      carousel.classList.toggle("is-paused", isPaused());
+    }
+    function setPause(reason, on) {
+      pause[reason] = !!on;
+      syncPaused();
+    }
+
+    function render() {
+      strip.style.setProperty("--active", index);
+      dots.forEach(function (b, i) {
+        var cur = i === index;
+        b.classList.toggle("is-current", cur);
+        if (cur) b.setAttribute("aria-current", "true");
+        else b.removeAttribute("aria-current");
+      });
+    }
+
+    // Restart the CSS fill animation from 0 (used on manual navigation, so
+    // the just-picked card gets a fresh full interval before it swaps).
+    function restartProgress() {
+      bar.style.animation = "none";
+      void bar.offsetWidth; // force reflow so the reset registers
+      bar.style.animation = "";
+    }
+
+    function announce() {
+      var title = slides[index].querySelector(".trust-item__title");
+      live.textContent = "Card " + (index + 1) + " of " + slides.length +
+        (title ? ": " + title.textContent : "");
+    }
+
+    function goTo(i, manual) {
+      index = (i % slides.length + slides.length) % slides.length;
+      render();
+      if (manual) { restartProgress(); announce(); }
+    }
+
+    // Auto-advance is triggered by the progress bar completing a loop, so the
+    // visible countdown and the slide change are always in lockstep — and a
+    // paused animation simply never fires the event.
+    bar.addEventListener("animationiteration", function () {
+      if (!isPaused()) goTo(index + 1, false);
+    });
+
+    function updatePlayBtn() {
+      var paused = pause.manual;
+      playBtn.replaceChild(svg(paused ? ICON_PLAY : ICON_PAUSE), playBtn.firstChild);
+      playBtn.setAttribute("aria-label", paused ? "Play the rotating cards" : "Pause the rotating cards");
+      playBtn.setAttribute("aria-pressed", paused ? "true" : "false");
+    }
+    function toggleManualPause() {
+      setPause("manual", !pause.manual);
+      updatePlayBtn();
+      if (!pause.manual) restartProgress(); // resume with a fresh full interval
+    }
+
+    // Pause while a reader hovers, tabs in, or leaves the tab — don't yank a
+    // card out from under someone (and it keeps the countdown honest).
+    carousel.addEventListener("mouseenter", function () { setPause("hover", true); });
+    carousel.addEventListener("mouseleave", function () { setPause("hover", false); });
+    carousel.addEventListener("focusin", function () { setPause("focus", true); });
+    carousel.addEventListener("focusout", function () { setPause("focus", false); });
+    document.addEventListener("visibilitychange", function () {
+      setPause("hidden", document.hidden);
+    });
+
+    render();
+    updatePlayBtn();
+    // The bar's CSS animation is already running from render — first swap in 8s.
   }
 })();

@@ -1935,6 +1935,121 @@ body {
 .trust-item__text { color: var(--color-ink-soft); font-size: var(--fs-400); }
 
 /* ---------------------------------------------------------------------
+   PROMISE CAROUSEL (home "Our promise") — progressive enhancement.
+   With NO JavaScript the three cards render as the normal grid above.
+   site.js initPromiseCarousel() adds `.is-carousel` + controls to turn
+   them into an auto-rotating carousel: one card at a time, swapping every
+   8s, with a countdown progress line that fills to the next swap. Auto-
+   rotation is skipped entirely under prefers-reduced-motion (the static
+   grid stays); it pauses on hover / keyboard focus / hidden tab and has a
+   play-pause toggle plus dot controls (so the motion is always stoppable
+   — WCAG 2.2.2 — and every card is reachable). The card content is never
+   hidden from assistive tech: all three stay in the DOM and in reading
+   order, so a screen-reader user gets the whole section regardless. */
+.promise-carousel { max-width: 44rem; margin-inline: auto; }
+.promise-carousel__viewport {
+  overflow: hidden;
+  /* let the card hover-lift shadow breathe without being clipped */
+  padding: var(--space-2) var(--space-1);
+  margin: calc(var(--space-2) * -1) calc(var(--space-1) * -1);
+}
+/* The grid becomes a single-file horizontal track; each card fills 100%. */
+.trust-strip.is-carousel {
+  display: flex;
+  grid-template-columns: none;
+  gap: 0;
+  transform: translateX(calc(var(--active, 0) * -100%));
+  transition: transform 520ms var(--ease);
+}
+.trust-strip.is-carousel > .trust-item {
+  flex: 0 0 100%;
+  /* Opt out of the home "db-rise-in" scroll animation: the clipped viewport
+     becomes these cards' view() scroll container and would freeze it. The
+     carousel is their motion now. (The reveal fade is transition-based and
+     unaffected, so cards still fade in on first scroll.) */
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .trust-strip.is-carousel { transition: none; }
+}
+
+/* Countdown progress line — a CSS animation drives the fill so it pauses
+   in perfect sync with the rotation (both freeze via animation-play-state,
+   and the JS advance is triggered by this bar's animation loop). */
+.promise-carousel__progress {
+  margin-top: var(--space-4);
+  height: 4px;
+  border-radius: 999px;
+  background: var(--color-border);
+  overflow: hidden;
+}
+.promise-carousel__bar {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-accent);
+  animation: promise-fill 8s linear infinite;
+}
+.promise-carousel.is-paused .promise-carousel__bar { animation-play-state: paused; }
+@keyframes promise-fill { from { width: 0; } to { width: 100%; } }
+
+.promise-carousel__controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+}
+.promise-carousel__dots { display: inline-flex; align-items: center; gap: 0.6rem; }
+.promise-carousel__dot {
+  position: relative;
+  width: 0.7rem;
+  height: 0.7rem;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--color-border);
+  cursor: pointer;
+  transition: background var(--transition), transform var(--transition);
+}
+/* Keep the visible dot small but the tap/click target ≥ 24px (WCAG 2.5.8). */
+.promise-carousel__dot::before { content: ""; position: absolute; inset: -0.55rem; }
+.promise-carousel__dot:hover { background: var(--color-accent-dark); }
+.promise-carousel__dot.is-current { background: var(--color-accent); transform: scale(1.3); }
+.promise-carousel__dot:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
+.promise-carousel__play {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-bg);
+  color: var(--color-accent-dark);
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
+}
+.promise-carousel__play:hover { background: var(--color-accent-soft); border-color: #bfdbfe; }
+.promise-carousel__play:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+.promise-carousel__play svg { width: 1.05rem; height: 1.05rem; display: block; }
+/* Screen-reader announcement of the active card on manual navigation. */
+.promise-carousel__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------------------------------------------------------------------
    17.2 Process steps (How we work)
    --------------------------------------------------------------------- */
 .process-steps {
