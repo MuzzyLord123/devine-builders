@@ -11,11 +11,13 @@
 
   # Content-Security-Policy — uncomment AFTER testing on your live domain.
   # Tuned to what this site actually uses: same-origin scripts (site.js / gallery.js /
-  # quote.js), inline styles (the site injects a couple of styles and uses <style> in
-  # <noscript>), data: images (the gallery's inline-SVG broken-image placeholder), and
-  # mailto: form submission. If you turn on a cookie-free analytics provider, add its
+  # quote.js / chatbot.js), inline styles (the site injects a couple of styles and uses
+  # <style> in <noscript>), data: images (the gallery's inline-SVG broken-image
+  # placeholder), and the quote form's FormSubmit posting — form-action and connect-src
+  # must allow https://formsubmit.co or every submission silently degrades to the
+  # mailto: fallback. If you turn on a cookie-free analytics provider, add its
   # domain to script-src and connect-src.
-  # Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; base-uri 'self'; form-action 'self' mailto:; frame-ancestors 'self'; object-src 'none'
+  # Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' https://formsubmit.co; base-uri 'self'; form-action 'self' mailto: https://formsubmit.co; frame-ancestors 'self'; object-src 'none'
 
 # --- Caching (read by Netlify / Cloudflare Pages; GitHub Pages ignores this) ---
 # HTML is always revalidated so deploys/content edits show up immediately.

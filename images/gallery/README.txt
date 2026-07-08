@@ -6,7 +6,7 @@ This folder holds the photos shown on gallery.html.
 ADDING YOUR OWN PHOTOS
 ----------------------
 1. Drop your image files into THIS folder
-   (C:\Users\Fortn\Downloads\devinebuilders\images\gallery\).
+   (the images/gallery/ folder inside the site folder).
    Supported formats: JPG / JPEG, PNG, or WebP.
 
 2. gallery.html loads these exact filenames from this folder:

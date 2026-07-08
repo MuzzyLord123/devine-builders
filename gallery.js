@@ -380,8 +380,12 @@
   }
 
   function lockScroll(on) {
-    document.documentElement.classList.toggle("no-scroll", !!on);
-    document.body.classList.toggle("no-scroll", !!on);
+    // Explicit add/remove, not toggle(name, force): old browsers at this
+    // file's ES5 floor ignore toggle's second argument, and a repeated call
+    // with the same value would silently invert the lock.
+    var method = on ? "add" : "remove";
+    document.documentElement.classList[method]("no-scroll");
+    document.body.classList[method]("no-scroll");
   }
 
   function prefersReducedMotion() {

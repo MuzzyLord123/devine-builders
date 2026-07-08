@@ -355,7 +355,10 @@
 
   function setError(r, msg) {
     r.control.setAttribute("aria-invalid", "true");
-    var field = r.control.closest(".field");
+    // Guarded closest(): browsers old enough to lack it are the same ones the
+    // !window.fetch mailto path serves — an unguarded call here would throw
+    // after preventDefault and stop EVERY submit path from running.
+    var field = r.control.closest ? r.control.closest(".field") : null;
     if (field) field.classList.add("has-error");
     if (r.error) {
       r.error.textContent = msg;
@@ -365,7 +368,7 @@
 
   function clearError(r) {
     r.control.setAttribute("aria-invalid", "false");
-    var field = r.control.closest(".field");
+    var field = r.control.closest ? r.control.closest(".field") : null;
     if (field) field.classList.remove("has-error");
     if (r.error) {
       r.error.textContent = "";

@@ -1156,11 +1156,36 @@
     return node;
   }
 
+  // ES5-safe element removal (Element.remove() is missing in the same old
+  // browsers this file's var/function convention otherwise supports).
+  function detach(node) {
+    if (node && node.parentNode) node.parentNode.removeChild(node);
+  }
+
+  // Internal hrefs in the KB are relative ("quote.html"). On 404.html —
+  // which GitHub Pages serves for ARBITRARY nested URLs and which therefore
+  // uses root-absolute links — a relative link would 404 again, so resolve
+  // against the header nav's own quote CTA at render time (same trick as
+  // site.js initCallBar). Render-time resolution also fixes transcripts
+  // restored from sessionStorage onto the 404 page.
+  var HREF_BASE = null;
+  function resolveHref(href) {
+    if (/^(https?:|mailto:|tel:|\/|#)/.test(href)) return href;
+    if (HREF_BASE === null) {
+      var cta = document.querySelector(".primary-nav__cta");
+      var navHref = cta ? cta.getAttribute("href") || "" : "";
+      HREF_BASE = /quote\.html$/.test(navHref)
+        ? navHref.slice(0, navHref.length - "quote.html".length)
+        : "";
+    }
+    return HREF_BASE + href;
+  }
+
   function buildActions(items) {
     var wrap = el("div", "db-chat__actions");
     items.forEach(function (item) {
       var a = el("a", "db-chat__action" + (item.primary ? " db-chat__action--primary" : ""));
-      a.setAttribute("href", item.href);
+      a.setAttribute("href", resolveHref(item.href));
       a.textContent = item.label;
       if (item.external) {
         a.setAttribute("target", "_blank");
@@ -1192,7 +1217,7 @@
   }
 
   function renderChips() {
-    if (els.chips) els.chips.remove();
+    if (els.chips) detach(els.chips);
     if (!state.chips || !state.chips.length) { els.chips = null; return; }
     var wrap = el("div", "db-chat__chips");
     wrap.setAttribute("role", "group");
@@ -1201,7 +1226,7 @@
     state.chips.forEach(function (chip) {
       if (chip.href) {
         var a = el("a", "db-chat__chip db-chat__chip--link");
-        a.setAttribute("href", chip.href);
+        a.setAttribute("href", resolveHref(chip.href));
         a.textContent = chip.label;
         if (chip.external) { a.setAttribute("target", "_blank"); a.setAttribute("rel", "noopener"); }
         wrap.appendChild(a);
@@ -1245,7 +1270,7 @@
     if (state.messages.length > 60) state.messages = state.messages.slice(-60);
     if (!opts.skipRender) {
       // keep chips below the newest message
-      if (els.chips) { els.chips.remove(); els.chips = null; }
+      if (els.chips) { detach(els.chips); els.chips = null; }
       els.log.appendChild(renderMessage(msg));
       if (state.chips && state.chips.length) renderChips();
       scrollToBottom();
@@ -1272,7 +1297,7 @@
   }
 
   function hideTyping() {
-    if (els.typing) { els.typing.remove(); els.typing = null; }
+    if (els.typing) { detach(els.typing); els.typing = null; }
   }
 
   // Core conversation step: echo the user, "think", then reply.
@@ -1282,7 +1307,7 @@
 
     addMessage({ from: "user", blocks: text });
     state.chips = [];
-    if (els.chips) { els.chips.remove(); els.chips = null; }
+    if (els.chips) { detach(els.chips); els.chips = null; }
 
     // An active guided flow consumes the message; otherwise the engine.
     // Computed at DELIVERY time (not now) so a Restart during the typing
@@ -1566,7 +1591,10 @@
     var nav = document.querySelector(".primary-nav");
     if (nav && "MutationObserver" in window) {
       var mo = new MutationObserver(function () {
-        root.classList.toggle("db-chat--nav-open", nav.classList.contains("is-open"));
+        // Explicit add/remove, not toggle(name, force): old browsers at this
+        // file's ES5 floor ignore toggle's second argument.
+        if (nav.classList.contains("is-open")) root.classList.add("db-chat--nav-open");
+        else root.classList.remove("db-chat--nav-open");
       });
       mo.observe(nav, { attributes: true, attributeFilter: ["class"] });
     }

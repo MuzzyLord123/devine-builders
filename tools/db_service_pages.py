@@ -22,7 +22,8 @@ Also: retargets the 8 homepage service-card links to the new pages, adds a
 """
 import os, re
 
-ROOT = r"C:\Users\Fortn\Downloads\devinebuilders"
+# Site root = the parent of this tools/ folder (portable across machines).
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BASE = "https://muzzylord123.github.io/devine-builders"
 TODAY = "2026-07-02"
 
