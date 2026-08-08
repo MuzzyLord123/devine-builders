@@ -41,6 +41,7 @@ Tip: if a page ever looks unstyled after an edit, hard-refresh once with **Ctrl 
 | `.nojekyll` | Tells GitHub Pages to serve files as-is (skip Jekyll processing) — keep it |
 | `*-connahs-quay.html` (×8) | Per-service landing pages — **hand-maintained**: edit the HTML directly |
 | `chatbot.js` | Free on-site chat assistant (knowledge-based, no APIs) |
+| `admin/` | Private enquiry tracker at `/admin/` — owner-only, not linked from the site (see below) |
 | `tools/db_service_pages.py` | One-shot scaffold that originally generated the 8 landing pages — **do not re-run** (it would revert hand-applied copy fixes; it exits immediately by design) |
 
 ---
@@ -93,6 +94,43 @@ No server, database or build step required anywhere.
 
 ---
 
+## The enquiry tracker (`/admin/`)
+
+A private page for whoever runs the business: **https://muzzylord123.github.io/devine-builders/admin/**
+It is not linked from anywhere on the site, sends `noindex, nofollow`, and is
+disallowed in `robots.txt`.
+
+**Access key:** `ridge-deeside-1101` — change it from the panel
+(*Your data → Change the access key*), or permanently for every device by
+replacing `DEFAULT_KEY_HASH` in `admin/admin.js` (that file explains how to
+generate the new hash).
+
+**Read this before relying on it:**
+
+- **It does not receive quotes automatically.** The site is static, with no
+  server or database — quote submissions go straight from the visitor to
+  FormSubmit and into the business inbox, and the website never sees them.
+  The tracker works by *paste*: open an enquiry email, copy it, paste it in,
+  and the panel pulls out the name, email, phone, postcode, service and
+  details for you to check and save. You can also type in phone enquiries.
+- **The data lives in one browser, on one device.** Nothing is uploaded and
+  there is no account, so the panel is empty on any other phone or laptop —
+  and clearing your browsing data wipes it. **Use *Back up (JSON)* regularly**
+  and keep the file somewhere safe; *Restore from backup* reads it back.
+- **The key is a privacy curtain, not a lock.** It is checked in the browser,
+  so someone technical could bypass it. It stops a passer-by with your
+  unlocked phone from reading customers' details — it is not a substitute for
+  your device passcode. Genuine server-side logins would need a backend, which
+  this site deliberately doesn't have.
+
+**What it does:** tracks each enquiry through *new → quoted → won/lost* with a
+quoted value, follow-up date and notes; flags follow-ups that are due; shows
+totals, monthly count, jobs won, won value and win rate; searches and filters;
+one-tap call / reply-by-email; exports CSV for a spreadsheet; auto-locks after
+30 minutes idle.
+
+---
+
 ## Handing the site over — ownership transfer checklist
 
 Everything the next owner/maintainer needs, in order:
@@ -107,6 +145,11 @@ Everything the next owner/maintainer needs, in order:
 2. **Quote-form delivery** — submissions currently arrive at
    `phildevine24@icloud.com` via FormSubmit (no account or key to hand over;
    the address in the code IS the wiring). New inbox? See checklist item 4.
+   The `/admin/` tracker holds nothing centrally, so there is no database to
+   migrate — but the outgoing owner should either **export a JSON backup for
+   the new owner, or delete their tracker data** (*Your data → Delete
+   everything*), since it contains customers' personal details. Change the
+   access key after handover.
 3. **Editing** — there is no build step: edit the HTML/CSS/JS directly and push
    to `main`. The 8 `*-connahs-quay.html` landing pages are hand-maintained
    (don't run `tools/db_service_pages.py`; it's disabled for a reason). When a

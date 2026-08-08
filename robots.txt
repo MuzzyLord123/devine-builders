@@ -2,5 +2,8 @@
 # OWNER: update the Sitemap URL below to your real domain.
 User-agent: *
 Allow: /
+# Owner-only enquiry tracker — not part of the public site.
+# (The page also sends "noindex, nofollow" and is linked from nowhere.)
+Disallow: /admin/
 
 Sitemap: https://muzzylord123.github.io/devine-builders/sitemap.xml

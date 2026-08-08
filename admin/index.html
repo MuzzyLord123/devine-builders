@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<!-- =====================================================================
+     DEVINE BUILDERS — ENQUIRY TRACKER  (owner tool, served at /admin/)
+
+     WHAT THIS IS
+     A private back-office page for the business owner. The public site is
+     static (no server, no database), so this page does NOT and CANNOT read
+     quote submissions automatically — those go straight from the visitor's
+     browser to FormSubmit and land in the business inbox.
+
+     Instead: paste an enquiry email in and this page parses it, files it,
+     and tracks it (new -> quoted -> won/lost) with notes, follow-up dates
+     and simple pipeline figures.
+
+     WHERE THE DATA LIVES  (important)
+     In THIS BROWSER only, in localStorage. Nothing is uploaded anywhere,
+     there is no account, and no other device can see it. That also means:
+       * clearing site data / "clear cookies" wipes it -> use Back up (JSON),
+       * a new phone or laptop starts empty -> restore from a backup file.
+
+     ABOUT THE ACCESS KEY  (read this before trusting it)
+     The key is checked in JavaScript, in the visitor's own browser, so it
+     is NOT real security: anyone determined can bypass it with dev tools.
+     What it genuinely does is stop someone who picks up an unlocked phone
+     from reading customers' names, numbers and addresses. It is a privacy
+     curtain for THIS device, not a lock on a shared database — and since
+     the data is per-device, a stranger who guesses this URL just gets an
+     empty panel anyway. Real logins need a server; see the README.
+
+     Only the SHA-256 HASH of the key is stored here, never the key itself.
+     ===================================================================== -->
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Enquiry tracker | Devine Builders</title>
+  <!-- Never index or follow: this is an owner-only tool. robots.txt also
+       disallows /admin/, and the page is linked from nowhere on the site. -->
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="referrer" content="same-origin">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="icon" href="../favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png">
+  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png">
+  <!-- The main stylesheet supplies the design tokens, button and form
+       styles; admin.css adds only what this page needs on top. -->
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body class="admin">
+
+  <!-- ---------- Lock screen (shown until the key is accepted) ---------- -->
+  <div class="admin-lock" id="admin-lock">
+    <main class="admin-lock__card">
+      <img class="admin-lock__logo" src="../images/logo-mark.png" width="60" height="40" alt="Devine Builders">
+      <h1 class="admin-lock__title">Enquiry tracker</h1>
+      <p class="admin-lock__text">Enter your access key to view enquiries stored on this device.</p>
+      <form class="admin-lock__form" id="unlock-form" autocomplete="off">
+        <label class="admin-lock__label" for="admin-key">Access key</label>
+        <input class="admin-lock__input" id="admin-key" name="admin-key" type="password"
+               inputmode="text" autocapitalize="none" autocorrect="off" spellcheck="false"
+               autocomplete="current-password" required>
+        <p class="admin-lock__error" id="unlock-error" role="alert"></p>
+        <button class="btn btn--primary btn--lg admin-lock__btn" type="submit" id="unlock-btn">Unlock</button>
+      </form>
+      <p class="admin-lock__note">
+        This key keeps casual eyes off customer details on this device. It is
+        checked in the browser, so it is not a substitute for your device's own
+        passcode. Enquiries are stored only in this browser.
+      </p>
+      <p class="admin-lock__back"><a href="../index.html">← Back to the website</a></p>
+    </main>
+  </div>
+
+  <!-- ---------- The panel itself (hidden until unlocked) ---------- -->
+  <div class="admin-app" id="admin-app" hidden>
+
+    <header class="admin-bar">
+      <div class="admin-bar__brand">
+        <img src="../images/logo-mark.png" width="60" height="40" alt="" aria-hidden="true">
+        <div>
+          <p class="admin-bar__title">Enquiry tracker</p>
+          <p class="admin-bar__sub">Devine Builders · this device only</p>
+        </div>
+      </div>
+      <div class="admin-bar__actions">
+        <a class="admin-btn" href="../index.html">View site</a>
+        <button class="admin-btn" type="button" id="lock-btn">Lock</button>
+      </div>
+    </header>
+
+    <main class="admin-main" id="admin-main">
+
+      <!-- ----- Summary figures ----- -->
+      <h2 class="admin-h2">Overview</h2>
+      <ul class="admin-stats" id="admin-stats" aria-label="Enquiry summary">
+        <!-- built by admin.js -->
+      </ul>
+
+      <!-- ----- Add an enquiry ----- -->
+      <h2 class="admin-h2" id="add-title">Add an enquiry</h2>
+      <div class="admin-card">
+        <div class="admin-tabs" role="tablist" aria-labelledby="add-title">
+          <button class="admin-tab is-active" type="button" role="tab" id="tab-paste"
+                  aria-selected="true" aria-controls="panel-paste">Paste an email</button>
+          <button class="admin-tab" type="button" role="tab" id="tab-manual"
+                  aria-selected="false" aria-controls="panel-manual">Type it in</button>
+        </div>
+
+        <!-- Paste tab -->
+        <div class="admin-tabpanel" id="panel-paste" role="tabpanel" aria-labelledby="tab-paste">
+          <p class="admin-help">
+            Open the enquiry email from the website, select all of it, copy, and
+            paste below. Name, email, phone, postcode, service and details are
+            picked out automatically — check them before saving.
+          </p>
+          <label class="admin-label" for="paste-box">Enquiry email</label>
+          <textarea class="admin-textarea" id="paste-box" rows="7"
+                    placeholder="Paste the whole enquiry email here…"></textarea>
+          <div class="admin-row">
+            <button class="btn btn--primary" type="button" id="parse-btn">Read enquiry</button>
+            <button class="admin-btn" type="button" id="paste-clear">Clear</button>
+          </div>
+          <p class="admin-status" id="parse-status" role="status"></p>
+        </div>
+
+        <!-- Manual tab (phone/word-of-mouth enquiries) -->
+        <div class="admin-tabpanel" id="panel-manual" role="tabpanel" aria-labelledby="tab-manual" hidden>
+          <p class="admin-help">For enquiries that came in by phone or in person.</p>
+        </div>
+
+        <!-- Shared review/edit form: filled by the parser, or blank for manual -->
+        <form class="admin-form" id="enquiry-form" autocomplete="off" hidden>
+          <p class="admin-form__lead" id="form-lead">Check the details, then save.</p>
+          <div class="admin-grid">
+            <div class="admin-field">
+              <label class="admin-label" for="f-name">Name</label>
+              <input class="admin-input" id="f-name" name="name" type="text" autocomplete="off">
+            </div>
+            <div class="admin-field">
+              <label class="admin-label" for="f-email">Email</label>
+              <input class="admin-input" id="f-email" name="email" type="email" autocomplete="off" spellcheck="false">
+            </div>
+            <div class="admin-field">
+              <label class="admin-label" for="f-phone">Phone</label>
+              <input class="admin-input" id="f-phone" name="phone" type="tel" autocomplete="off">
+            </div>
+            <div class="admin-field">
+              <label class="admin-label" for="f-postcode">Postcode</label>
+              <input class="admin-input" id="f-postcode" name="postcode" type="text"
+                     autocapitalize="characters" autocomplete="off" spellcheck="false">
+            </div>
+            <div class="admin-field">
+              <label class="admin-label" for="f-service">Service</label>
+              <select class="admin-input" id="f-service" name="service">
+                <option value="">Not specified</option>
+                <option value="Extension">Extension</option>
+                <option value="Renovation">Renovation</option>
+                <option value="Brickwork &amp; Masonry">Brickwork &amp; Masonry</option>
+                <option value="Groundworks">Groundworks</option>
+                <option value="Roofing">Roofing</option>
+                <option value="Driveway / Patio">Driveway / Patio</option>
+                <option value="Landscaping">Landscaping</option>
+                <option value="Property Maintenance">Property Maintenance</option>
+                <option value="Other / Not sure">Other / Not sure</option>
+              </select>
+            </div>
+            <div class="admin-field">
+              <label class="admin-label" for="f-source">Came in via</label>
+              <select class="admin-input" id="f-source" name="source">
+                <option value="Website">Website</option>
+                <option value="Phone">Phone</option>
+                <option value="Facebook">Facebook</option>
+                <option value="Word of mouth">Word of mouth</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="admin-field">
+              <label class="admin-label" for="f-received">Date received</label>
+              <input class="admin-input" id="f-received" name="received" type="date">
+            </div>
+            <div class="admin-field">
+              <label class="admin-label" for="f-status">Status</label>
+              <select class="admin-input" id="f-status" name="status">
+                <option value="new">New</option>
+                <option value="quoted">Quoted</option>
+                <option value="won">Won</option>
+                <option value="lost">Lost</option>
+              </select>
+            </div>
+          </div>
+          <div class="admin-field">
+            <label class="admin-label" for="f-details">What they asked for</label>
+            <textarea class="admin-textarea" id="f-details" name="details" rows="4"></textarea>
+          </div>
+          <div class="admin-row">
+            <button class="btn btn--primary" type="submit" id="save-btn">Save enquiry</button>
+            <button class="admin-btn" type="button" id="cancel-btn">Cancel</button>
+          </div>
+          <p class="admin-status" id="save-status" role="status"></p>
+        </form>
+      </div>
+
+      <!-- ----- The list ----- -->
+      <h2 class="admin-h2">Enquiries</h2>
+      <div class="admin-card">
+        <div class="admin-filters">
+          <div class="admin-field admin-field--grow">
+            <label class="admin-label" for="search">Search</label>
+            <input class="admin-input" id="search" type="search" placeholder="Name, email, postcode, words…"
+                   autocomplete="off">
+          </div>
+          <div class="admin-field">
+            <label class="admin-label" for="filter-status">Status</label>
+            <select class="admin-input" id="filter-status">
+              <option value="">All</option>
+              <option value="new">New</option>
+              <option value="quoted">Quoted</option>
+              <option value="won">Won</option>
+              <option value="lost">Lost</option>
+            </select>
+          </div>
+          <div class="admin-field">
+            <label class="admin-label" for="sort-by">Sort</label>
+            <select class="admin-input" id="sort-by">
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+              <option value="followup">Follow-up date</option>
+              <option value="name">Name</option>
+            </select>
+          </div>
+        </div>
+        <p class="admin-count" id="list-count" role="status"></p>
+        <ul class="admin-list" id="admin-list"><!-- built by admin.js --></ul>
+        <p class="admin-empty" id="admin-empty" hidden>
+          No enquiries yet. Paste an enquiry email above to get started.
+        </p>
+      </div>
+
+      <!-- ----- Backup / restore ----- -->
+      <h2 class="admin-h2">Your data</h2>
+      <div class="admin-card">
+        <p class="admin-help">
+          Everything here is stored in this browser only — nothing is uploaded.
+          <strong>Back up regularly:</strong> clearing your browsing data, or
+          switching phone or laptop, will lose it otherwise.
+        </p>
+        <div class="admin-row admin-row--wrap">
+          <button class="btn btn--primary" type="button" id="export-json">Back up (JSON)</button>
+          <button class="admin-btn" type="button" id="export-csv">Export for a spreadsheet (CSV)</button>
+          <button class="admin-btn" type="button" id="import-btn">Restore from backup…</button>
+          <input class="admin-visually-hidden" id="import-file" type="file" accept="application/json,.json" tabindex="-1">
+          <button class="admin-btn admin-btn--danger" type="button" id="wipe-btn">Delete everything…</button>
+        </div>
+        <p class="admin-status" id="data-status" role="status"></p>
+        <details class="admin-details">
+          <summary>Change the access key</summary>
+          <p class="admin-help">
+            Sets a new key <strong>for this device</strong>. To change it
+            everywhere, replace <code>DEFAULT_KEY_HASH</code> in
+            <code>admin/admin.js</code> — the file explains how.
+          </p>
+          <div class="admin-field">
+            <label class="admin-label" for="new-key">New key (at least 8 characters)</label>
+            <input class="admin-input" id="new-key" type="password" autocomplete="new-password"
+                   autocapitalize="none" spellcheck="false">
+          </div>
+          <div class="admin-row">
+            <button class="admin-btn" type="button" id="save-key">Save new key</button>
+            <button class="admin-btn" type="button" id="reset-key">Back to the built-in key</button>
+          </div>
+          <p class="admin-status" id="key-status" role="status"></p>
+        </details>
+      </div>
+
+      <footer class="admin-foot">
+        <p>
+          Enquiry tracker · data stored in this browser only ·
+          <a href="../index.html">Devine Builders website</a>
+        </p>
+      </footer>
+    </main>
+  </div>
+
+  <!-- Confirm dialog (used for delete actions; native <dialog>) -->
+  <dialog class="admin-dialog" id="confirm-dialog">
+    <form method="dialog">
+      <h2 class="admin-dialog__title" id="confirm-title">Are you sure?</h2>
+      <p class="admin-dialog__text" id="confirm-text"></p>
+      <div class="admin-row admin-row--end">
+        <button class="admin-btn" value="cancel">Cancel</button>
+        <button class="admin-btn admin-btn--danger" value="confirm" id="confirm-ok">Delete</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="admin.js" defer></script>
+</body>
+</html>
