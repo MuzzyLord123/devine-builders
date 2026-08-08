@@ -141,7 +141,9 @@
 .admin-bar__actions { display: flex; gap: 0.4rem; flex: none; }
 .admin-bar .admin-btn {
   background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.28);
+  /* >=3:1 against the navy bar, so the button's edge is actually
+     perceivable (WCAG 1.4.11); 0.28 alpha measured only 2.5:1. */
+  border-color: rgba(255, 255, 255, 0.55);
   color: #fff;
 }
 .admin-bar .admin-btn:hover { background: rgba(255, 255, 255, 0.22); }
@@ -160,6 +162,9 @@
   font-size: var(--fs-fluid-600);
   letter-spacing: -0.015em;
 }
+/* Focused programmatically on unlock — don't paint a stray ring for that. */
+.admin-h2:focus { outline: none; }
+.admin-h2:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
 .admin-main > .admin-h2:first-child { margin-top: 0; }
 .admin-card {
   padding: var(--space-4);
@@ -320,6 +325,12 @@
   background: #f8fafc;
   border-radius: var(--radius);
 }
+/* Phone/email links sit inline in a paragraph, so give them enough vertical
+   padding to clear the 24px minimum target size (WCAG 2.5.8). */
+.admin-item__contact a {
+  display: inline-block;
+  padding-block: 0.2rem;
+}
 .admin-item__notes {
   margin: var(--space-3) 0 0;
   font-size: var(--fs-300);
@@ -356,6 +367,15 @@
 }
 .admin-empty[hidden] { display: none; }
 
+/* Shown only when stored data can't be read — saving is paused until the
+   owner chooses to rescue or discard it, so it must be impossible to miss. */
+.admin-broken {
+  margin-bottom: var(--space-5);
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+.admin-broken .admin-h2 { margin-top: 0; color: #b91c1c; }
+
 .admin-details { margin-top: var(--space-5); }
 .admin-details summary {
   cursor: pointer;
@@ -381,6 +401,10 @@
 /* -------------------------------------------------------------- Dialog */
 
 .admin-dialog {
+  /* styles.css resets margins globally, which wipes the browser's own
+     `dialog { margin: auto }` and pins the modal to the top-left corner.
+     Put it back explicitly. */
+  margin: auto;
   max-width: 24rem;
   width: calc(100% - 2rem);
   padding: var(--space-5);

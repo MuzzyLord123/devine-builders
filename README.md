@@ -100,10 +100,12 @@ A private page for whoever runs the business: **https://muzzylord123.github.io/d
 It is not linked from anywhere on the site, sends `noindex, nofollow`, and is
 disallowed in `robots.txt`.
 
-**Access key:** `ridge-deeside-1101` — change it from the panel
-(*Your data → Change the access key*), or permanently for every device by
-replacing `DEFAULT_KEY_HASH` in `admin/admin.js` (that file explains how to
-generate the new hash).
+**Access key:** issued separately — ask the site owner; it is deliberately
+**not** written down in this repo, because the repo is public and a key
+published next to the URL protects nothing. Change it from the panel
+(*Your data → Change the access key*) for the device you're on, or permanently
+for every device by replacing `DEFAULT_KEY_HASH` in `admin/admin.js` (that
+file explains how to generate the new hash). Never commit the key itself.
 
 **Read this before relying on it:**
 
@@ -117,6 +119,12 @@ generate the new hash).
   there is no account, so the panel is empty on any other phone or laptop —
   and clearing your browsing data wipes it. **Use *Back up (JSON)* regularly**
   and keep the file somewhere safe; *Restore from backup* reads it back.
+- **On iPhone/iPad, Safari deletes this kind of storage by itself** if you
+  don't open the page for **7 days** (its anti-tracking rules make no
+  exception for a site's own data). That is the most likely way to lose
+  everything, and no warning is given. If you use it on an iPhone, either open
+  it at least weekly, add it to the Home Screen (installed pages are exempt),
+  or keep a current JSON backup — ideally all three.
 - **The key is a privacy curtain, not a lock.** It is checked in the browser,
   so someone technical could bypass it. It stops a passer-by with your
   unlocked phone from reading customers' details — it is not a substitute for

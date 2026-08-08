@@ -51,15 +51,17 @@
 
   <!-- ---------- Lock screen (shown until the key is accepted) ---------- -->
   <div class="admin-lock" id="admin-lock">
-    <main class="admin-lock__card">
+    <div class="admin-lock__card">
       <img class="admin-lock__logo" src="../images/logo-mark.png" width="60" height="40" alt="Devine Builders">
       <h1 class="admin-lock__title">Enquiry tracker</h1>
       <p class="admin-lock__text">Enter your access key to view enquiries stored on this device.</p>
       <form class="admin-lock__form" id="unlock-form" autocomplete="off">
         <label class="admin-lock__label" for="admin-key">Access key</label>
+        <!-- autocomplete="off": a key the browser remembers and autofills for
+             anyone who opens the page defeats the one thing it is for. -->
         <input class="admin-lock__input" id="admin-key" name="admin-key" type="password"
                inputmode="text" autocapitalize="none" autocorrect="off" spellcheck="false"
-               autocomplete="current-password" required>
+               autocomplete="off" aria-describedby="unlock-error" required>
         <p class="admin-lock__error" id="unlock-error" role="alert"></p>
         <button class="btn btn--primary btn--lg admin-lock__btn" type="submit" id="unlock-btn">Unlock</button>
       </form>
@@ -69,7 +71,7 @@
         passcode. Enquiries are stored only in this browser.
       </p>
       <p class="admin-lock__back"><a href="../index.html">← Back to the website</a></p>
-    </main>
+    </div>
   </div>
 
   <!-- ---------- The panel itself (hidden until unlocked) ---------- -->
@@ -79,7 +81,7 @@
       <div class="admin-bar__brand">
         <img src="../images/logo-mark.png" width="60" height="40" alt="" aria-hidden="true">
         <div>
-          <p class="admin-bar__title">Enquiry tracker</p>
+          <h1 class="admin-bar__title">Enquiry tracker</h1>
           <p class="admin-bar__sub">Devine Builders · this device only</p>
         </div>
       </div>
@@ -101,10 +103,13 @@
       <h2 class="admin-h2" id="add-title">Add an enquiry</h2>
       <div class="admin-card">
         <div class="admin-tabs" role="tablist" aria-labelledby="add-title">
+          <!-- Roving tabindex: only the selected tab is in the tab order and
+               Left/Right move between them (admin.js) — the keyboard contract
+               that goes with role="tab". -->
           <button class="admin-tab is-active" type="button" role="tab" id="tab-paste"
-                  aria-selected="true" aria-controls="panel-paste">Paste an email</button>
+                  aria-selected="true" aria-controls="panel-paste" tabindex="0">Paste an email</button>
           <button class="admin-tab" type="button" role="tab" id="tab-manual"
-                  aria-selected="false" aria-controls="panel-manual">Type it in</button>
+                  aria-selected="false" aria-controls="panel-manual" tabindex="-1">Type it in</button>
         </div>
 
         <!-- Paste tab -->
@@ -115,8 +120,12 @@
             picked out automatically — check them before saving.
           </p>
           <label class="admin-label" for="paste-box">Enquiry email</label>
-          <textarea class="admin-textarea" id="paste-box" rows="7"
-                    placeholder="Paste the whole enquiry email here…"></textarea>
+          <!-- spellcheck off on every field holding customer details: browser
+               "enhanced" spellcheckers upload field text to the vendor, which
+               would contradict this page's promise that nothing leaves the
+               device. -->
+          <textarea class="admin-textarea" id="paste-box" rows="7" spellcheck="false"
+                    autocorrect="off" placeholder="Paste the whole enquiry email here…"></textarea>
           <div class="admin-row">
             <button class="btn btn--primary" type="button" id="parse-btn">Read enquiry</button>
             <button class="admin-btn" type="button" id="paste-clear">Clear</button>
@@ -135,7 +144,7 @@
           <div class="admin-grid">
             <div class="admin-field">
               <label class="admin-label" for="f-name">Name</label>
-              <input class="admin-input" id="f-name" name="name" type="text" autocomplete="off">
+              <input class="admin-input" id="f-name" name="name" type="text" autocomplete="off" spellcheck="false">
             </div>
             <div class="admin-field">
               <label class="admin-label" for="f-email">Email</label>
@@ -143,7 +152,7 @@
             </div>
             <div class="admin-field">
               <label class="admin-label" for="f-phone">Phone</label>
-              <input class="admin-input" id="f-phone" name="phone" type="tel" autocomplete="off">
+              <input class="admin-input" id="f-phone" name="phone" type="tel" autocomplete="off" spellcheck="false">
             </div>
             <div class="admin-field">
               <label class="admin-label" for="f-postcode">Postcode</label>
@@ -191,7 +200,8 @@
           </div>
           <div class="admin-field">
             <label class="admin-label" for="f-details">What they asked for</label>
-            <textarea class="admin-textarea" id="f-details" name="details" rows="4"></textarea>
+            <textarea class="admin-textarea" id="f-details" name="details" rows="4"
+                      spellcheck="false" autocorrect="off"></textarea>
           </div>
           <div class="admin-row">
             <button class="btn btn--primary" type="submit" id="save-btn">Save enquiry</button>
@@ -231,9 +241,13 @@
           </div>
         </div>
         <p class="admin-count" id="list-count" role="status"></p>
+        <p class="admin-status" id="list-status" role="status"></p>
         <ul class="admin-list" id="admin-list"><!-- built by admin.js --></ul>
         <p class="admin-empty" id="admin-empty" hidden>
           No enquiries yet. Paste an enquiry email above to get started.
+        </p>
+        <p class="admin-empty" id="admin-nomatch" hidden>
+          No enquiries match that search or filter. Clear the search box, or set Status back to “All”.
         </p>
       </div>
 
@@ -249,7 +263,8 @@
           <button class="btn btn--primary" type="button" id="export-json">Back up (JSON)</button>
           <button class="admin-btn" type="button" id="export-csv">Export for a spreadsheet (CSV)</button>
           <button class="admin-btn" type="button" id="import-btn">Restore from backup…</button>
-          <input class="admin-visually-hidden" id="import-file" type="file" accept="application/json,.json" tabindex="-1">
+          <input class="admin-visually-hidden" id="import-file" type="file" accept="application/json,.json"
+                 tabindex="-1" aria-hidden="true" aria-label="Backup file to restore">
           <button class="admin-btn admin-btn--danger" type="button" id="wipe-btn">Delete everything…</button>
         </div>
         <p class="admin-status" id="data-status" role="status"></p>
@@ -260,9 +275,19 @@
             everywhere, replace <code>DEFAULT_KEY_HASH</code> in
             <code>admin/admin.js</code> — the file explains how.
           </p>
+          <p class="admin-help">
+            <strong>Write the new key down before you save it.</strong> There is no
+            way to recover it — if you forget it you'd have to clear this
+            browser's site data, which deletes your enquiries too.
+          </p>
           <div class="admin-field">
             <label class="admin-label" for="new-key">New key (at least 8 characters)</label>
             <input class="admin-input" id="new-key" type="password" autocomplete="new-password"
+                   autocapitalize="none" spellcheck="false">
+          </div>
+          <div class="admin-field">
+            <label class="admin-label" for="new-key-confirm">Type it again to be sure</label>
+            <input class="admin-input" id="new-key-confirm" type="password" autocomplete="new-password"
                    autocapitalize="none" spellcheck="false">
           </div>
           <div class="admin-row">
@@ -283,7 +308,8 @@
   </div>
 
   <!-- Confirm dialog (used for delete actions; native <dialog>) -->
-  <dialog class="admin-dialog" id="confirm-dialog">
+  <dialog class="admin-dialog" id="confirm-dialog" aria-labelledby="confirm-title"
+          aria-describedby="confirm-text">
     <form method="dialog">
       <h2 class="admin-dialog__title" id="confirm-title">Are you sure?</h2>
       <p class="admin-dialog__text" id="confirm-text"></p>

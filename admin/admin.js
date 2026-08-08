@@ -35,8 +35,12 @@
   /* ---------------------------------------------------------------- */
 
   // SHA-256 of the key issued when this panel was built.
+  // NEVER write the key itself into this repo (or the README) — the repo is
+  // public, so a plaintext key there is the same as having no key at all.
+  // If it ever does leak, rotate: pick a new key, regenerate this hash with
+  // the console snippet above, and commit only the hash.
   const DEFAULT_KEY_HASH =
-    "9058d51f69c76ca0e46fd3b1cc7f3709aa48dfd39fbf216e75ac7cc41cfe370d";
+    "483d31429d46e02a2e877f390bbca69c68a22c25462b896ce862c5e0b97e5ed4";
 
   const STORE_KEY = "db-admin-enquiries-v1";  // the enquiries themselves
   const KEYHASH_KEY = "db-admin-keyhash";     // per-device key override
@@ -76,7 +80,14 @@
     return "e" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
   }
 
-  const todayISO = () => new Date().toISOString().slice(0, 10);
+  /* Local calendar date, NOT toISOString() — that converts to UTC first, so
+     anything logged late in the evening during BST would be filed a day early. */
+  function toLocalISO(d) {
+    const pad = (n) => String(n).padStart(2, "0");
+    return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+  }
+
+  const todayISO = () => toLocalISO(new Date());
 
   function formatDate(iso) {
     if (!iso) return "";
@@ -102,17 +113,59 @@
 
   let enquiries = [];
 
+  /* If there IS stored data but it can't be read, we keep the raw text here
+     and refuse to write over it. Silently showing "no enquiries yet" and
+     then overwriting on the next save would destroy the owner's only copy
+     of their customer list — the worst thing this tool could do. */
+  let brokenRaw = null;
+
   function load() {
+    let raw = null;
     try {
-      const raw = window.localStorage.getItem(STORE_KEY);
+      raw = window.localStorage.getItem(STORE_KEY);
       if (!raw) return [];
       const data = JSON.parse(raw);
-      if (!data || !Array.isArray(data.items)) return [];
+      if (!data || !Array.isArray(data.items)) throw new Error("unexpected shape");
       return data.items.filter(valid).map(clean);
     } catch (e) {
-      // Corrupt or unavailable storage must never brick the panel.
+      if (raw) brokenRaw = raw;   // data is there, we just can't parse it
       return [];
     }
+  }
+
+  /* Blocking banner shown when the stored data is unreadable. The owner
+     chooses: rescue the raw text, or knowingly start fresh. */
+  function showBrokenBanner() {
+    if (!brokenRaw || document.getElementById("broken-banner")) return;
+    const box = el("div", "admin-card admin-broken");
+    box.id = "broken-banner";
+    box.appendChild(el("h2", "admin-h2", "Your saved enquiries couldn't be read"));
+    box.appendChild(el("p", "admin-help",
+      "There is saved data in this browser, but it isn't in a format this page understands — " +
+      "so nothing is being shown. Nothing has been deleted, and saving is paused so it can't be " +
+      "overwritten. Download the raw file first (it may still be readable by hand), then choose."));
+    const row = el("div", "admin-row admin-row--wrap");
+    const grab = el("button", "btn btn--primary", "Download the unreadable file");
+    grab.type = "button";
+    grab.addEventListener("click", () => {
+      download("devine-builders-unreadable-" + stamp() + ".txt", brokenRaw, "text/plain");
+    });
+    const fresh = el("button", "admin-btn admin-btn--danger", "Start fresh (deletes it)");
+    fresh.type = "button";
+    fresh.addEventListener("click", () => {
+      confirmAction("Start fresh?",
+        "The unreadable saved data will be deleted from this device. Download it first if you haven't.",
+        () => {
+          brokenRaw = null;
+          box.remove();
+          if (save()) { renderAll(); announce("Started fresh."); }
+        });
+    });
+    row.appendChild(grab);
+    row.appendChild(fresh);
+    box.appendChild(row);
+    const main = $("admin-main");
+    main.insertBefore(box, main.firstChild);
   }
 
   function valid(item) {
@@ -158,6 +211,11 @@
      rollback, a quota error would show the owner an enquiry that looked
      saved and would vanish on the next visit. */
   function commit(mutate) {
+    if (brokenRaw !== null) {
+      setStatus($("data-status"),
+        "Saving is paused: there is unreadable saved data in this browser. Deal with the message at the top of the page first.", "bad");
+      return false;
+    }
     const backup = JSON.stringify(enquiries);
     mutate();
     if (save()) return true;
@@ -188,28 +246,53 @@
   let failedAttempts = 0;
   let lockTimer = null;
 
-  function showApp() {
+  function showApp(silent) {
     $("admin-lock").hidden = true;
     $("admin-app").hidden = false;
-    try { window.sessionStorage.setItem(UNLOCK_FLAG, "1"); } catch (e) { /* ignore */ }
+    // Timestamped, so the unlock can't outlive the idle window — including
+    // in a duplicated tab, which inherits a copy of sessionStorage.
+    try { window.sessionStorage.setItem(UNLOCK_FLAG, String(Date.now())); } catch (e) { /* ignore */ }
+    if (brokenRaw !== null) showBrokenBanner();
     renderAll();
     resetIdleTimer();
+    // Move focus into the panel so keyboard and screen-reader users land in
+    // the newly revealed content rather than back at the top of the document.
+    if (!silent) {
+      const heading = $("admin-main").querySelector(".admin-h2");
+      if (heading) {
+        heading.tabIndex = -1;
+        try { heading.focus({ preventScroll: true }); } catch (e) { /* ignore */ }
+      }
+    }
   }
 
-  function lock() {
+  function lock(auto) {
     $("admin-app").hidden = true;
     $("admin-lock").hidden = false;
     $("admin-key").value = "";
+    /* Locking must actually take the customer details off the page: hiding
+       the panel still leaves every name, number and address in the DOM (and
+       in the paste box) for anyone who opens dev tools or hits Find. */
+    $("admin-list").textContent = "";
+    $("paste-box").value = "";
+    fillForm({});          // every add/edit field, not just the details box
+    hideForm();
+    setStatus($("parse-status"), "");
+    setStatus($("list-status"), "");
+    setStatus($("data-status"), "");
     setStatus($("unlock-error"), "");
     $("unlock-error").className = "admin-lock__error";
     try { window.sessionStorage.removeItem(UNLOCK_FLAG); } catch (e) { /* ignore */ }
     if (lockTimer) { window.clearTimeout(lockTimer); lockTimer = null; }
+    // Say WHY the screen changed — an auto-lock that just appears is
+    // baffling, especially to a screen-reader user who saw no reason for it.
+    if (auto) $("unlock-error").textContent = "Locked automatically after 30 minutes without activity. Enter your key to carry on.";
     $("admin-key").focus();
   }
 
   function resetIdleTimer() {
     if (lockTimer) window.clearTimeout(lockTimer);
-    lockTimer = window.setTimeout(lock, AUTO_LOCK_MS);
+    lockTimer = window.setTimeout(() => lock(true), AUTO_LOCK_MS);
   }
 
   async function tryUnlock(e) {
@@ -309,7 +392,11 @@
         for (let j = i + 1; j < lines.length; j++) {
           const next = lines[j];
           if (isNoise(next)) break;
-          if (labelOf(next) && next.trim().length <= 40) break;
+          // Stop at a genuine field label — but NOT at one already captured
+          // above, so a customer writing "Phone: best after 6pm" inside their
+          // message doesn't truncate the rest of what they wrote.
+          const nextLabel = labelOf(next);
+          if (nextLabel && !found[nextLabel] && next.trim().length <= 40) break;
           parts.push(next);
         }
         const joined = parts.join("\n").trim();
@@ -347,14 +434,17 @@
     }
 
     // A "Date:" header, when the whole email was copied.
+    /* A "Date:" header from a copied email. Only the written-month form
+       ("6 Jul 2026") is accepted: a numeric 06/07/2026 is read as June 7th
+       by Date.parse, which would silently misfile every UK enquiry. */
     let received = todayISO();
     const dm = text.match(/^\s*(?:date|sent|received)\s*:\s*(.+)$/im);
-    if (dm) {
+    if (dm && /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i.test(dm[1])) {
       const d = new Date(dm[1].trim());
       const now = Date.now();
       // Only trust it if it's a real date, not in the future, not ancient.
       if (!isNaN(d.getTime()) && d.getTime() <= now + 864e5 && d.getTime() > now - 5 * 365 * 864e5) {
-        received = d.toISOString().slice(0, 10);
+        received = toLocalISO(d);
       }
     }
 
@@ -448,6 +538,19 @@
     return out;
   }
 
+  /* Enquiry text is untrusted: it ultimately comes from the public quote
+     form. Only link an address/number that really looks like one, so a
+     crafted value such as "victim@x.com?bcc=attacker@evil.tld" can never
+     become a live mailto link with hidden headers — it shows as plain text
+     for the owner to see instead. */
+  const EMAIL_RE = /^[^\s@"'<>,;:&?]+@[^\s@"'<>,;:&?]+\.[^\s@"'<>,;:&?]+$/;
+  const isEmail = (v) => EMAIL_RE.test(String(v || "").trim());
+
+  function telHref(phone) {
+    const digits = String(phone || "").replace(/[^\d+]/g, "");
+    return /^\+?\d{6,15}$/.test(digits) ? "tel:" + digits : null;
+  }
+
   function replyMailto(item) {
     const subject = "Your enquiry — " + BUSINESS.name;
     const body = [
@@ -463,13 +566,16 @@
       BUSINESS.name,
       BUSINESS.phone
     ].join("\r\n");
-    return "mailto:" + encodeURIComponent(item.email) +
+    // The address is validated by isEmail() before this link is offered, so
+    // it needs no escaping (and encoding the "@" breaks some mail clients).
+    return "mailto:" + item.email +
       "?subject=" + encodeURIComponent(subject) +
       "&body=" + encodeURIComponent(body);
   }
 
   function renderItem(item) {
     const li = el("li", "admin-item");
+    li.setAttribute("data-id", item.id);
 
     /* --- headline: name + status --- */
     const head = el("div", "admin-item__head");
@@ -490,17 +596,26 @@
 
     /* --- contact --- */
     if (item.phone || item.email) {
-      const contact = el("p", "admin-item__meta");
+      const contact = el("p", "admin-item__meta admin-item__contact");
       if (item.phone) {
-        const a = el("a", null, item.phone);
-        a.href = "tel:" + item.phone.replace(/[^\d+]/g, "");
-        contact.appendChild(a);
+        const href = telHref(item.phone);
+        if (href) {
+          const a = el("a", null, item.phone);
+          a.href = href;
+          contact.appendChild(a);
+        } else {
+          contact.appendChild(el("span", null, item.phone));
+        }
       }
       if (item.phone && item.email) contact.appendChild(document.createTextNode(" · "));
       if (item.email) {
-        const a = el("a", null, item.email);
-        a.href = "mailto:" + item.email;
-        contact.appendChild(a);
+        if (isEmail(item.email)) {
+          const a = el("a", null, item.email);
+          a.href = "mailto:" + item.email;
+          contact.appendChild(a);
+        } else {
+          contact.appendChild(el("span", null, item.email));
+        }
       }
       li.appendChild(contact);
     }
@@ -509,20 +624,29 @@
     if (item.notes) li.appendChild(el("p", "admin-item__notes", "Notes: " + item.notes));
 
     /* --- actions --- */
+    /* Every row has the same button labels, so each one carries the
+       enquiry's name in its accessible name — otherwise a screen-reader
+       user hears "Update, Update, Update…" with no way to tell them apart. */
+    const who = item.name || "this enquiry";
     const actions = el("div", "admin-item__actions");
-    if (item.email) {
+    if (isEmail(item.email)) {
       const reply = el("a", "admin-btn", "Reply by email");
       reply.href = replyMailto(item);
+      reply.setAttribute("aria-label", "Reply by email to " + who);
       actions.appendChild(reply);
     }
-    if (item.phone) {
+    const callHref = telHref(item.phone);
+    if (callHref) {
       const call = el("a", "admin-btn", "Call");
-      call.href = "tel:" + item.phone.replace(/[^\d+]/g, "");
+      call.href = callHref;
+      call.setAttribute("aria-label", "Call " + who);
       actions.appendChild(call);
     }
     const editBtn = el("button", "admin-btn", "Update");
     editBtn.type = "button";
+    editBtn.id = "update-" + item.id;
     editBtn.setAttribute("aria-expanded", "false");
+    editBtn.setAttribute("aria-label", "Update " + who);
     actions.appendChild(editBtn);
     li.appendChild(actions);
 
@@ -540,6 +664,7 @@
 
     const notesArea = el("textarea", "admin-textarea");
     notesArea.rows = 3;
+    notesArea.spellcheck = false;   // notes name a real customer — see index.html
     notesArea.value = item.notes;
     notesArea.id = "notes-" + item.id;
     const notesWrap = el("div", "admin-field");
@@ -564,10 +689,20 @@
       edit.hidden = open;
       editBtn.setAttribute("aria-expanded", String(!open));
       editBtn.textContent = open ? "Update" : "Close";
+      editBtn.setAttribute("aria-label", (open ? "Update " : "Close update panel for ") + who);
       if (!open) statusField.control.focus();
     });
 
     saveBtn.addEventListener("click", () => {
+      /* A half-typed number or date leaves the control "bad input", which
+         reads back as "" — saving that would quietly wipe the value or
+         follow-up date already stored. Refuse instead of destroying it. */
+      const bad = [valueField.control, followField.control]
+        .some((c) => c.validity && c.validity.badInput);
+      if (bad) {
+        setStatus($("list-status"), "Check the quoted value and follow-up date — one of them isn't a valid entry.", "bad");
+        return;
+      }
       const ok = commit(() => {
         item.status = statusField.control.value;
         item.value = Math.max(0, Math.round(Number(valueField.control.value) || 0));
@@ -575,7 +710,9 @@
         item.source = sourceField.control.value;
         item.notes = notesArea.value.slice(0, 2000);
       });
-      if (ok) { renderAll(); announce("Enquiry updated."); }
+      // Re-rendering destroys the button that was clicked, so send focus
+      // back to the same row's control rather than letting it fall to <body>.
+      if (ok) { focusAfterRender = "update-" + item.id; refreshItem(item); listAnnounce("Enquiry updated."); }
     });
 
     delBtn.addEventListener("click", () => {
@@ -586,7 +723,8 @@
           const ok = commit(() => {
             enquiries = enquiries.filter((e) => e.id !== item.id);
           });
-          if (ok) { renderAll(); announce("Enquiry deleted."); }
+          // The row (and its buttons) are gone — park focus somewhere stable.
+          if (ok) { focusAfterRender = "search"; renderAll(); listAnnounce("Enquiry deleted."); }
         }
       );
     });
@@ -647,6 +785,10 @@
     items.forEach((item) => list.appendChild(renderItem(item)));
 
     $("admin-empty").hidden = enquiries.length !== 0;
+    // Filters that match nothing must say so — otherwise the list just goes
+    // blank and looks like the data has been lost.
+    $("admin-nomatch").hidden = !(enquiries.length && !items.length);
+
     const count = $("list-count");
     if (!enquiries.length) count.textContent = "";
     else if (items.length === enquiries.length) {
@@ -656,9 +798,40 @@
     }
   }
 
-  function renderAll() { renderStats(); renderList(); }
+  /* Element id to focus once the list has been rebuilt (set by actions that
+     destroy the control the owner was using). */
+  let focusAfterRender = null;
 
+  function applyFocus() {
+    if (!focusAfterRender) return;
+    const target = $(focusAfterRender);
+    focusAfterRender = null;
+    if (target) { try { target.focus({ preventScroll: true }); } catch (e) { /* ignore */ } }
+  }
+
+  function renderAll() { renderStats(); renderList(); applyFocus(); }
+
+  /* Redraw ONE row instead of the whole list, so that saving one enquiry
+     doesn't wipe out text the owner has typed into another open panel.
+     Falls back to a full redraw if the change means the row should no
+     longer be listed (e.g. its new status is filtered out). */
+  function refreshItem(item) {
+    const list = $("admin-list");
+    const row = list.querySelector('[data-id="' + (window.CSS && CSS.escape ? CSS.escape(item.id) : item.id) + '"]');
+    const stillListed = visibleEnquiries().some((e) => e.id === item.id);
+    if (row && stillListed) {
+      row.replaceWith(renderItem(item));
+      renderStats();
+      applyFocus();
+    } else {
+      renderAll();
+    }
+  }
+
+  /* Two feedback spots, each next to the controls it describes: backup and
+     key messages in the data card, list actions beside the list itself. */
   function announce(message) { setStatus($("data-status"), message, "good"); }
+  function listAnnounce(message) { setStatus($("list-status"), message, "good"); }
 
   /* ---------------------------------------------------------------- */
   /* 7. Add / edit form                                                */
@@ -748,8 +921,12 @@
     setStatus($("parse-status"), "");
     hideForm();
     renderAll();
-    announce("Enquiry saved.");
-    $("admin-list").scrollIntoView({ behavior: "smooth", block: "start" });
+    const trimmed = $("f-details").value.trim().length > 4000;
+    listAnnounce("Enquiry saved." + (trimmed
+      ? " Note: the details were longer than 4,000 characters and have been shortened."
+      : ""));
+    const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    $("admin-list").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
   }
 
   /* ---------------------------------------------------------------- */
@@ -811,7 +988,9 @@
         setStatus($("data-status"), "That file isn't a backup this panel can read.", "bad");
         return;
       }
-      const incoming = (data && Array.isArray(data.items) ? data.items : []).filter(valid).map(clean);
+      const rawItems = data && Array.isArray(data.items) ? data.items : [];
+      const incoming = rawItems.filter(valid).map(clean);
+      const unreadable = rawItems.length - incoming.length;
       if (!incoming.length) {
         setStatus($("data-status"), "No enquiries found in that file.", "bad");
         return;
@@ -826,9 +1005,15 @@
       });
       if (!ok) return;
       renderAll();
-      announce(added
-        ? "Restored " + added + " enquir" + (added === 1 ? "y" : "ies") + " (duplicates skipped)."
-        : "Nothing new to restore — those enquiries are already here.");
+      // Say exactly what happened — silently dropping records from a backup
+      // is how someone discovers a gap months later.
+      const skipped = incoming.length - added;
+      const notes = [];
+      if (skipped) notes.push(skipped + " already here");
+      if (unreadable) notes.push(unreadable + " unreadable and not restored");
+      announce((added
+        ? "Restored " + added + " enquir" + (added === 1 ? "y" : "ies")
+        : "Nothing new to restore") + (notes.length ? " — " + notes.join(", ") + "." : "."));
     };
     reader.onerror = () => setStatus($("data-status"), "Couldn't read that file.", "bad");
     reader.readAsText(file);
@@ -849,6 +1034,10 @@
     $("confirm-title").textContent = title;
     $("confirm-text").textContent = text;
     pendingConfirm = onConfirm;
+    // returnValue PERSISTS between openings. Without clearing it, dismissing
+    // this dialog with Escape after a previous confirmed delete would replay
+    // "confirm" and delete again — Escape must always mean cancel.
+    dialog.returnValue = "";
     dialog.showModal();
   }
 
@@ -857,10 +1046,17 @@
   /* ---------------------------------------------------------------- */
 
   function switchTab(toManual) {
+    // Re-clicking the tab you're already on must not throw away a
+    // half-filled enquiry.
+    const alreadyThere = toManual === !$("panel-manual").hidden;
+    if (alreadyThere) return;
     $("tab-paste").classList.toggle("is-active", !toManual);
     $("tab-manual").classList.toggle("is-active", toManual);
     $("tab-paste").setAttribute("aria-selected", String(!toManual));
     $("tab-manual").setAttribute("aria-selected", String(toManual));
+    // Roving tabindex: only the selected tab stays in the tab order.
+    $("tab-paste").tabIndex = toManual ? -1 : 0;
+    $("tab-manual").tabIndex = toManual ? 0 : -1;
     $("panel-paste").hidden = toManual;
     $("panel-manual").hidden = !toManual;
     if (toManual) {
@@ -876,11 +1072,28 @@
 
     /* Lock screen */
     $("unlock-form").addEventListener("submit", tryUnlock);
-    $("lock-btn").addEventListener("click", lock);
+    $("lock-btn").addEventListener("click", () => lock(false));
 
     /* Add / paste */
     $("tab-paste").addEventListener("click", () => switchTab(false));
     $("tab-manual").addEventListener("click", () => switchTab(true));
+
+    /* Arrow/Home/End movement between the tabs — the keyboard half of the
+       ARIA tab pattern the roles promise. */
+    const tabs = [$("tab-paste"), $("tab-manual")];
+    tabs.forEach((tab, i) => {
+      tab.addEventListener("keydown", (e) => {
+        let next = null;
+        if (e.key === "ArrowRight" || e.key === "ArrowDown") next = tabs[(i + 1) % tabs.length];
+        else if (e.key === "ArrowLeft" || e.key === "ArrowUp") next = tabs[(i + tabs.length - 1) % tabs.length];
+        else if (e.key === "Home") next = tabs[0];
+        else if (e.key === "End") next = tabs[tabs.length - 1];
+        if (!next) return;
+        e.preventDefault();
+        switchTab(next === $("tab-manual"));
+        next.focus();
+      });
+    });
     $("parse-btn").addEventListener("click", onParse);
     $("paste-clear").addEventListener("click", () => {
       $("paste-box").value = "";
@@ -890,8 +1103,14 @@
     $("enquiry-form").addEventListener("submit", onSave);
     $("cancel-btn").addEventListener("click", hideForm);
 
-    /* List controls */
-    $("search").addEventListener("input", renderList);
+    /* List controls. The search box is debounced: #list-count is a live
+       region, and re-writing it on every keystroke makes a screen reader
+       read the running total over the letters being typed. */
+    let searchTimer = null;
+    $("search").addEventListener("input", () => {
+      if (searchTimer) window.clearTimeout(searchTimer);
+      searchTimer = window.setTimeout(renderList, 300);
+    });
     $("filter-status").addEventListener("change", renderList);
     $("sort-by").addEventListener("change", renderList);
 
@@ -926,14 +1145,21 @@
     /* Access key */
     $("save-key").addEventListener("click", async () => {
       const value = $("new-key").value;
+      const again = $("new-key-confirm").value;
       if (value.length < 8) {
         setStatus($("key-status"), "Use at least 8 characters.", "bad");
+        return;
+      }
+      // Only the hash is kept, so a typo here would be unrecoverable.
+      if (value !== again) {
+        setStatus($("key-status"), "The two keys don't match — type the same one in both boxes.", "bad");
         return;
       }
       try {
         window.localStorage.setItem(KEYHASH_KEY, await sha256(value));
         $("new-key").value = "";
-        setStatus($("key-status"), "New key saved for this device.", "good");
+        $("new-key-confirm").value = "";
+        setStatus($("key-status"), "New key saved for this device. Make sure you've written it down.", "good");
       } catch (err) {
         setStatus($("key-status"), "Couldn't save the new key — storage is blocked.", "bad");
       }
@@ -950,8 +1176,11 @@
 
     /* Stay unlocked across a refresh in the same tab, but not a new one. */
     let unlocked = false;
-    try { unlocked = window.sessionStorage.getItem(UNLOCK_FLAG) === "1"; } catch (e) { /* ignore */ }
-    if (unlocked) showApp();
+    try {
+      const since = Number(window.sessionStorage.getItem(UNLOCK_FLAG));
+      unlocked = !!since && Date.now() - since < AUTO_LOCK_MS;
+    } catch (e) { /* ignore */ }
+    if (unlocked) showApp(true);
     else $("admin-key").focus();
   }
 

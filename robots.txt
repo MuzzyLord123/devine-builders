@@ -3,7 +3,13 @@
 User-agent: *
 Allow: /
 # Owner-only enquiry tracker — not part of the public site.
-# (The page also sends "noindex, nofollow" and is linked from nowhere.)
+# NOTE: crawlers only read robots.txt from the DOMAIN root, so on the current
+# GitHub Pages project URL (…github.io/devine-builders/) this file is never
+# fetched and these rules do nothing. The tracker's real protection is the
+# "noindex, nofollow, noarchive" tag on the page itself, plus the fact that
+# nothing links to it. Both paths are listed so the rule starts working the
+# moment the site moves to its own domain.
 Disallow: /admin/
+Disallow: /devine-builders/admin/
 
 Sitemap: https://muzzylord123.github.io/devine-builders/sitemap.xml
