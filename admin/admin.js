@@ -1216,7 +1216,11 @@
       const raw = window.localStorage.getItem(GALLERY_STORE);
       if (!raw) return null;
       const parsed = JSON.parse(raw);
-      if (parsed && Array.isArray(parsed.items)) return parsed;
+      if (parsed && Array.isArray(parsed.items)) {
+        // Drafts saved before the Before & after editor existed have no pairs.
+        if (!Array.isArray(parsed.pairs)) parsed.pairs = [];
+        return parsed;
+      }
     } catch (e) { /* corrupt draft: fall back to the published file */ }
     return null;
   }
@@ -1251,7 +1255,25 @@
   function manifestChanged() {
     if (!published) return true;
     if (published.items.length !== gallery.items.length) return true;
-    return gallery.items.some(entryChanged);
+    if (published.pairs.length !== gallery.pairs.length) return true;
+    return gallery.items.some(entryChanged) || gallery.pairs.some(pairChanged);
+  }
+
+  /* Same idea as entryChanged, for a Before & after slider. */
+  function pairChanged(pair, i) {
+    if (pair.pendingBefore || pair.pendingAfter) return true;
+    const p = published.pairs[i];
+    if (!p) return true;
+    return p.before !== pair.before || p.after !== pair.after ||
+           p.beforeAlt !== pair.beforeAlt || p.afterAlt !== pair.afterAlt ||
+           p.caption !== pair.caption || p.label !== pair.label ||
+           !!p.illustrative !== !!pair.illustrative;
+  }
+
+  function changeCount() {
+    return gallery.items.filter(entryChanged).length +
+           gallery.pairs.filter(pairChanged).length +
+           (published && published.items.length > gallery.items.length ? 1 : 0);
   }
 
   /* ---- rendering --------------------------------------------------- */
@@ -1271,6 +1293,48 @@
     }).catch(() => { /* leave the broken-image box; the row still works */ });
   }
 
+  /* A thumbnail you click to swap the picture. The <label>/<input type=file>
+     pairing is what makes the whole tile a real file picker: it keeps
+     keyboard and screen-reader behaviour that a div with a click handler
+     would throw away, and needs no JS to open the dialog. */
+  function pickerTile(opts) {
+    const wrap = el("div", "img-thumb" + (opts.changed ? " img-thumb--changed" : ""));
+
+    const label = el("label", "img-thumb__label");
+    label.setAttribute("for", opts.id);
+    label.title = "Click to change this picture";
+
+    const img = document.createElement("img");
+    img.alt = "";
+    img.loading = "lazy";
+    thumbFor({ src: opts.src, pending: opts.pending }, img);
+    label.appendChild(img);
+
+    // Visible on hover/focus, and the accessible name for the picker.
+    const hint = el("span", "img-thumb__hint", opts.hint || "Change picture");
+    label.appendChild(hint);
+    label.appendChild(el("span", "visually-hidden", opts.a11y || "Change this picture"));
+
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/jpeg,image/png,image/webp";
+    input.id = opts.id;
+    input.className = "img-thumb__input";
+    input.addEventListener("change", () => {
+      const f = input.files && input.files[0];
+      if (f) opts.onPick(f);
+      input.value = "";
+    });
+
+    // Input BEFORE the label so CSS can style focus with a sibling selector
+    // (input:focus-visible + label) rather than relying on :has().
+    wrap.appendChild(input);
+    wrap.appendChild(label);
+    if (opts.badge) wrap.appendChild(el("span", "img-row__badge", opts.badge));
+    if (opts.caption) wrap.appendChild(el("span", "img-thumb__cap", opts.caption));
+    return wrap;
+  }
+
   function renderGallery() {
     const list = $("img-list");
     const empty = $("img-empty");
@@ -1284,16 +1348,15 @@
     items.forEach((item, i) => {
       const li = el("li", "img-row" + (entryChanged(item, i) ? " img-row--changed" : ""));
 
-      const fig = el("div", "img-row__thumb");
-      const img = document.createElement("img");
-      img.alt = "";
-      img.loading = "lazy";
-      thumbFor(item, img);
-      fig.appendChild(img);
-      if (entryChanged(item, i)) {
-        fig.appendChild(el("span", "img-row__badge", "Not published yet"));
-      }
-      li.appendChild(fig);
+      li.appendChild(pickerTile({
+        id: "replace-" + i,
+        src: item.src,
+        pending: item.pending,
+        changed: entryChanged(item, i),
+        badge: entryChanged(item, i) ? "Not published yet" : null,
+        a11y: "Change the photo for " + (item.caption || "this slot"),
+        onPick: (f) => replacePhoto(item, f)
+      }));
 
       const body = el("div", "img-row__body");
 
@@ -1321,21 +1384,6 @@
 
       const row = el("div", "admin-row img-row__actions");
 
-      const replaceLabel = el("label", "admin-btn", "Replace photo…");
-      const replaceInput = document.createElement("input");
-      replaceInput.type = "file";
-      replaceInput.accept = "image/jpeg,image/png,image/webp";
-      replaceInput.hidden = true;
-      replaceInput.id = "replace-" + i;
-      replaceLabel.setAttribute("for", replaceInput.id);
-      replaceInput.addEventListener("change", () => {
-        const f = replaceInput.files && replaceInput.files[0];
-        if (f) replacePhoto(item, f);
-        replaceInput.value = "";
-      });
-      row.appendChild(replaceLabel);
-      row.appendChild(replaceInput);
-
       const up = el("button", "admin-btn", "Move up");
       up.type = "button";
       up.disabled = i === 0;
@@ -1359,14 +1407,98 @@
       list.appendChild(li);
     });
 
+    renderPairs();
     markDirty();
+  }
+
+  /* The Before & after sliders. Each one is two pictures that must stay the
+     same shot from the same spot, so they are edited side by side rather
+     than as two unrelated rows. */
+  function renderPairs() {
+    const list = $("ba-list");
+    if (!list) return;
+    list.textContent = "";
+
+    gallery.pairs.forEach((pair, i) => {
+      const changed = pairChanged(pair, i);
+      const li = el("li", "img-row ba-row" + (changed ? " img-row--changed" : ""));
+
+      const shots = el("div", "ba-row__shots");
+      shots.appendChild(pickerTile({
+        id: "ba-before-" + i,
+        src: pair.before,
+        pending: pair.pendingBefore,
+        hint: "Change",
+        caption: "Before",
+        a11y: "Change the before picture for " + (pair.caption || "this comparison"),
+        onPick: (f) => replacePairImage(pair, "before", f)
+      }));
+      shots.appendChild(pickerTile({
+        id: "ba-after-" + i,
+        src: pair.after,
+        pending: pair.pendingAfter,
+        hint: "Change",
+        caption: "After",
+        a11y: "Change the after picture for " + (pair.caption || "this comparison"),
+        onPick: (f) => replacePairImage(pair, "after", f)
+      }));
+      li.appendChild(shots);
+
+      const body = el("div", "img-row__body");
+      if (changed) body.appendChild(el("p", "img-row__note", "Not published yet"));
+
+      const bind = (labelText, key, id) => {
+        const f = field(labelText, textBox(pair[key]), id);
+        f.control.addEventListener("input", (e) => {
+          pair[key] = e.target.value; saveDraft(); markDirty();
+        });
+        body.appendChild(f.wrap);
+      };
+      bind("Caption under the slider", "caption", "ba-cap-" + i);
+      bind("Describe the before picture (screen readers)", "beforeAlt", "ba-balt-" + i);
+      bind("Describe the after picture (screen readers)", "afterAlt", "ba-aalt-" + i);
+
+      const tagWrap = el("label", "img-row__check");
+      const tag = document.createElement("input");
+      tag.type = "checkbox";
+      tag.checked = !!pair.illustrative;
+      tag.addEventListener("change", () => {
+        pair.illustrative = tag.checked; saveDraft(); renderGallery();
+      });
+      tagWrap.appendChild(tag);
+      tagWrap.appendChild(document.createTextNode(" Stock photos (shows an \u201cIllustrative\u201d badge)"));
+      body.appendChild(tagWrap);
+
+      body.appendChild(el("p", "img-row__file",
+        pair.before.replace("images/gallery/", "") + "  +  " +
+        pair.after.replace("images/gallery/", "")));
+      li.appendChild(body);
+      list.appendChild(li);
+    });
+  }
+
+  /* Replacing one half of a pair keeps that half's filename, so publishing
+     is a single overwrite and the other half is untouched. */
+  function replacePairImage(pair, half, file) {
+    setStatus($("img-status"), "Preparing the picture\u2026", "");
+    const name = pair[half];
+    shrink(file).then(({ blob }) => idbPut(name, blob).then(() => {
+      pair[half === "before" ? "pendingBefore" : "pendingAfter"] = true;
+      pair.illustrative = false;
+      saveDraft();
+      renderGallery();
+      setStatus($("img-status"),
+        "\u201c" + half + "\u201d picture replaced (" + Math.round(blob.size / 1024) +
+        "KB). Publish when you are ready.", "good");
+    })).catch(() => {
+      setStatus($("img-status"), "That file could not be read as a photo. Try a JPG, PNG or WebP.", "bad");
+    });
   }
 
   function markDirty() {
     const btn = $("img-publish");
     if (!btn) return;
-    const n = gallery.items.filter(entryChanged).length +
-              (published && published.items.length > gallery.items.length ? 1 : 0);
+    const n = changeCount();
     btn.textContent = n > 0 ? "Publish " + n + " change" + (n === 1 ? "" : "s") + "…" : "Publish…";
     btn.disabled = n === 0;
   }
@@ -1484,11 +1616,25 @@
         alt: i.alt || "",
         full: i.full || "",
         illustrative: !!i.illustrative
+      })),
+      pairs: gallery.pairs.map((p) => ({
+        before: p.before,
+        after: p.after,
+        beforeAlt: p.beforeAlt || "",
+        afterAlt: p.afterAlt || "",
+        caption: p.caption || "",
+        label: p.label || "",
+        illustrative: !!p.illustrative
       }))
     };
     const manifestBlob = new Blob([JSON.stringify(clean, null, 2)], { type: "application/json" });
 
-    const pending = gallery.items.filter((i) => i.pending);
+    // Every image file that has to travel with this publish.
+    const pending = gallery.items.filter((i) => i.pending).map((i) => i.src);
+    gallery.pairs.forEach((p) => {
+      if (p.pendingBefore) pending.push(p.before);
+      if (p.pendingAfter) pending.push(p.after);
+    });
     let count = 0;
 
     const finish = () => {
@@ -1523,12 +1669,11 @@
     let n = 0;
     const next = () => {
       if (n >= pending.length) { finish(); return; }
-      const item = pending[n];
-      idbGet(item.src).then((blob) => {
+      const src = pending[n];
+      idbGet(src).then((blob) => {
         if (blob) {
-          box.appendChild(downloadLink(
-            item.src.replace("images/gallery/", ""), blob,
-            "Download " + item.src.replace("images/gallery/", "")));
+          const file = src.replace("images/gallery/", "");
+          box.appendChild(downloadLink(file, blob, "Download " + file));
           count += 1;
         }
       }).catch(() => {}).then(() => { n += 1; next(); });
@@ -1552,8 +1697,11 @@
 
   function clonePublished() {
     return published
-      ? { items: published.items.map((i) => Object.assign({}, i)) }
-      : { items: [] };
+      ? {
+          items: published.items.map((i) => Object.assign({}, i)),
+          pairs: published.pairs.map((p) => Object.assign({}, p))
+        }
+      : { items: [], pairs: [] };
   }
 
   /* ---- start-up ----------------------------------------------------- */
@@ -1562,8 +1710,8 @@
     if (!$("img-list")) return;
 
     const fail = (msg) => {
-      published = { items: [] };
-      gallery = loadDraft() || { items: [] };
+      published = { items: [], pairs: [] };
+      gallery = loadDraft() || { items: [], pairs: [] };
       renderGallery();
       setStatus($("img-status"), msg, "bad");
     };
@@ -1577,10 +1725,17 @@
       .then((res) => { if (!res.ok) throw new Error("HTTP " + res.status); return res.json(); })
       .then((data) => {
         if (!data || !Array.isArray(data.items)) throw new Error("bad manifest");
-        published = { items: data.items.map((i) => Object.assign({}, i)) };
+        published = {
+          items: data.items.map((i) => Object.assign({}, i)),
+          pairs: Array.isArray(data.pairs) ? data.pairs.map((p) => Object.assign({}, p)) : []
+        };
         gallery = loadDraft() || clonePublished();
+        // A draft saved before the Before & after editor existed has no pairs.
+        if (gallery.pairs.length === 0 && published.pairs.length > 0) {
+          gallery.pairs = published.pairs.map((p) => Object.assign({}, p));
+        }
         renderGallery();
-        const changed = gallery.items.filter(entryChanged).length;
+        const changed = changeCount();
         if (changed) {
           setStatus($("img-status"),
             "You have " + changed + " unpublished change" + (changed === 1 ? "" : "s") +

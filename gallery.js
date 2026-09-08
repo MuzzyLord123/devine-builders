@@ -137,6 +137,120 @@
     return li;
   }
 
+  /* Build one Before & after slider from a manifest pair. Mirrors the markup
+     in gallery.html exactly, because site.js's initBeforeAfter() reads it. */
+  function buildPair(pair, n) {
+    const li = document.createElement("li");
+
+    var fig = document.createElement("figure");
+    fig.className = "ba-slider";
+    fig.setAttribute("data-ba-slider", "");
+    fig.style.setProperty("--ba-pos", "50%");
+
+    var stage = document.createElement("div");
+    stage.className = "ba-slider__stage";
+
+    if (pair.illustrative) {
+      var tag = document.createElement("span");
+      tag.className = "ba-slider__tag";
+      tag.setAttribute("aria-hidden", "true");
+      tag.textContent = "Illustrative";
+      stage.appendChild(tag);
+    }
+
+    var before = document.createElement("img");
+    before.className = "ba-slider__img ba-slider__img--before";
+    before.src = pair.before;
+    before.alt = pair.beforeAlt || "";
+    before.setAttribute("width", "800");
+    before.setAttribute("height", "600");
+    before.setAttribute("loading", "lazy");
+    stage.appendChild(before);
+
+    var afterWrap = document.createElement("div");
+    afterWrap.className = "ba-slider__after";
+    afterWrap.setAttribute("data-ba-after", "");
+    var after = document.createElement("img");
+    after.className = "ba-slider__img ba-slider__img--after";
+    after.src = pair.after;
+    after.alt = pair.afterAlt || "";
+    after.setAttribute("width", "800");
+    after.setAttribute("height", "600");
+    after.setAttribute("loading", "lazy");
+    afterWrap.appendChild(after);
+    stage.appendChild(afterWrap);
+
+    var lb = document.createElement("span");
+    lb.className = "ba-slider__label ba-slider__label--before";
+    lb.setAttribute("aria-hidden", "true");
+    lb.textContent = "Before";
+    stage.appendChild(lb);
+
+    var la = document.createElement("span");
+    la.className = "ba-slider__label ba-slider__label--after";
+    la.setAttribute("aria-hidden", "true");
+    la.textContent = "After";
+    stage.appendChild(la);
+
+    var divider = document.createElement("span");
+    divider.className = "ba-slider__divider";
+    divider.setAttribute("data-ba-divider", "");
+    divider.setAttribute("aria-hidden", "true");
+    stage.appendChild(divider);
+
+    fig.appendChild(stage);
+
+    var id = "ba-range-" + n;
+    var rangeLabel = document.createElement("label");
+    rangeLabel.className = "ba-slider__range-label";
+    rangeLabel.setAttribute("for", id);
+    rangeLabel.textContent = pair.label || "Reveal the finished result";
+    fig.appendChild(rangeLabel);
+
+    var range = document.createElement("input");
+    range.className = "ba-slider__range";
+    range.id = id;
+    range.type = "range";
+    range.min = "0";
+    range.max = "100";
+    range.value = "50";
+    range.step = "1";
+    range.setAttribute("data-ba-range", "");
+    fig.appendChild(range);
+
+    var cap = document.createElement("figcaption");
+    cap.className = "ba-slider__caption";
+    cap.textContent = pair.caption || "";
+    fig.appendChild(cap);
+
+    li.appendChild(fig);
+    return li;
+  }
+
+  function renderPairs(data) {
+    var grid = document.querySelector(".ba-grid");
+    if (!grid || !data || Object.prototype.toString.call(data.pairs) !== "[object Array]") return;
+    var pairs = data.pairs.filter(function (p) {
+      return p && typeof p.before === "string" && p.before &&
+             typeof p.after === "string" && p.after;
+    });
+    if (pairs.length === 0) return;   // keep the shipped sliders
+
+    var frag = document.createDocumentFragment();
+    for (var i = 0; i < pairs.length; i++) frag.appendChild(buildPair(pairs[i], i + 1));
+    grid.textContent = "";
+    grid.appendChild(frag);
+
+    // site.js already ran, so the fresh range inputs are unwired. Re-run its
+    // initialiser if it is there; without it the sliders simply sit at 50%,
+    // which is still a readable before/after view.
+    try {
+      if (window.DevineBuilders && typeof window.DevineBuilders.initBeforeAfter === "function") {
+        window.DevineBuilders.initBeforeAfter();
+      }
+    } catch (e) { /* leave the static view */ }
+  }
+
   /* Replace the shipped grid with the manifest's. Returns false and leaves
      the HTML untouched if the data is not usable. */
   function renderManifest(gallery, data) {
@@ -170,7 +284,7 @@
         if (!res.ok) throw new Error("HTTP " + res.status);
         return res.json();
       })
-      .then(function (data) { renderManifest(gallery, data); })
+      .then(function (data) { renderManifest(gallery, data); renderPairs(data); })
       .catch(function () { /* keep the photos that shipped with the page */ })
       .then(function () { window.clearTimeout(timer); go(); });
   });

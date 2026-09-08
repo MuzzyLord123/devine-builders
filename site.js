@@ -1081,6 +1081,13 @@
     }
   }
 
+  /* gallery.js can rebuild the Before & after markup from gallery.json after
+     this file has already run, so it needs a way to wire the fresh sliders.
+     setup() only ever touches the node handed to it and re-running on an
+     already-wired node is harmless, so re-entry is safe. */
+  window.DevineBuilders = window.DevineBuilders || {};
+  window.DevineBuilders.initBeforeAfter = initBeforeAfter;
+
   /* =================================================================
      FEATURE 5 — "Back to top" button (all pages)
 

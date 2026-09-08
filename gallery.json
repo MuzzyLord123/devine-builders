@@ -1,5 +1,5 @@
 {
-  "_comment": "Gallery contents. Edited through the Images tab of /admin/ - you should not need to touch this by hand. gallery.js renders the grid on gallery.html from this file; if the file is missing or unreadable the built-in HTML in gallery.html is used instead, so the page can never end up empty. 'illustrative' true shows the small Illustrative badge - turn it off once a slot holds a real job photo.",
+  "_comment": "Gallery contents. Edited through the Gallery images section of /admin/ - you should not need to touch this by hand. gallery.js renders the Work Carried Out grid from 'items' and the Before & after sliders from 'pairs'; if the file is missing or unreadable the built-in HTML in gallery.html is used instead, so the page can never end up empty. 'illustrative' true shows the small Illustrative badge - turn it off once a slot holds a real job photo.",
   "version": 1,
   "updated": "2026-09-08",
   "items": [
@@ -50,6 +50,26 @@
       "caption": "Landscaping & patios",
       "alt": "A landscaped garden with a timber pergola and paved patio",
       "full": "Landscaping & patios, an illustrative example of our garden and outdoor work.",
+      "illustrative": true
+    }
+  ],
+  "pairs": [
+    {
+      "before": "images/gallery/ba-kitchen-before.jpg",
+      "after": "images/gallery/ba-kitchen-after.jpg",
+      "beforeAlt": "A dated kitchen with an old cooker and worn tiling, before renovation",
+      "afterAlt": "A modern fitted kitchen after renovation",
+      "caption": "Kitchen renovation, slide to compare. Illustrative example.",
+      "label": "Reveal the finished kitchen renovation",
+      "illustrative": true
+    },
+    {
+      "before": "images/gallery/ba-bathroom-before.jpg",
+      "after": "images/gallery/ba-bathroom-after.jpg",
+      "beforeAlt": "A tired, dated bathroom with old fittings, before renovation",
+      "afterAlt": "A modern tiled bathroom after renovation",
+      "caption": "Bathroom renovation, slide to compare. Illustrative example.",
+      "label": "Reveal the finished bathroom renovation",
       "illustrative": true
     }
   ]

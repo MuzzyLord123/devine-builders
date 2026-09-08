@@ -182,6 +182,11 @@ Carried Out page get changed, with no code involved. Add, replace, reorder,
 re-caption and remove; big phone photos are shrunk automatically (long edge
 capped at 1600px, JPEG quality 0.82) so the page stays fast.
 
+**Click any picture to change it** - the thumbnail itself is the file picker.
+The **Before & after sliders** below the main list work the same way: click the
+Before or the After shot. Those two need to be the same view from the same spot,
+or the slider will not line up.
+
 It is a **draft** until you publish. The site is static, so a photo only
 reaches visitors once the file reaches the host. Press **Publish** and it
 gives you the exact files to upload:
