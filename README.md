@@ -37,6 +37,8 @@ Tip: if a page ever looks unstyled after an edit, hard-refresh once with **Ctrl 
 | `devine-builders.vcf` | "Save Phil's number" contact card |
 | `favicon.ico`, `images/favicon-16/32.png`, `images/og-cover.png`, `site.webmanifest` | Icons, social share image, PWA manifest (`favicon.svg` / `og-cover.svg` are unlinked design sources) |
 | `robots.txt`, `sitemap.xml` | Search-engine files |
+| `build.js` | Deploy-time script: bakes the `/admin/` key from `ADMIN_KEY` / `ADMIN_KEY_HASH` into `admin/admin-key.js`. The only build step |
+| `admin/admin-key.js` | **Generated** — committed copy is deliberately empty; never commit a real hash |
 | `vercel.json` | Vercel config — security headers + `cleanUrls: false`. **Strict schema: no comment keys** (a `_comment_*` property is rejected at deploy time) |
 | `_headers` | Same headers for Netlify/Cloudflare Pages — inert on Vercel and GitHub Pages, kept for a future host move |
 | `.nojekyll` | GitHub Pages leftover (skip Jekyll processing) — ignored by Vercel, harmless to keep |
@@ -124,10 +126,48 @@ disallowed in `robots.txt`.
 
 **Access key:** issued separately — ask the site owner; it is deliberately
 **not** written down in this repo, because the repo is public and a key
-published next to the URL protects nothing. Change it from the panel
-(*Your data → Change the access key*) for the device you're on, or permanently
-for every device by replacing `DEFAULT_KEY_HASH` in `admin/admin.js` (that
-file explains how to generate the new hash). Never commit the key itself.
+published next to the URL protects nothing.
+
+Three sources are checked, first match wins:
+
+| # | Source | Scope |
+|---|--------|-------|
+| 1 | *Your data → Change the access key* in the panel | this browser only |
+| 2 | **`ADMIN_KEY` set in Vercel** (see below) | every device — **use this one** |
+| 3 | `BUILT_IN_KEY_HASH` in `admin/admin.js` | fallback if 1 and 2 are absent |
+
+### Setting the key in Vercel
+
+The key does not have to live in this public repo. Vercel runs `build.js`
+(wired up as `buildCommand` in `vercel.json`), which bakes the key's hash into
+`admin/admin-key.js` at deploy time:
+
+1. Vercel → your project → **Settings → Environment Variables**.
+2. Add **`ADMIN_KEY`**, value = the key Phil will actually type (8+ characters).
+   Tick **Production** and **Preview**. `build.js` hashes it — the plaintext
+   stays inside Vercel and is never written into the deployment.
+3. **Redeploy** (Deployments → ⋯ → Redeploy). Environment variables are read at
+   build time, so an existing deployment will not pick up a change on its own.
+
+Prefer not to put the plaintext into Vercel at all? Set **`ADMIN_KEY_HASH`**
+instead — a SHA-256 hex digest you generate yourself (`admin/admin.js` has the
+console one-liner). It takes precedence over `ADMIN_KEY`.
+
+The build log tells you which one it used. With **neither** set it prints a
+warning and the panel keeps working on the built-in key, so a missing variable
+can never lock you out. A bad value (short key, malformed hash) **fails the
+build** rather than deploying a panel nobody can open.
+
+`admin/admin-key.js` is generated. The copy committed here is deliberately
+empty — **never commit one containing a real hash.** Never commit the key
+itself anywhere.
+
+**What this lock is and isn't:** the check runs in the visitor's own browser,
+so it is not server-grade security. It doesn't need to be — the enquiries live
+only in `localStorage` on the device you use the panel on, so a stranger
+opening `/admin/` sees an empty tracker. The lock is what stops someone who has
+your unlocked device. Keeping the hash out of the public repo matters because a
+published hash can be attacked offline at leisure.
 
 **Read this before relying on it:**
 
@@ -179,9 +219,11 @@ Everything the next owner/maintainer needs, in order:
    migrate — but the outgoing owner should either **export a JSON backup for
    the new owner, or delete their tracker data** (*Your data → Delete
    everything*), since it contains customers' personal details. Change the
-   access key after handover.
-3. **Editing** — there is no build step: edit the HTML/CSS/JS directly and push
-   to `main`. The 8 `*-connahs-quay.html` landing pages are hand-maintained
+   access key after handover — that now means updating `ADMIN_KEY` in the
+   Vercel project and redeploying, plus transferring the Vercel project itself.
+3. **Editing** — edit the HTML/CSS/JS directly and push to `main`; nothing is
+   compiled or bundled. (The one `buildCommand`, `node build.js`, only injects
+   the `/admin/` key — it does not transform any site file.) The 8 `*-connahs-quay.html` landing pages are hand-maintained
    (don't run `tools/db_service_pages.py`; it's disabled for a reason). When a
    page's visible content changes, bump its `<lastmod>` in `sitemap.xml`.
 4. **Assets with regeneration notes** — the brochure PDF, the hero image

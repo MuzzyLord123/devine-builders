@@ -14,17 +14,29 @@
    CHANGING THE ACCESS KEY
 
    Only the SHA-256 hash of the key is stored, never the key itself.
-   The panel's "Change the access key" box sets a key for the CURRENT
-   device. To change the built-in key for every device, replace
-   DEFAULT_KEY_HASH below with the hash of your new key. Get the hash by
-   pasting this into any browser's dev-tools console (F12 -> Console):
+   Three sources are checked, in this order:
+
+     1. A per-device key set in this panel's "Change the access key" box.
+        Stored in this browser's localStorage; affects THIS device only.
+     2. A key deployed from the host. On Vercel, set ADMIN_KEY (plain
+        text) or ADMIN_KEY_HASH in the project's Environment Variables;
+        build.js hashes it into admin/admin-key.js at deploy time, so the
+        key never appears in this public repo. This is the one to use.
+     3. BUILT_IN_KEY_HASH below — the fallback baked in when the panel was
+        built, used when neither of the above is present.
+
+   To change (3), replace the hash below. Get one by pasting this into
+   any browser's dev-tools console (F12 -> Console):
 
      crypto.subtle.digest('SHA-256', new TextEncoder().encode('your-new-key'))
        .then(b => console.log([...new Uint8Array(b)]
          .map(x => x.toString(16).padStart(2, '0')).join('')));
 
    Remember: this check runs in the visitor's own browser, so it is a
-   privacy curtain for your device — not server-grade security.
+   privacy curtain for your device — not server-grade security. The
+   enquiries themselves never leave this browser's localStorage, so the
+   lock is what stops someone picking up your unlocked device; it is not
+   protecting data that sits on a server.
    ===================================================================== */
 
 (function () {
@@ -34,13 +46,23 @@
   /* 1. Constants                                                      */
   /* ---------------------------------------------------------------- */
 
-  // SHA-256 of the key issued when this panel was built.
+  // SHA-256 of the key issued when this panel was built — the LAST resort,
+  // used only when the host has not deployed one (see the header).
   // NEVER write the key itself into this repo (or the README) — the repo is
   // public, so a plaintext key there is the same as having no key at all.
-  // If it ever does leak, rotate: pick a new key, regenerate this hash with
-  // the console snippet above, and commit only the hash.
-  const DEFAULT_KEY_HASH =
+  // Even the hash is worth keeping out: published, it can be attacked
+  // offline at leisure. That is what the ADMIN_KEY route above is for.
+  const BUILT_IN_KEY_HASH =
     "483d31429d46e02a2e877f390bbca69c68a22c25462b896ce862c5e0b97e5ed4";
+
+  // Injected by build.js from the host's ADMIN_KEY / ADMIN_KEY_HASH
+  // environment variable (admin/admin-key.js). Absent when the site is
+  // opened straight off disk, or when the variable was never set — hence
+  // the fallback, so a missing build step can never lock Phil out.
+  function deployedKeyHash() {
+    const injected = String(window.__DB_ADMIN_KEY_HASH || "").toLowerCase();
+    return /^[0-9a-f]{64}$/.test(injected) ? injected : "";
+  }
 
   const STORE_KEY = "db-admin-enquiries-v1";  // the enquiries themselves
   const KEYHASH_KEY = "db-admin-keyhash";     // per-device key override
@@ -51,9 +73,9 @@
 
   // Must match the quote form's <option> values (quote.html).
   const SERVICES = [
-    "Extension", "Renovation", "Brickwork & Masonry", "Groundworks",
-    "Roofing", "Driveway / Patio", "Landscaping", "Property Maintenance",
-    "Other / Not sure"
+    "Extension", "Renovation", "Kitchen", "Garage Renovation",
+    "Brickwork & Masonry", "Groundworks", "Roofing", "Driveway / Patio",
+    "Landscaping", "Property Maintenance", "Other / Not sure"
   ];
 
   const BUSINESS = { name: "Devine Builders", contact: "Phil Devine", phone: "07956 547040" };
@@ -239,8 +261,8 @@
     try {
       const override = window.localStorage.getItem(KEYHASH_KEY);
       if (override && /^[0-9a-f]{64}$/.test(override)) return override;
-    } catch (e) { /* storage blocked — fall through to the built-in key */ }
-    return DEFAULT_KEY_HASH;
+    } catch (e) { /* storage blocked — fall through to the deployed key */ }
+    return deployedKeyHash() || BUILT_IN_KEY_HASH;
   }
 
   let failedAttempts = 0;
