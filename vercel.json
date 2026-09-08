@@ -1,7 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "cleanUrls": false,
-  "_comment_trailingSlash": "Left as null deliberately: forcing false would redirect /admin/ to /admin, which serves the folder's index.html from a path where its relative ../styles.css and admin.js no longer resolve — the tracker would load unstyled with no JavaScript.",
   "headers": [
     {
       "source": "/(.*)",

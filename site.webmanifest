@@ -1,9 +1,9 @@
 {
   "name": "Devine Builders",
   "short_name": "Devine Builders",
-  "description": "Local, owner-run builder in Connah's Quay, North Wales — extensions, renovations, brickwork, groundworks, roofing, driveways, landscaping and property maintenance.",
-  "start_url": "/devine-builders/",
-  "scope": "/devine-builders/",
+  "description": "Local business in Connah's Quay, North Wales — extensions, renovations, brickwork, groundworks, roofing, driveways, landscaping, kitchens, garage renovations and property maintenance.",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#1d4ed8",

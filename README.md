@@ -37,8 +37,9 @@ Tip: if a page ever looks unstyled after an edit, hard-refresh once with **Ctrl 
 | `devine-builders.vcf` | "Save Phil's number" contact card |
 | `favicon.ico`, `images/favicon-16/32.png`, `images/og-cover.png`, `site.webmanifest` | Icons, social share image, PWA manifest (`favicon.svg` / `og-cover.svg` are unlinked design sources) |
 | `robots.txt`, `sitemap.xml` | Search-engine files |
-| `_headers`, `vercel.json` | Security/caching headers for Netlify/Cloudflare Pages/Vercel — **inert on GitHub Pages** (kept ready for a future host move; there is no active Vercel deployment) |
-| `.nojekyll` | Tells GitHub Pages to serve files as-is (skip Jekyll processing) — keep it |
+| `vercel.json` | Vercel config — security headers + `cleanUrls: false`. **Strict schema: no comment keys** (a `_comment_*` property is rejected at deploy time) |
+| `_headers` | Same headers for Netlify/Cloudflare Pages — inert on Vercel and GitHub Pages, kept for a future host move |
+| `.nojekyll` | GitHub Pages leftover (skip Jekyll processing) — ignored by Vercel, harmless to keep |
 | `*-connahs-quay.html` (×8) | Per-service landing pages — **hand-maintained**: edit the HTML directly |
 | `chatbot.js` | Free on-site chat assistant (knowledge-based, no APIs) |
 | `admin/` | Private enquiry tracker at `/admin/` — owner-only, not linked from the site (see below) |
@@ -74,21 +75,42 @@ Tip: if a page ever looks unstyled after an edit, hard-refresh once with **Ctrl 
 
 ## Deploy
 
-**The site is already live** on GitHub Pages at
-**https://muzzylord123.github.io/devine-builders/** — every push to the `main`
-branch of the `MuzzyLord123/devine-builders` repo redeploys it automatically
-(legacy branch builder, no Actions workflow needed). All canonical, sitemap and
-social URLs point at that address until a real domain is set (checklist item 3).
+**The host is Vercel** (moved off GitHub Pages). It's a plain static site —
+no build step, no framework — so Vercel's "Other" preset serves the repo root
+as-is. Import the `MuzzyLord123/devine-builders` repo and leave the Build &
+Output settings empty; every push to `main` redeploys.
 
-Moving to a different host later? It's plain static files, so anything works —
-but note two couplings first:
+> **Still to do:** all canonical, Open Graph, sitemap and `robots.txt` URLs
+> still point at the retired `https://muzzylord123.github.io/devine-builders`
+> address. That is deliberate while the site is on a temporary `*.vercel.app`
+> URL (it stops Google indexing the preview domain as the real one), but it
+> **must** be swapped the moment a real domain is bought — see checklist item 3.
+> Until then the GitHub Pages site should be left up, or those canonical tags
+> point at a dead address.
 
-- **`404.html` hardcodes the `/devine-builders/` path prefix** in all its links
-  and assets (required for GitHub Pages project sites, which serve the 404 for
-  arbitrary nested URLs). On a host that serves the site at the domain root,
-  change that prefix to `/` or the 404 page loads unstyled with dead links.
+The site now assumes it is served from a **domain root**:
+
+- **`404.html` uses root-absolute links** (`/styles.css`, `/site.js`, …). It has
+  to, because a host serves that page for arbitrary nested URLs, where relative
+  paths would resolve against the wrong directory. Vercel returns `/404.html`
+  for unmatched routes automatically. The old `/devine-builders/` GitHub Pages
+  prefix was stripped when the site moved — if it is ever served from a
+  sub-path again, that prefix has to come back.
+- **`site.webmanifest` uses relative `start_url` / `scope` (`./`)**, so the PWA
+  scope follows whatever path the manifest is served from. Leave them relative.
+- **Vercel's filesystem is case-sensitive** (Windows is not). A link like
+  `images/Logo.png` pointing at `images/logo.png` works locally and 404s in
+  production — check the exact case when adding assets.
 - `_headers` (Netlify/Cloudflare Pages) and `vercel.json` (Vercel) start being
   honoured on those hosts — they're ignored on GitHub Pages.
+- **`vercel.json` deliberately omits `trailingSlash`.** Setting it to `false`
+  would redirect `/admin/` to `/admin`, which serves the folder's `index.html`
+  from a path where its relative `../styles.css` and `admin.js` no longer
+  resolve — the tracker would load unstyled with no JavaScript. Leave the key
+  out. (It used to be documented in a `_comment_trailingSlash` key inside
+  `vercel.json`; Vercel validates that file against a strict schema and rejects
+  unknown properties, so the note lives here instead — do not add comment keys
+  back to `vercel.json`.)
 
 No server, database or build step required anywhere.
 
