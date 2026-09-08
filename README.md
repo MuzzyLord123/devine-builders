@@ -26,12 +26,12 @@ Tip: if a page ever looks unstyled after an edit, hard-refresh once with **Ctrl 
 | `index.html` | Home — hero, services, why-us, process, "Our promise" carousel, FAQ, areas map |
 | `services.html` | Detailed services page |
 | `gallery.html` | Photo gallery + lightbox + before/after slider |
-| `quote.html` | Quote request form + contact details |
+| `estimate.html` | Quote request form + contact details |
 | `thank-you.html` | Post-submit confirmation page |
 | `404.html` | Friendly not-found page |
 | `styles.css` | Single shared stylesheet (blue & white theme) |
 | `site.js` | Brick-wall hero bands, photo-hero effects, mobile menu, scroll-reveal, parallax, sticky call bar, before/after slider, promise carousel, back-to-top |
-| `gallery.js` / `quote.js` | Lightbox / form validation |
+| `gallery.js` / `estimate.js` | Lightbox / form validation |
 | `images/gallery/` | Your photos go here (placeholders included) |
 | `devine-builders-services.pdf` | Downloadable services brochure |
 | `devine-builders.vcf` | "Save Phil's number" contact card |
@@ -67,7 +67,7 @@ Tip: if a page ever looks unstyled after an edit, hard-refresh once with **Ctrl 
    - the root-absolute `/devine-builders/` links inside `404.html` (change the prefix to `/`),
    - and reset `start_url`/`scope` in `site.webmanifest` to `/`, then add a `CNAME` file.
 
-4. **Quote form — already live** → the form posts to **FormSubmit.co** (free): a background JSON send with a native POST for photo attachments, falling back to the visitor's email app only if both fail. Delivery goes to **phildevine24@icloud.com**. If that inbox ever changes, update the address in BOTH `quote.html` (the form `action`) and `quote.js` (`RECIPIENT`), then submit the form once — FormSubmit emails a one-time activation link to the new address before it starts forwarding.
+4. **Quote form — already live** → the form posts to **FormSubmit.co** (free): a background JSON send with a native POST for photo attachments, falling back to the visitor's email app only if both fail. Delivery goes to **phildevine24@icloud.com**. If that inbox ever changes, update the address in BOTH `estimate.html` (the form `action`) and `estimate.js` (`RECIPIENT`), then submit the form once — FormSubmit emails a one-time activation link to the new address before it starts forwarding.
 
 5. *(Optional)* **Turn on cookie-free analytics** → uncomment one provider in the `<head>` of each page (Plausible / Cloudflare / GoatCounter). They need no cookie banner.
 

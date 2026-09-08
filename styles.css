@@ -1173,6 +1173,60 @@ ol[class] { list-style: none; padding: 0; }
 .label .req { color: var(--color-danger); font-weight: 700; }
 .field__hint { font-size: 0.9375rem; line-height: 1.5; color: var(--color-ink-faint); }
 
+/* Preferred contact method (estimate.html). A <fieldset>, so the legend is
+   announced with each radio; the browser default fieldset chrome is removed
+   because .field already supplies the grid + spacing. The options are real
+   radios (not restyled boxes) so focus, keyboard and forced-colours modes
+   all behave, wrapped in a card that gives a 44px+ touch target. */
+.contact-pref {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-inline-size: 0;   /* Chrome/Safari fieldsets refuse to shrink otherwise */
+}
+.contact-pref__legend { padding: 0; }
+.contact-pref__options {
+  display: grid;
+  gap: var(--space-2);
+}
+@media (min-width: 30em) {
+  .contact-pref__options { grid-template-columns: 1fr 1fr; }
+}
+.contact-pref__option {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-height: 2.75rem;
+  padding: 0.625rem 0.9rem;
+  font-size: var(--fs-400);
+  color: var(--color-ink);
+  background: var(--color-bg);
+  border: 1.5px solid var(--color-border-2);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-xs);
+  cursor: pointer;
+  transition: border-color var(--transition), background var(--transition);
+}
+.contact-pref__option:hover { border-color: var(--color-accent); }
+.contact-pref__option input {
+  width: 1.125rem;
+  height: 1.125rem;
+  margin: 0;
+  accent-color: var(--color-accent);
+  flex: 0 0 auto;
+}
+/* :has() lifts the whole card on selection; browsers without it simply keep
+   the plain card, and the radio dot still shows the state. */
+.contact-pref__option:has(input:checked) {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+  font-weight: 600;
+}
+.contact-pref__option:has(input:focus-visible) {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
 .input,
 .select,
 .textarea {
@@ -1221,7 +1275,7 @@ ol[class] { list-style: none; padding: 0; }
   border-color: var(--color-focus);
 }
 
-/* Invalid state (set by quote.js via aria-invalid + .has-error) */
+/* Invalid state (set by estimate.js via aria-invalid + .has-error) */
 .field.has-error .input,
 .field.has-error .select,
 .field.has-error .textarea,
@@ -1286,7 +1340,7 @@ ol[class] { list-style: none; padding: 0; }
   border: 1px solid #fecaca;
 }
 
-/* Persistent success panel rendered by quote.js after a valid submit.
+/* Persistent success panel rendered by estimate.js after a valid submit.
    Visually matches the form's success state but lives in a NON-live
    container, so its links aren't announced as transient status text. */
 .form-success {
@@ -3290,7 +3344,7 @@ body.has-call-bar { /* only meaningful with the mobile media query below */ }
    out-ranks the UA [hidden] rule), so hiding needs this explicit override. */
 .service-card[hidden] { display: none; }
 
-/* ---- Quote-form smart helper (quote.html) -------------------------- */
+/* ---- Quote-form smart helper (estimate.html) -------------------------- */
 .field-tip {
   margin: var(--space-3) 0 0;
   padding: var(--space-3) var(--space-4);

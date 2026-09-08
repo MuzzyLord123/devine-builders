@@ -3,6 +3,10 @@
   "buildCommand": "node build.js",
   "outputDirectory": ".",
   "cleanUrls": false,
+  "redirects": [
+    { "source": "/quote.html", "destination": "/estimate.html", "permanent": true },
+    { "source": "/quote", "destination": "/estimate.html", "permanent": true }
+  ],
   "headers": [
     {
       "source": "/(.*)",

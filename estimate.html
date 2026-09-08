@@ -21,7 +21,7 @@
     page's own absolute URL using the PLACEHOLDER domain below, e.g.:
       index.html   -> https://muzzylord123.github.io/devine-builders/
       gallery.html -> https://muzzylord123.github.io/devine-builders/gallery.html
-      quote.html   -> https://muzzylord123.github.io/devine-builders/quote.html
+      estimate.html   -> https://muzzylord123.github.io/devine-builders/estimate.html
       404.html     -> https://muzzylord123.github.io/devine-builders/404.html
 
     IMPORTANT FOR PHIL: replace "https://muzzylord123.github.io/devine-builders"
@@ -31,13 +31,13 @@
   ============================================================ -->
 
   <!-- Canonical URL (PLACEHOLDER domain — update to real domain) -->
-  <link rel="canonical" href="https://muzzylord123.github.io/devine-builders/quote.html">
+  <link rel="canonical" href="https://muzzylord123.github.io/devine-builders/estimate.html">
 
   <!-- Let search engines index + follow -->
   <meta name="robots" content="index, follow, max-image-preview:large">
 
   <!-- Open Graph image + URL + site name (complements existing og:type/title/description) -->
-  <meta property="og:url" content="https://muzzylord123.github.io/devine-builders/quote.html">
+  <meta property="og:url" content="https://muzzylord123.github.io/devine-builders/estimate.html">
   <meta property="og:site_name" content="Devine Builders">
   <meta property="og:locale" content="en_GB">
   <!-- 1200x630 branded card that ships with the site (created as og-cover.svg).
@@ -127,7 +127,7 @@
           <li><a class="primary-nav__link" href="services.html">Services</a></li>
           <li><a class="primary-nav__link" href="gallery.html">Gallery</a></li>
           <li class="primary-nav__phone-item"><a class="primary-nav__link primary-nav__phone" href="tel:+447956547040"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/></svg>07956 547040</a></li>
-          <li><a class="primary-nav__cta" href="quote.html" aria-current="page">Get an Estimate</a></li>
+          <li><a class="primary-nav__cta" href="estimate.html" aria-current="page">Get an Estimate</a></li>
         </ul>
       </nav>
     </div>
@@ -162,14 +162,14 @@
           emails Phil a confirmation link. He clicks it once, and from then
           on every enquiry is delivered straight to his inbox.
 
-          With JavaScript, quote.js validates and sends it in the background
+          With JavaScript, estimate.js validates and sends it in the background
           (FormSubmit's /ajax/ endpoint) then shows thank-you.html; if that
           ever fails it falls back to opening the visitor's email app.
           Without JavaScript, the plain POST above still works and uses the
           _next field to land on thank-you.html.
 
           Prefer Formspree or another backend? Swap the action URL here and
-          the ENDPOINT in quote.js — the field names stay the same.
+          the ENDPOINT in estimate.js — the field names stay the same.
         -->
         <form class="quote-form" id="quote-form" novalidate method="POST" action="https://formsubmit.co/phildevine24@icloud.com" enctype="multipart/form-data">
           <!-- FormSubmit.co settings (free, no account). The FIRST submission
@@ -195,17 +195,40 @@
             <span class="error" id="name-error" role="alert"></span>
           </div>
 
+          <!-- Preferred contact method. Both fields below stay available so a
+               visitor can leave an email AND a number; the one they pick here
+               is the one that is required, and the one Phil is told to use.
+               NO-JS NOTE: the HTML marks EMAIL required because that is the
+               default choice. estimate.js moves the required flag (and the
+               asterisk) to the phone field when Phone is selected, so with
+               JavaScript off the form still guarantees one reachable contact. -->
+          <fieldset class="field contact-pref">
+            <legend class="label contact-pref__legend">How should Phil get back to you? <span class="req" aria-hidden="true">*</span></legend>
+            <div class="contact-pref__options">
+              <label class="contact-pref__option">
+                <input type="radio" name="contact-preference" value="Email" checked data-contact-pref>
+                <span>Email me</span>
+              </label>
+              <label class="contact-pref__option">
+                <input type="radio" name="contact-preference" value="Phone" data-contact-pref>
+                <span>Call me</span>
+              </label>
+            </div>
+            <span class="field__hint">Leave both if you like &mdash; Phil will use the one you pick here.</span>
+          </fieldset>
+
           <div class="field">
-            <label class="label" for="email">Email address <span class="req" aria-hidden="true">*</span></label>
-            <input class="input" id="email" name="email" type="email" autocomplete="email" required inputmode="email" aria-describedby="email-error">
+            <label class="label" for="email">Email address <span class="req" id="email-req" aria-hidden="true">*</span></label>
+            <input class="input" id="email" name="email" type="email" autocomplete="email" required inputmode="email" aria-describedby="email-hint email-error">
+            <span class="field__hint" id="email-hint">Where Phil will send your estimate.</span>
             <span class="error" id="email-error" role="alert"></span>
           </div>
 
           <div class="form-row form-row--split">
             <div class="field">
-              <label class="label" for="phone">Phone number <span class="req" aria-hidden="true">*</span></label>
-              <input class="input" id="phone" name="phone" type="tel" autocomplete="tel" required inputmode="tel" aria-describedby="phone-hint phone-error">
-              <span class="field__hint" id="phone-hint">So Phil can call you back to talk the job through.</span>
+              <label class="label" for="phone">Phone number <span class="req" id="phone-req" aria-hidden="true" hidden>*</span></label>
+              <input class="input" id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" aria-describedby="phone-hint phone-error">
+              <span class="field__hint" id="phone-hint">Optional &mdash; add it and Phil can call if that is quicker.</span>
               <span class="error" id="phone-error" role="alert"></span>
             </div>
             <div class="field">
@@ -255,7 +278,7 @@
           </div>
         </form>
 
-        <!-- Persistent success panel (populated by quote.js after a valid submit).
+        <!-- Persistent success panel (populated by estimate.js after a valid submit).
              Kept OUT of the #form-status live region so the interactive links
              aren't announced as transient status text. -->
         <div class="form-success" id="form-success" hidden></div>
@@ -323,7 +346,7 @@
           <li><a href="index.html">Home</a></li>
           <li><a href="services.html">Services</a></li>
           <li><a href="gallery.html">Gallery</a></li>
-          <li><a href="quote.html">Get an Estimate</a></li>
+          <li><a href="estimate.html">Get an Estimate</a></li>
           <li><a href="devine-builders-services.pdf" download>Services brochure (PDF)</a></li>
         </ul>
       </div>
@@ -369,12 +392,12 @@
   </footer>
 
   <script src="site.js" defer></script>
-  <script src="quote.js" defer></script>
+  <script src="estimate.js" defer></script>
   <script src="chatbot.js" defer></script>
 
   <!-- ============================================================
-    JSON-LD — ESTIMATE PAGE (quote.html). Paste just before </body>,
-    after <script src="quote.js" defer></script>.
+    JSON-LD — ESTIMATE PAGE (estimate.html). Paste just before </body>,
+    after <script src="estimate.js" defer></script>.
     Breadcrumb + ContactPage. No fabricated data.
   ============================================================ -->
   <script type="application/ld+json">
@@ -394,7 +417,7 @@
             "@type": "ListItem",
             "position": 2,
             "name": "Get an Estimate",
-            "item": "https://muzzylord123.github.io/devine-builders/quote.html"
+            "item": "https://muzzylord123.github.io/devine-builders/estimate.html"
           }
         ]
       },
@@ -402,7 +425,7 @@
         "@type": "ContactPage",
         "name": "Get a Free Estimate | Devine Builders",
         "description": "Request a free, no-obligation estimate from Devine Builders for extensions, renovations, brickwork, groundworks, roofing, driveways, landscaping and property maintenance in Connah's Quay and across North Wales.",
-        "url": "https://muzzylord123.github.io/devine-builders/quote.html",
+        "url": "https://muzzylord123.github.io/devine-builders/estimate.html",
         "isPartOf": { "@id": "https://muzzylord123.github.io/devine-builders/#website" },
         "about": {
           "@id": "https://muzzylord123.github.io/devine-builders/#business",

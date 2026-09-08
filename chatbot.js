@@ -26,9 +26,9 @@
           advisory as the estimate form (CH4-CH8 / LL covered; ask Phil
           otherwise) — road numbers like the A55 are ignored.
      3) A GUIDED ESTIMATE FLOW ("Start my estimate"): three chip-driven questions
-        (job type → location → brief details) that hand off to quote.html
+        (job type → location → brief details) that hand off to estimate.html
         with the project type pre-selected and the details pre-filled via
-        sessionStorage (quote.js only fills fields the visitor left empty).
+        sessionStorage (estimate.js only fills fields the visitor left empty).
         It never promises anything beyond the site's established wording.
      4) An accessible, themed UI built entirely with DOM APIs (user text is
         only ever inserted via textContent, so it is XSS-safe).
@@ -171,7 +171,7 @@
 
   // Common action buttons (reused across many replies).
   var ACT = {
-    quote: { label: "Get a free estimate", href: "quote.html", primary: true },
+    quote: { label: "Get a free estimate", href: "estimate.html", primary: true },
     call: { label: "Call Phil", href: "tel:" + CONTACT.tel },
     email: { label: "Email Phil", href: "mailto:" + CONTACT.email },
     services: { label: "See all services", href: "services.html" },
@@ -278,7 +278,7 @@
       reply: function (ctx) {
         var svc = ctx && ctx.svc;
         var quoteAct = svc
-          ? { label: "Estimate form — " + svc.name, href: "quote.html?service=" + svc.id, primary: true }
+          ? { label: "Estimate form — " + svc.name, href: "estimate.html?service=" + svc.id, primary: true }
           : ACT.quote;
         return {
           blocks: [
@@ -300,7 +300,7 @@
       reply: function (ctx) {
         var svc = ctx && ctx.svc;
         var quoteAct = svc
-          ? { label: "Get a " + svc.name.toLowerCase() + " estimate", href: "quote.html?service=" + svc.id, primary: true }
+          ? { label: "Get a " + svc.name.toLowerCase() + " estimate", href: "estimate.html?service=" + svc.id, primary: true }
           : ACT.quote;
         return {
           blocks: [
@@ -354,7 +354,7 @@
       reply: function (ctx) {
         var svc = ctx && ctx.svc;
         var quoteAct = svc
-          ? { label: "Get a " + svc.name.toLowerCase() + " estimate", href: "quote.html?service=" + svc.id, primary: true }
+          ? { label: "Get a " + svc.name.toLowerCase() + " estimate", href: "estimate.html?service=" + svc.id, primary: true }
           : ACT.quote;
         return {
           blocks: [
@@ -879,9 +879,9 @@
 
   /* =================================================================
      4b. GUIDED ESTIMATE FLOW — three quick questions (job type → location
-         → brief details), then a handoff to quote.html with the project
+         → brief details), then a handoff to estimate.html with the project
          type in the URL (the existing ?service= deep link) and the rest
-         stashed in sessionStorage for quote.js to pre-fill. Chip-driven
+         stashed in sessionStorage for estimate.js to pre-fill. Chip-driven
          but free text works at every step; "cancel" backs out anywhere.
      ================================================================= */
 
@@ -930,7 +930,7 @@
   function beginQuoteFlow() {
     state.flow = { id: "quote", step: "type", data: { service: "", serviceLabel: "", typeText: "", place: "", details: "" } };
     // A fresh flow invalidates any earlier handoff payload — a stale one
-    // must never prefill an unrelated later visit to quote.html.
+    // must never prefill an unrelated later visit to estimate.html.
     lastPrefill = null;
     try { window.sessionStorage.removeItem(PREFILL_KEY); } catch (e) { /* ignore */ }
     saveState();
@@ -1018,8 +1018,8 @@
     var d = state.flow.data;
     state.flow = null;
 
-    // Hand the answers to quote.js: the service travels in the URL, the
-    // rest via sessionStorage. quote.js only ever fills fields the
+    // Hand the answers to estimate.js: the service travels in the URL, the
+    // rest via sessionStorage. estimate.js only ever fills fields the
     // visitor has left empty, and clears the key immediately.
     var pc = d.place ? findPostcode(d.place) : null;
     var parts = [];
@@ -1043,7 +1043,7 @@
         p(summary),
         p("Tap continue and the estimate form will be pre-filled — just add your name and contact details, check it over, and send. Phil usually replies within a day or two."),
         actions([
-          { label: "Continue to the estimate form", href: "quote.html" + (d.service ? "?service=" + d.service : ""), primary: true },
+          { label: "Continue to the estimate form", href: "estimate.html" + (d.service ? "?service=" + d.service : ""), primary: true },
           ACT.call
         ])
       ],
@@ -1104,7 +1104,7 @@
   var replyTimer = null;
 
   // Last completed guided-flow handoff payload — re-stashed on bfcache
-  // restores (quote.js consumes the key destructively on load).
+  // restores (estimate.js consumes the key destructively on load).
   var lastPrefill = null;
 
   var els = {};   // DOM references
@@ -1174,7 +1174,7 @@
     if (node && node.parentNode) node.parentNode.removeChild(node);
   }
 
-  // Internal hrefs in the KB are relative ("quote.html"). On 404.html —
+  // Internal hrefs in the KB are relative ("estimate.html"). On 404.html —
   // which GitHub Pages serves for ARBITRARY nested URLs and which therefore
   // uses root-absolute links — a relative link would 404 again, so resolve
   // against the header nav's own estimate CTA at render time (same trick as
@@ -1186,8 +1186,8 @@
     if (HREF_BASE === null) {
       var cta = document.querySelector(".primary-nav__cta");
       var navHref = cta ? cta.getAttribute("href") || "" : "";
-      HREF_BASE = /quote\.html$/.test(navHref)
-        ? navHref.slice(0, navHref.length - "quote.html".length)
+      HREF_BASE = /estimate\.html$/.test(navHref)
+        ? navHref.slice(0, navHref.length - "estimate.html".length)
         : "";
     }
     return HREF_BASE + href;
@@ -1622,7 +1622,7 @@
       lbo.observe(lightbox, { attributes: true, attributeFilter: ["hidden"] });
     }
 
-    // quote.js consumes the prefill key destructively on load, so after
+    // estimate.js consumes the prefill key destructively on load, so after
     // browser-back the transcript's "tap continue and the form will be
     // pre-filled" promise would be false. bfcache restores keep JS memory
     // alive — re-stash so a second "Continue" tap still works.

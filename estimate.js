@@ -1,6 +1,6 @@
 /* =====================================================================
-   Devine Builders — quote.js
-   Progressive enhancement for quote.html. Vanilla JS, defer-loaded.
+   Devine Builders — estimate.js
+   Progressive enhancement for estimate.html. Vanilla JS, defer-loaded.
 
    Accessible client-side validation (aria-live / aria-describedby /
    aria-invalid, focus-the-first-invalid-field), then — on a valid submit —
@@ -14,12 +14,12 @@
    confirmation link; once he clicks it, every enquiry is delivered to his
    inbox. No signup, dashboard, or endpoint key required.
    --------------------------------------------------------------------
-   EXPECTED FORM CONTRACT (owned by quote.html)
+   EXPECTED FORM CONTRACT (owned by estimate.html)
    --------------------------------------------------------------------
    <form id="quote-form" novalidate method="POST"
          action="https://formsubmit.co/phildevine24@icloud.com">
      <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
-     ... fields named: name, email, phone, postcode (optional),
+     ... fields named: name, email, phone, contact-preference, postcode (optional),
          project-type, details ...
      <button id="quote-submit" type="submit">Get my free estimate</button>
    </form>
@@ -55,7 +55,10 @@
       id: "email",
       label: "your email",
       validate: function (v) {
-        if (!v) return "Please enter your email address.";
+        // Required only when Email is the chosen way to reply. Still checked
+        // for typos when given as the secondary detail — a mistyped address
+        // Phil never uses is harmless, one he DOES fall back to is not.
+        if (!v) return prefersEmail() ? "Please enter your email address." : "";
         if (!EMAIL_RE.test(v)) return "Please enter a valid email address.";
         return "";
       }
@@ -64,7 +67,7 @@
       id: "phone",
       label: "your phone number",
       validate: function (v) {
-        if (!v) return "Please enter a contact phone number.";
+        if (!v) return prefersEmail() ? "" : "Please enter a contact phone number.";
         if (!PHONE_RE.test(v) || v.replace(/\D/g, "").length < 7) return "Please enter a valid phone number.";
         return "";
       }
@@ -87,6 +90,50 @@
       }
     }
   ];
+
+  /* ---- Preferred contact method -------------------------------------
+     The visitor may fill in BOTH an email and a phone number; the radio
+     says which one Phil should actually use. Whichever is chosen is the
+     required one, so nobody is forced to hand over a number to get a
+     reply by email (or vice versa). Defaults to Email — that matches the
+     "checked" radio in the HTML, so the no-JS and with-JS states agree. */
+  function prefersEmail() {
+    var picked = document.querySelector('[data-contact-pref]:checked');
+    return !picked || picked.value !== "Phone";
+  }
+
+  /* Move the required flag and its asterisk to whichever field is chosen,
+     and reword the hints so the form says what it now expects. */
+  function applyContactPreference(refs) {
+    var email = prefersEmail();
+    var pairs = [
+      { id: "email", req: "email-req", hint: "email-hint", on: email,
+        wanted: "Where Phil will send your estimate.",
+        spare: "Optional — worth adding as a backup." },
+      { id: "phone", req: "phone-req", hint: "phone-hint", on: !email,
+        wanted: "Phil will ring you on this number.",
+        spare: "Optional — add it and Phil can call if that is quicker." }
+    ];
+
+    pairs.forEach(function (f) {
+      var input = document.getElementById(f.id);
+      var star = document.getElementById(f.req);
+      var hint = document.getElementById(f.hint);
+      if (!input) return;
+      if (f.on) { input.setAttribute("required", "required"); }
+      else { input.removeAttribute("required"); }
+      if (star) star.hidden = !f.on;
+      if (hint) hint.textContent = f.on ? f.wanted : f.spare;
+
+      // A field that just became optional must not keep an error saying it
+      // is missing — that would block a form the visitor has now completed.
+      if (!f.on && !getValue(input)) {
+        for (var i = 0; i < refs.length; i++) {
+          if (refs[i].control === input) { clearError(refs[i]); break; }
+        }
+      }
+    });
+  }
 
   function ready(fn) {
     if (document.readyState === "loading") {
@@ -131,7 +178,7 @@
       });
     }
 
-    // Deep-link: quote.html?service=Roofing pre-selects the matching project type
+    // Deep-link: estimate.html?service=Roofing pre-selects the matching project type
     // and triggers the helper tip (initQuoteHelper in site.js listens for change).
     var select = document.getElementById("project-type");
     try {
@@ -195,6 +242,14 @@
         }
       });
     });
+
+    // Keep the required-field markers in step with the chosen reply method,
+    // and set them once on load in case the browser restored a selection.
+    var prefRadios = form.querySelectorAll("[data-contact-pref]");
+    Array.prototype.forEach.call(prefRadios, function (radio) {
+      radio.addEventListener("change", function () { applyContactPreference(refs); });
+    });
+    applyContactPreference(refs);
 
     form.addEventListener("submit", function (e) {
       // We control submission entirely.
@@ -268,6 +323,7 @@
         name: data.name || "",
         email: data.email || "",
         phone: data.phone || "",
+        "preferred contact": data["contact-preference"] || "",
         postcode: data.postcode || "",
         "project-type": data["project-type"] || "",
         details: data.details || "",
@@ -323,6 +379,12 @@
     var els = form.querySelectorAll("input, select, textarea");
     Array.prototype.forEach.call(els, function (el) {
       if (!el.name || el.name.charAt(0) === "_") return; // skip FormSubmit _config fields
+      // Radios and checkboxes share a name: only the checked one has a value
+      // worth reading, otherwise the last in the group would always win.
+      if (el.type === "radio" || el.type === "checkbox") {
+        if (el.checked) out[el.name] = (el.value || "").trim();
+        return;
+      }
       out[el.name] = (el.value || "").trim();
     });
     return out;
@@ -340,6 +402,7 @@
       "Name:        " + (data.name || ""),
       "Email:       " + (data.email || ""),
       "Phone:       " + (data.phone || ""),
+      "Prefers:     " + (data["contact-preference"] || ""),
       "Postcode:    " + (data.postcode || "(not given)"),
       "Project:     " + (data["project-type"] || ""),
       "",

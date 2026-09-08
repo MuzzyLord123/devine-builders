@@ -24,7 +24,7 @@
       close, and an automatic reset to "closed" when the viewport grows
       to desktop.
 
-   This file does NOT touch gallery.js or quote.js state. It only adds
+   This file does NOT touch gallery.js or estimate.js state. It only adds
    the .no-scroll class while the *menu* is open and removes it on close
    (the same class gallery.js uses) — and only on pages without a
    lightbox open, which never overlap in practice.
@@ -965,8 +965,8 @@
       // Reuse the page's own nav-CTA href so the 404 page (which uses
       // root-absolute links — GitHub Pages serves it for arbitrary nested
       // paths) doesn't get a relative link that 404s again.
-      var navQuote = document.querySelector(".primary-nav__cta") || document.querySelector('.primary-nav a[href*="quote.html"]');
-      var quoteHref = navQuote ? navQuote.getAttribute("href") : "quote.html";
+      var navQuote = document.querySelector(".primary-nav__cta") || document.querySelector('.primary-nav a[href*="estimate.html"]');
+      var quoteHref = navQuote ? navQuote.getAttribute("href") : "estimate.html";
       bar.appendChild(
         btn("quote", quoteHref, "Get an estimate — free, no obligation", quoteSvg, "Get an estimate")
       );
@@ -1343,7 +1343,7 @@
   }
 
   /* =================================================================
-     FEATURE — Quote-form smart helper (quote.html)
+     FEATURE — Quote-form smart helper (estimate.html)
      When a project type is chosen, show a short, honest tip on what
      helps Phil estimate it accurately. No prices, no commitments.
      ================================================================= */

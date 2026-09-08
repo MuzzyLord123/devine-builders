@@ -4,7 +4,7 @@
    Vanilla JS, no libraries, no network calls of any kind. Everything is
    kept in this browser's localStorage; nothing is uploaded or shared.
 
-   NOTE ON STYLE: the public site files (site.js / quote.js / gallery.js /
+   NOTE ON STYLE: the public site files (site.js / estimate.js / gallery.js /
    chatbot.js) are deliberately written in an ES5 style because they run in
    whatever browser a visitor turns up with. This file is different: it is
    an owner-only tool used on one modern device, so it uses const/let and
@@ -71,7 +71,7 @@
 
   const STATUSES = { new: "New", quoted: "Quoted", won: "Won", lost: "Lost" };
 
-  // Must match the quote form's <option> values (quote.html).
+  // Must match the quote form's <option> values (estimate.html).
   const SERVICES = [
     "Extension", "Renovation", "Kitchen", "Garage Renovation",
     "Brickwork & Masonry", "Groundworks", "Roofing", "Driveway / Patio",
