@@ -828,7 +828,7 @@
           tagIfEligible(sections[s]);
         }
       } else {
-        // Single-section pages (e.g. the quote form, the 404 page) where
+        // Single-section pages (e.g. the estimate form, the 404 page) where
         // <main> IS the section. We must NEVER hide the form/critical block,
         // so we only reveal the safe intro/heading block(s) and leave the
         // rest (form, error actions, contact panel) permanently visible.
@@ -943,7 +943,7 @@
       btn("call", "tel:+447956547040", "Call Phil on +44 7956 547040", phoneSvg, "Call Phil")
     );
 
-    // On the quote page itself the 'Get a quote' button would link to the
+    // On the estimate page itself the 'Get an estimate' button would link to the
     // current page — a dead, redundant control. Offer a genuine alternative
     // action (email Phil) instead, while keeping the two-up grid intact.
     var onQuote = !!document.getElementById("quote-form");
@@ -968,7 +968,7 @@
       var navQuote = document.querySelector(".primary-nav__cta") || document.querySelector('.primary-nav a[href*="quote.html"]');
       var quoteHref = navQuote ? navQuote.getAttribute("href") : "quote.html";
       bar.appendChild(
-        btn("quote", quoteHref, "Get a quote — free, no obligation", quoteSvg, "Get a quote")
+        btn("quote", quoteHref, "Get an estimate — free, no obligation", quoteSvg, "Get an estimate")
       );
     }
 
@@ -1345,7 +1345,7 @@
   /* =================================================================
      FEATURE — Quote-form smart helper (quote.html)
      When a project type is chosen, show a short, honest tip on what
-     helps Phil quote it accurately. No prices, no commitments.
+     helps Phil estimate it accurately. No prices, no commitments.
      ================================================================= */
   function initQuoteHelper() {
     var select = document.getElementById("project-type");
@@ -1354,11 +1354,13 @@
 
     var tips = {
       "Extension": "A rough idea of the size and how you'll use the new space helps Phil scope it — photos or any plans are a bonus.",
-      "Renovation": "Tell us which rooms and roughly what you'd like done; photos of the current space help Phil quote accurately.",
+      "Renovation": "Tell us which rooms and roughly what you'd like done; photos of the current space help Phil estimate accurately.",
+      "Kitchen": "Rough room measurements and a photo of the current kitchen help \u2014 plus whether you already have units in mind or want Phil to price them in.",
+      "Garage Renovation": "Let us know whether it's a repair or a full conversion, plus rough measurements \u2014 photos inside and out really help.",
       "Brickwork & Masonry": "A photo of the wall or area and rough measurements help Phil price new brickwork or repairs.",
       "Groundworks": "Let us know the site access and roughly the area involved — photos help with drainage, foundations or concrete work.",
       "Roofing": "For a repair, a photo of the issue (from the ground is fine) really helps; for a new roof, the rough size and type.",
-      "Driveway / Patio": "The rough area and your preferred finish — block paving, resin, tarmac or concrete — help Phil quote.",
+      "Driveway / Patio": "The rough area and your preferred finish — block paving, resin, tarmac or concrete — help Phil estimate.",
       "Landscaping": "Describe the space and what you'd like (lawn, decking, fencing, walls); photos of the garden help.",
       "Property Maintenance": "A quick description of the job and a photo of the problem help Phil tell you what's needed.",
       "Other / Not sure": "No problem — just describe what you're after and Phil will point you in the right direction."

@@ -20,12 +20,12 @@
           two letters) so "drivway" or "extenshion" still land.
         - CONTEXT MEMORY: the last service discussed is remembered, so
           follow-ups like "how much would that cost?" answer in context and
-          deep-link the quote form to the right project type.
+          deep-link the estimate form to the right project type.
         - MULTI-TOPIC: "do you do roofing AND driveways?" answers both.
         - POSTCODE AWARENESS: a typed postcode gets the same honest area
-          advisory as the quote form (CH4-CH8 / LL covered; ask Phil
+          advisory as the estimate form (CH4-CH8 / LL covered; ask Phil
           otherwise) — road numbers like the A55 are ignored.
-     3) A GUIDED QUOTE FLOW ("Start my quote"): three chip-driven questions
+     3) A GUIDED ESTIMATE FLOW ("Start my estimate"): three chip-driven questions
         (job type → location → brief details) that hand off to quote.html
         with the project type pre-selected and the details pre-filled via
         sessionStorage (quote.js only fills fields the visitor left empty).
@@ -85,13 +85,25 @@
       id: "extensions", name: "Extensions", page: "extensions-connahs-quay.html",
       blurb: "Single- and double-storey extensions, garage and loft conversions, conservatories, porches, garden rooms and outbuildings — built from the groundwork up.",
       items: ["Single- & double-storey extensions", "Garage & loft conversions", "Conservatories, porches & garden rooms", "Outbuildings & new builds"],
-      tags: ["extension", "extensions", "extend", "single storey", "double storey", "loft", "loft conversion", "attic", "garage", "garage conversion", "conservatory", "conservatories", "porch", "porches", "garden room", "outbuilding", "new build", "new builds", "more space", "extra room"]
+      tags: ["extension", "extensions", "extend", "single storey", "double storey", "loft", "loft conversion", "attic", "conservatory", "conservatories", "porch", "porches", "garden room", "outbuilding", "new build", "new builds", "more space", "extra room"]
     },
     {
       id: "renovations", name: "Renovations", page: "renovations-connahs-quay.html",
       blurb: "Full refurbishments and room-by-room renovations, managed from first idea to final finish and kept tidy throughout.",
       items: ["Full home refurbishments", "Kitchens, bathrooms & wet rooms", "Plastering, flooring & joinery", "Structural alterations, RSJs & knock-throughs"],
       tags: ["renovation", "renovations", "renovate", "refurbishment", "refurbish", "refurb", "remodel", "do up", "doing up", "full house", "whole house"]
+    },
+    {
+      id: "kitchens", name: "Kitchens", page: "services.html#kitchens",
+      blurb: "New kitchens fitted from strip-out to finish — units, worktops, tiling, flooring, plastering and joinery, plus knock-throughs where a room needs opening up.",
+      items: ["Kitchen fitting & worktops", "Tiling, flooring & splashbacks", "Plastering, joinery & making good", "Knock-throughs, RSJs & appliance fitting"],
+      tags: ["kitchen", "kitchens", "new kitchen", "kitchen fitting", "kitchen fitter", "worktop", "worktops", "splashback", "kitchen units", "galley kitchen"]
+    },
+    {
+      id: "garage-renovations", name: "Garage Renovations", page: "services.html#garage-renovations",
+      blurb: "Garage repairs and full garage conversions — re-roofing, floors, damp proofing and insulation, new doors, walls and rendering.",
+      items: ["Garage conversions", "Garage re-roofing & flat roof repairs", "Floors, damp proofing & insulation", "New garage doors, walls & rendering"],
+      tags: ["garage", "garages", "garage renovation", "garage renovations", "garage conversion", "convert my garage", "garage roof", "garage door", "garage floor"]
     },
     {
       id: "brickwork", name: "Brickwork & Masonry", page: "brickwork-connahs-quay.html",
@@ -159,7 +171,7 @@
 
   // Common action buttons (reused across many replies).
   var ACT = {
-    quote: { label: "Get a free quote", href: "quote.html", primary: true },
+    quote: { label: "Get a free estimate", href: "quote.html", primary: true },
     call: { label: "Call Phil", href: "tel:" + CONTACT.tel },
     email: { label: "Email Phil", href: "mailto:" + CONTACT.email },
     services: { label: "See all services", href: "services.html" },
@@ -171,7 +183,7 @@
   // Quick-reply chip sets.
   var STARTER_CHIPS = [
     { label: "What services do you offer?", send: "What services do you offer?" },
-    { label: "Start a free quote", send: "Start my quote" },
+    { label: "Start a free estimate", send: "Start my estimate" },
     { label: "Areas you cover", send: "What areas do you cover?" },
     { label: "Contact Phil", send: "How do I contact you?" }
   ];
@@ -190,7 +202,7 @@
     return {
       blocks: blocks,
       chips: [
-        { label: "Start my quote", send: "Start my quote" },
+        { label: "Start my estimate", send: "Start my estimate" },
         { label: "Areas you cover", send: "What areas do you cover?" },
         { label: "Other services", send: "What services do you offer?" }
       ]
@@ -209,7 +221,7 @@
       onlyShort: true,
       reply: function () {
         return {
-          blocks: [p("Hello! 👋 I can help with our building services, the areas we cover, or getting a free, no-obligation quote from Phil. What are you after?")],
+          blocks: [p("Hello! 👋 I can help with our building services, the areas we cover, or getting a free, no-obligation estimate from Phil. What are you after?")],
           chips: STARTER_CHIPS
         };
       }
@@ -232,7 +244,7 @@
       reply: function () {
         return {
           blocks: [
-            p("Thanks for stopping by! When you're ready, Phil would be glad to help — call " + CONTACT.telDisplay + " or get a free quote any time."),
+            p("Thanks for stopping by! When you're ready, Phil would be glad to help — call " + CONTACT.telDisplay + " or get a free estimate any time."),
             actions([ACT.quote, ACT.call])
           ],
           chips: STARTER_CHIPS
@@ -255,28 +267,28 @@
             { label: "Renovations", send: "Tell me about renovations" },
             { label: "Roofing", send: "Tell me about roofing" },
             { label: "Brickwork", send: "Tell me about brickwork" },
-            { label: "Get a free quote", send: "How do I get a quote?" }
+            { label: "Get a free estimate", send: "How do I get an estimate?" }
           ]
         };
       }
     },
     {
       id: "quote",
-      tags: ["quote", "quotation", "quotes", "estimate", "estimates", "get a quote", "free quote", "enquire", "enquiry", "inquiry", "book", "booking", "get started", "interested", "contact form", "request a quote"],
+      tags: ["estimate", "estimates", "quote", "quotation", "quotes", "get an estimate", "free estimate", "get an estimate", "free estimate", "enquire", "enquiry", "inquiry", "book", "booking", "get started", "interested", "contact form", "request an estimate"],
       reply: function (ctx) {
         var svc = ctx && ctx.svc;
         var quoteAct = svc
-          ? { label: "Quote form — " + svc.name, href: "quote.html?service=" + svc.id, primary: true }
+          ? { label: "Estimate form — " + svc.name, href: "quote.html?service=" + svc.id, primary: true }
           : ACT.quote;
         return {
           blocks: [
-            p("Getting a free quote is easy — and there's never any obligation:"),
-            p("1) Tell us about the job · 2) Phil comes back with a clear, no-pressure quote and a sensible plan · 3) we do the work and keep the site tidy."),
-            p("You can fill in the quote form, or call/email Phil directly — he usually gets back to you within a day or two. Or answer three quick questions right here and I'll set the form up for you."),
+            p("Getting a free estimate is easy — and there's never any obligation:"),
+            p("1) Tell us about the job · 2) Phil comes back with a clear, no-pressure estimate and a sensible plan · 3) we do the work and keep the site tidy."),
+            p("You can fill in the estimate form, or call/email Phil directly — he usually gets back to you within a day or two. Or answer three quick questions right here and I'll set the form up for you."),
             actions([quoteAct, ACT.call, ACT.email])
           ],
           chips: [
-            { label: "Start my quote here", send: "Start my quote" },
+            { label: "Start my estimate here", send: "Start my estimate" },
             { label: "What areas do you cover?", send: "What areas do you cover?" }
           ]
         };
@@ -288,16 +300,16 @@
       reply: function (ctx) {
         var svc = ctx && ctx.svc;
         var quoteAct = svc
-          ? { label: "Get a " + svc.name.toLowerCase() + " quote", href: "quote.html?service=" + svc.id, primary: true }
+          ? { label: "Get a " + svc.name.toLowerCase() + " estimate", href: "quote.html?service=" + svc.id, primary: true }
           : ACT.quote;
         return {
           blocks: [
-            p("Every quote is free and with no obligation. We don't list fixed prices because every job is different — Phil works out a clear, fair price once he understands exactly what you need." + (svc ? " That goes for " + svc.name.toLowerCase() + " too: the size and spec make all the difference." : "")),
+            p("Every estimate is free and with no obligation. We don't list fixed prices because every job is different — Phil works out a clear, fair price once he understands exactly what you need." + (svc ? " That goes for " + svc.name.toLowerCase() + " too: the size and spec make all the difference." : "")),
             p("Tell us about your project and he'll come back to you, usually within a day or two."),
             actions([quoteAct, ACT.call])
           ],
           chips: [
-            { label: "Start my quote", send: "Start my quote" },
+            { label: "Start my estimate", send: "Start my estimate" },
             { label: "What services do you offer?", send: "What services do you offer?" }
           ]
         };
@@ -314,7 +326,7 @@
             actions([ACT.call, ACT.email, ACT.facebook, ACT.quote])
           ],
           chips: [
-            { label: "Get a free quote", send: "How do I get a quote?" },
+            { label: "Get a free estimate", send: "How do I get an estimate?" },
             { label: "What areas do you cover?", send: "What areas do you cover?" }
           ]
         };
@@ -330,7 +342,7 @@
             actions([ACT.call, ACT.quote])
           ],
           chips: [
-            { label: "How do I get a quote?", send: "How do I get a quote?" },
+            { label: "How do I get an estimate?", send: "How do I get an estimate?" },
             { label: "Contact Phil", send: "How do I contact you?" }
           ]
         };
@@ -342,15 +354,15 @@
       reply: function (ctx) {
         var svc = ctx && ctx.svc;
         var quoteAct = svc
-          ? { label: "Get a " + svc.name.toLowerCase() + " quote", href: "quote.html?service=" + svc.id, primary: true }
+          ? { label: "Get a " + svc.name.toLowerCase() + " estimate", href: "quote.html?service=" + svc.id, primary: true }
           : ACT.quote;
         return {
           blocks: [
-            p("It really depends on the size of the job — a small repair is very different from a full extension. Phil will give you a realistic timescale along with your free quote, once he's seen what's involved." + (svc ? " For " + svc.name.toLowerCase() + ", just tell him what you have in mind and he'll be straight with you about timing." : "")),
+            p("It really depends on the size of the job — a small repair is very different from a full extension. Phil will give you a realistic timescale along with your free estimate, once he's seen what's involved." + (svc ? " For " + svc.name.toLowerCase() + ", just tell him what you have in mind and he'll be straight with you about timing." : "")),
             actions([quoteAct, ACT.call])
           ],
           chips: [
-            { label: "Get a free quote", send: "How do I get a quote?" },
+            { label: "Get a free estimate", send: "How do I get an estimate?" },
             { label: "What services do you offer?", send: "What services do you offer?" }
           ]
         };
@@ -362,7 +374,7 @@
       reply: function () {
         return {
           blocks: [
-            p("Devine Builders is a small, local, owner-run firm based in Connah's Quay, run by Phil Devine — a hands-on builder. When you call, you talk to the person actually doing the work, not a call centre."),
+            p("Devine Builders is a small local business based in Connah's Quay, run by Phil Devine — a hands-on builder. When you call, you talk to the person actually doing the work, not a call centre."),
             p("That means clear advice, fair pricing and no surprises. Phil treats every home like his own: turning up on time, keeping the site tidy and doing things properly the first time."),
             actions([ACT.services, ACT.quote])
           ],
@@ -383,7 +395,7 @@
         var blocks;
         if (named) {
           blocks = [
-            p("Yes — " + named + " is right in the area we cover. We're based in Connah's Quay and work across Flintshire and the wider North Wales area. Tell Phil about your project for a free quote."),
+            p("Yes — " + named + " is right in the area we cover. We're based in Connah's Quay and work across Flintshire and the wider North Wales area. Tell Phil about your project for a free estimate."),
             actions([ACT.quote, ACT.call])
           ];
         } else if (ctx && ctx.unknownPlace) {
@@ -406,7 +418,7 @@
         return {
           blocks: blocks,
           chips: [
-            { label: "Get a free quote", send: "How do I get a quote?" },
+            { label: "Get a free estimate", send: "How do I get an estimate?" },
             { label: "What services do you offer?", send: "What services do you offer?" }
           ]
         };
@@ -423,7 +435,7 @@
           ],
           chips: [
             { label: "What services do you offer?", send: "What services do you offer?" },
-            { label: "Get a free quote", send: "How do I get a quote?" }
+            { label: "Get a free estimate", send: "How do I get an estimate?" }
           ]
         };
       }
@@ -453,7 +465,7 @@
             actions([ACT.call, ACT.email])
           ],
           chips: [
-            { label: "Get a free quote", send: "How do I get a quote?" },
+            { label: "Get a free estimate", send: "How do I get an estimate?" },
             { label: "What services do you offer?", send: "What services do you offer?" }
           ]
         };
@@ -465,7 +477,7 @@
       reply: function () {
         return {
           blocks: [
-            p("I'm Devine Builders' automated assistant — happy to help! I can tell you about our services, the areas we cover, how quotes work, or how to reach Phil. For anything specific to your project, Phil is the best person to speak to.")
+            p("I'm Devine Builders' automated assistant — happy to help! I can tell you about our services, the areas we cover, how estimates work, or how to reach Phil. For anything specific to your project, Phil is the best person to speak to.")
           ],
           chips: STARTER_CHIPS
         };
@@ -482,15 +494,15 @@
           return serviceReply(ctx.svc, { lead: "Happy to — here's more on our " + ctx.svc.name.toLowerCase() + " work." });
         }
         return {
-          blocks: [p("Happy to! Which topic — one of our services, the areas we cover, or how free quotes work?")],
+          blocks: [p("Happy to! Which topic — one of our services, the areas we cover, or how free estimates work?")],
           chips: STARTER_CHIPS
         };
       }
     },
     {
-      // Kicks off the guided quote flow (handled in deliver()).
+      // Kicks off the guided estimate flow (handled in deliver()).
       id: "quote-start",
-      tags: ["start my quote", "start a quote", "start quote", "start my quote here", "quote in chat", "quick questions", "three questions", "3 questions"],
+      tags: ["start my estimate", "start an estimate", "start estimate", "start my estimate here", "estimate in chat", "start my estimate", "start an estimate", "start estimate", "estimate in chat", "quick questions", "three questions", "3 questions"],
       reply: function () {
         return { startFlow: "quote" };
       }
@@ -698,7 +710,7 @@
   }
 
   /* ---- postcode awareness -------------------------------------------
-     Same honest rule as the quote form's advisory: CH4–CH8 and any LL
+     Same honest rule as the estimate form's advisory: CH4–CH8 and any LL
      district are "within the area we cover"; anything else defers to
      Phil. Road numbers (A55, B5125, M56…) are explicitly not postcodes. */
 
@@ -732,7 +744,7 @@
     return {
       blocks: blocks,
       chips: [
-        { label: "Start my quote", send: "Start my quote" },
+        { label: "Start my estimate", send: "Start my estimate" },
         { label: "What services do you offer?", send: "What services do you offer?" }
       ]
     };
@@ -750,13 +762,13 @@
       blocks.push(p(svc.name + " — " + svc.blurb));
       acts.push({ label: svc.name + " details", href: svc.page });
     }
-    blocks.push(p("One enquiry can cover the lot — tell Phil what you're planning and he'll quote it as a whole job."));
+    blocks.push(p("One enquiry can cover the lot — tell Phil what you're planning and he'll estimate it as a whole job."));
     acts.push(ACT.quote);
     blocks.push(actions(acts));
     return {
       blocks: blocks,
       chips: [
-        { label: "Start my quote", send: "Start my quote" },
+        { label: "Start my estimate", send: "Start my estimate" },
         { label: "Areas you cover", send: "What areas do you cover?" }
       ]
     };
@@ -765,8 +777,8 @@
   function fallbackReply() {
     return {
       blocks: [
-        p("I'm a simple assistant, so I may have missed that — sorry! Short and plain works best with me — try something like 'garden wall cost', 'do you cover CH6?' or 'start a quote'."),
-        p("For anything specific, the best thing is to call Phil on " + CONTACT.telDisplay + " or get a free quote."),
+        p("I'm a simple assistant, so I may have missed that — sorry! Short and plain works best with me — try something like 'garden wall cost', 'do you cover CH6?' or 'start an estimate'."),
+        p("For anything specific, the best thing is to call Phil on " + CONTACT.telDisplay + " or get a free estimate."),
         actions([ACT.quote, ACT.call, ACT.services])
       ],
       chips: STARTER_CHIPS
@@ -866,7 +878,7 @@
   }
 
   /* =================================================================
-     4b. GUIDED QUOTE FLOW — three quick questions (job type → location
+     4b. GUIDED ESTIMATE FLOW — three quick questions (job type → location
          → brief details), then a handoff to quote.html with the project
          type in the URL (the existing ?service= deep link) and the rest
          stashed in sessionStorage for quote.js to pre-fill. Chip-driven
@@ -908,7 +920,7 @@
     saveState();
     return {
       blocks: [
-        p("No problem — I've dropped that. The normal quote form is there whenever you want it, and I'm happy to help with anything else."),
+        p("No problem — I've dropped that. The normal estimate form is there whenever you want it, and I'm happy to help with anything else."),
         actions([ACT.quote, ACT.call])
       ],
       chips: STARTER_CHIPS
@@ -924,7 +936,7 @@
     saveState();
     say({
       blocks: [
-        p("Brilliant — three quick questions and I'll set the quote form up for you. No obligation, and Phil reads every enquiry himself."),
+        p("Brilliant — three quick questions and I'll set the estimate form up for you. No obligation, and Phil reads every enquiry himself."),
         p("First: what type of job is it?")
       ],
       chips: SERVICES.map(function (svc) {
@@ -1029,14 +1041,14 @@
       blocks: [
         p("Perfect, that's everything. Here's what I've got:"),
         p(summary),
-        p("Tap continue and the quote form will be pre-filled — just add your name and contact details, check it over, and send. Phil usually replies within a day or two."),
+        p("Tap continue and the estimate form will be pre-filled — just add your name and contact details, check it over, and send. Phil usually replies within a day or two."),
         actions([
-          { label: "Continue to the quote form", href: "quote.html" + (d.service ? "?service=" + d.service : ""), primary: true },
+          { label: "Continue to the estimate form", href: "quote.html" + (d.service ? "?service=" + d.service : ""), primary: true },
           ACT.call
         ])
       ],
       chips: [
-        { label: "Start again", send: "Start my quote" },
+        { label: "Start again", send: "Start my estimate" },
         { label: "Areas you cover", send: "What areas do you cover?" }
       ]
     };
@@ -1165,7 +1177,7 @@
   // Internal hrefs in the KB are relative ("quote.html"). On 404.html —
   // which GitHub Pages serves for ARBITRARY nested URLs and which therefore
   // uses root-absolute links — a relative link would 404 again, so resolve
-  // against the header nav's own quote CTA at render time (same trick as
+  // against the header nav's own estimate CTA at render time (same trick as
   // site.js initCallBar). Render-time resolution also fixes transcripts
   // restored from sessionStorage onto the 404 page.
   var HREF_BASE = null;
@@ -1430,7 +1442,7 @@
     addMessage({
       from: "bot",
       blocks: [
-        p("Hi! 👋 I'm the Devine Builders assistant. I can help with our services, the areas we cover, or getting a free, no-obligation quote from Phil."),
+        p("Hi! 👋 I'm the Devine Builders assistant. I can help with our services, the areas we cover, or getting a free, no-obligation estimate from Phil."),
         p("What can I help you with?")
       ]
     });
@@ -1539,7 +1551,7 @@
     var input = el("input", "db-chat__input");
     input.type = "text";
     input.id = "db-chat-input";
-    input.setAttribute("placeholder", "Ask about services, areas, quotes…");
+    input.setAttribute("placeholder", "Ask about services, areas, estimates…");
     input.setAttribute("aria-label", "Type your message to the assistant");
     input.setAttribute("maxlength", "300");
     input.setAttribute("autocomplete", "off");

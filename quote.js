@@ -21,7 +21,7 @@
      <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
      ... fields named: name, email, phone, postcode (optional),
          project-type, details ...
-     <button id="quote-submit" type="submit">Get my free quote</button>
+     <button id="quote-submit" type="submit">Get my free estimate</button>
    </form>
    <div class="form-success" id="form-success" hidden></div>
 
@@ -142,6 +142,8 @@
         var ALIAS = {
           "extensions": "Extension", "extension": "Extension",
           "renovations": "Renovation", "renovation": "Renovation",
+          "kitchens": "Kitchen", "kitchen": "Kitchen",
+          "garage-renovations": "Garage Renovation", "garage renovations": "Garage Renovation", "garage renovation": "Garage Renovation", "garage": "Garage Renovation",
           "brickwork": "Brickwork & Masonry", "brickwork & masonry": "Brickwork & Masonry", "masonry": "Brickwork & Masonry",
           "groundworks": "Groundworks",
           "roofing": "Roofing", "roof": "Roofing",
@@ -162,7 +164,7 @@
       }
     } catch (e) { /* URLSearchParams unsupported — ignore */ }
 
-    // Prefill handed over from the chat assistant's guided quote flow
+    // Prefill handed over from the chat assistant's guided estimate flow
     // (chatbot.js stashes it in sessionStorage just before linking here).
     // Only ever fills fields the visitor hasn't already typed in, then
     // clears the key so a refresh doesn't re-apply it.
@@ -269,7 +271,7 @@
         postcode: data.postcode || "",
         "project-type": data["project-type"] || "",
         details: data.details || "",
-        _subject: "New quote request — Devine Builders website",
+        _subject: "New estimate request — Devine Builders website",
         _template: "table",
         _captcha: "false",
         _honey: (function () { var h = form.querySelector('[name="_honey"]'); return h ? h.value : ""; })()
@@ -330,10 +332,10 @@
      fallback used only if the live (FormSubmit) send fails. */
   function buildMailto(data) {
     var subject =
-      "Quote request — " + (data["project-type"] || "General enquiry") +
+      "Estimate request — " + (data["project-type"] || "General enquiry") +
       " (" + (data.name || "Website enquiry") + ")";
     var bodyLines = [
-      "New quote request from the Devine Builders website",
+      "New estimate request from the Devine Builders website",
       "------------------------------------------------------",
       "Name:        " + (data.name || ""),
       "Email:       " + (data.email || ""),
@@ -345,7 +347,7 @@
       data.details || "",
       "",
       "------------------------------------------------------",
-      "Sent from the Devine Builders website quote form"
+      "Sent from the Devine Builders website estimate form"
     ];
     var body = bodyLines.join("\r\n");
     return "mailto:" + RECIPIENT +
