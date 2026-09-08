@@ -260,6 +260,32 @@
         </p>
       </div>
 
+      <!-- ----- Gallery images ----- -->
+      <h2 class="admin-h2" id="images-title">Gallery images</h2>
+      <div class="admin-card">
+        <p class="admin-help">
+          The photos on the <a href="/gallery.html">Work Carried Out</a> page. Add, replace,
+          reorder and re-caption them here, then press <strong>Publish</strong> and follow the
+          two steps it gives you. You never need to touch any code.
+        </p>
+        <p class="admin-help">
+          <strong>Changes here are a draft until you publish.</strong> They live in this browser
+          so you can get the gallery how you want it first. Visitors keep seeing the current
+          photos until you upload the files Publish gives you.
+        </p>
+        <div class="admin-row">
+          <label class="admin-btn admin-btn--primary" for="img-add">Add photos…</label>
+          <input id="img-add" type="file" accept="image/jpeg,image/png,image/webp" multiple hidden>
+          <button class="admin-btn" type="button" id="img-publish">Publish…</button>
+          <button class="admin-btn" type="button" id="img-revert">Discard my changes</button>
+        </div>
+        <p class="admin-status" id="img-status" role="status" aria-live="polite"></p>
+        <ul class="img-list" id="img-list"><!-- built by admin.js --></ul>
+        <p class="admin-empty" id="img-empty" hidden>
+          No photos in the gallery. Press “Add photos…” to put some in.
+        </p>
+      </div>
+
       <!-- ----- Backup / restore ----- -->
       <h2 class="admin-h2">Your data</h2>
       <div class="admin-card">
@@ -318,6 +344,31 @@
       </footer>
     </main>
   </div>
+
+  <!-- Publish dialog: lists exactly which files to upload, and where. -->
+  <dialog class="admin-dialog admin-dialog--wide" id="publish-dialog" aria-labelledby="publish-title">
+    <h2 class="admin-dialog__title" id="publish-title">Publish your gallery</h2>
+    <p class="admin-dialog__text">
+      Two steps. Download the files, then drop them into the website's file store.
+      The site rebuilds itself automatically, usually within a minute.
+    </p>
+    <ol class="publish-steps">
+      <li>
+        <strong>Download the files below.</strong>
+        <div class="publish-downloads" id="publish-downloads"></div>
+      </li>
+      <li>
+        <strong>Upload them.</strong>
+        <span class="publish-where" id="publish-where"></span>
+      </li>
+    </ol>
+    <p class="admin-dialog__text admin-dialog__text--quiet" id="publish-note"></p>
+    <form method="dialog">
+      <div class="admin-row admin-row--end">
+        <button class="admin-btn admin-btn--primary" value="done">Done</button>
+      </div>
+    </form>
+  </dialog>
 
   <!-- Confirm dialog (used for delete actions; native <dialog>) -->
   <dialog class="admin-dialog" id="confirm-dialog" aria-labelledby="confirm-title"

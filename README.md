@@ -36,6 +36,7 @@ Tip: if a page ever looks unstyled after an edit, hard-refresh once with **Ctrl 
 | `devine-builders-services.pdf` | Downloadable services brochure |
 | `devine-builders.vcf` | "Save Phil's number" contact card |
 | `favicon.ico`, `images/favicon-16/32.png`, `images/og-cover.png`, `site.webmanifest` | Icons, social share image, PWA manifest (`favicon.svg` / `og-cover.svg` are unlinked design sources) |
+| `gallery.json` | What the gallery shows. **Written by the Images section of `/admin/`** - do not hand-edit unless you have to |
 | `robots.txt`, `sitemap.xml` | Search-engine files |
 | `build.js` | Deploy-time script: bakes the `/admin/` key from `ADMIN_KEY` / `ADMIN_KEY_HASH` into `admin/admin-key.js`. The only build step |
 | `admin/admin-key.js` | **Generated** — committed copy is deliberately empty; never commit a real hash |
@@ -173,6 +174,30 @@ only in `localStorage` on the device you use the panel on, so a stranger
 opening `/admin/` sees an empty tracker. The lock is what stops someone who has
 your unlocked device. Keeping the hash out of the public repo matters because a
 published hash can be attacked offline at leisure.
+
+### Changing the gallery photos
+
+The **Gallery images** section of `/admin/` is how the photos on the Work
+Carried Out page get changed, with no code involved. Add, replace, reorder,
+re-caption and remove; big phone photos are shrunk automatically (long edge
+capped at 1600px, JPEG quality 0.82) so the page stays fast.
+
+It is a **draft** until you publish. The site is static, so a photo only
+reaches visitors once the file reaches the host. Press **Publish** and it
+gives you the exact files to upload:
+
+1. Photo files go in `images/gallery/`. A *replaced* photo keeps its old
+   filename, so uploading it simply overwrites the old one.
+2. `gallery.json` goes in the site's main folder, whenever anything other
+   than the image bytes changed (order, captions, additions, removals).
+
+On GitHub: open the folder, **Add file -> Upload files**, drag them in,
+**Commit changes**. Vercel redeploys on its own. Until then the panel keeps
+showing a "Not published yet" badge on every row visitors are not seeing yet.
+
+`gallery.html` still contains a hand-written copy of the grid. That is the
+fallback: if `gallery.json` is ever missing or malformed, or JavaScript is
+off, those photos are shown instead, so the page cannot come up empty.
 
 **Read this before relying on it:**
 

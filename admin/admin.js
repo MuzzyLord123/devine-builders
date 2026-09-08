@@ -1089,6 +1089,515 @@
     }
   }
 
+  /* ---------------------------------------------------------------- */
+  /* 10. Gallery images                                                */
+  /* ---------------------------------------------------------------- */
+  /*
+     Lets the owner run the Work Carried Out gallery without touching code.
+
+     WHY THERE IS A "PUBLISH" STEP AT ALL
+     This site is static: there is no server to receive an upload, so a new
+     photo only reaches visitors once the FILE reaches the host. Everything
+     here is therefore a local draft — the manifest in localStorage, the
+     images in IndexedDB — and Publish hands over the exact files to drop
+     into the site's file store. Nothing pretends to be live that isn't:
+     the list marks every unpublished change, so the owner can always see
+     what visitors are still being served.
+
+     Photos are re-encoded on import (long edge capped, JPEG quality 0.82).
+     A phone photo is often 4-8MB, which would make the gallery crawl on
+     mobile data; this keeps each one to roughly 150-350KB.
+  */
+
+  const GALLERY_STORE = "db-admin-gallery-v1";   // draft manifest (localStorage)
+  const IDB_NAME = "db-admin-images";            // draft image blobs
+  const IDB_STORE = "files";
+  const MAX_EDGE = 1600;                         // px, long edge
+  const JPEG_QUALITY = 0.82;
+
+  let gallery = null;      // { items:[...] } currently being edited
+  let published = null;    // what gallery.json holds right now, for comparison
+  const objectUrls = [];   // revoked on re-render so previews don't leak
+
+  /* ---- IndexedDB (blobs are far too big for localStorage) ---------- */
+
+  function idb() {
+    return new Promise((resolve, reject) => {
+      let req;
+      try { req = window.indexedDB.open(IDB_NAME, 1); }
+      catch (e) { reject(e); return; }
+      req.onupgradeneeded = () => {
+        const db = req.result;
+        if (!db.objectStoreNames.contains(IDB_STORE)) db.createObjectStore(IDB_STORE);
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  function idbDo(mode, fn) {
+    return idb().then((db) => new Promise((resolve, reject) => {
+      const tx = db.transaction(IDB_STORE, mode);
+      const store = tx.objectStore(IDB_STORE);
+      const out = fn(store);
+      tx.oncomplete = () => resolve(out && out.result !== undefined ? out.result : out);
+      tx.onerror = () => reject(tx.error);
+      tx.onabort = () => reject(tx.error);
+    }));
+  }
+
+  const idbPut = (key, blob) => idbDo("readwrite", (s) => s.put(blob, key));
+  const idbGet = (key) => idbDo("readonly", (s) => s.get(key));
+  const idbDel = (key) => idbDo("readwrite", (s) => s.delete(key));
+  const idbKeys = () => idbDo("readonly", (s) => s.getAllKeys());
+  const idbClear = () => idbDo("readwrite", (s) => s.clear());
+
+  /* ---- image processing ------------------------------------------- */
+
+  function readImage(file) {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => { resolve(img); };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("not an image")); };
+      img.src = url;
+    });
+  }
+
+  /* Cap the long edge and re-encode as JPEG. Returns a Blob. */
+  function shrink(file) {
+    return readImage(file).then((img) => new Promise((resolve, reject) => {
+      const w = img.naturalWidth, h = img.naturalHeight;
+      if (!w || !h) { reject(new Error("empty image")); return; }
+      const scale = Math.min(1, MAX_EDGE / Math.max(w, h));
+      const cw = Math.round(w * scale), ch = Math.round(h * scale);
+      const canvas = document.createElement("canvas");
+      canvas.width = cw; canvas.height = ch;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, cw, ch);
+      URL.revokeObjectURL(img.src);
+      canvas.toBlob((blob) => {
+        if (blob) resolve({ blob: blob, width: cw, height: ch });
+        else reject(new Error("could not encode"));
+      }, "image/jpeg", JPEG_QUALITY);
+    }));
+  }
+
+  /* ---- manifest ---------------------------------------------------- */
+
+  function textBox(value) {
+    const input = el("input", "admin-input");
+    input.type = "text";
+    input.value = value || "";
+    return input;
+  }
+
+  function slug(text) {
+    return String(text || "photo").toLowerCase()
+      .replace(/&/g, " and ")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 40) || "photo";
+  }
+
+  function uniqueName(base) {
+    const taken = {};
+    (gallery.items || []).forEach((i) => { taken[i.src] = true; });
+    let n = 0, name;
+    do {
+      n += 1;
+      name = "images/gallery/" + base + (n > 1 ? "-" + n : "") + ".jpg";
+    } while (taken[name]);
+    return name;
+  }
+
+  function loadDraft() {
+    try {
+      const raw = window.localStorage.getItem(GALLERY_STORE);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (parsed && Array.isArray(parsed.items)) return parsed;
+    } catch (e) { /* corrupt draft: fall back to the published file */ }
+    return null;
+  }
+
+  function saveDraft() {
+    try {
+      window.localStorage.setItem(GALLERY_STORE, JSON.stringify(gallery));
+    } catch (e) {
+      setStatus($("img-status"), "Could not save your changes: this browser is blocking storage or is full.", "bad");
+    }
+  }
+
+  /* An entry differs from the live site if it is new, moved, re-worded, or
+     its image has been replaced (a replaced one has a blob in IndexedDB). */
+  function publishedIndex(src) {
+    if (!published) return -1;
+    for (let i = 0; i < published.items.length; i++) {
+      if (published.items[i].src === src) return i;
+    }
+    return -1;
+  }
+
+  function entryChanged(item, i) {
+    if (item.pending) return true;                 // image replaced or added
+    const j = publishedIndex(item.src);
+    if (j === -1 || j !== i) return true;          // new, or moved
+    const p = published.items[j];
+    return p.caption !== item.caption || p.alt !== item.alt ||
+           p.full !== item.full || !!p.illustrative !== !!item.illustrative;
+  }
+
+  function manifestChanged() {
+    if (!published) return true;
+    if (published.items.length !== gallery.items.length) return true;
+    return gallery.items.some(entryChanged);
+  }
+
+  /* ---- rendering --------------------------------------------------- */
+
+  function releasePreviews() {
+    while (objectUrls.length) URL.revokeObjectURL(objectUrls.pop());
+  }
+
+  function thumbFor(item, img) {
+    // A replaced/added photo is only in IndexedDB until it is published.
+    if (!item.pending) { img.src = "/" + item.src; return; }
+    idbGet(item.src).then((blob) => {
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      objectUrls.push(url);
+      img.src = url;
+    }).catch(() => { /* leave the broken-image box; the row still works */ });
+  }
+
+  function renderGallery() {
+    const list = $("img-list");
+    const empty = $("img-empty");
+    if (!list) return;
+    releasePreviews();
+    list.textContent = "";
+
+    const items = gallery.items;
+    if (empty) empty.hidden = items.length > 0;
+
+    items.forEach((item, i) => {
+      const li = el("li", "img-row" + (entryChanged(item, i) ? " img-row--changed" : ""));
+
+      const fig = el("div", "img-row__thumb");
+      const img = document.createElement("img");
+      img.alt = "";
+      img.loading = "lazy";
+      thumbFor(item, img);
+      fig.appendChild(img);
+      if (entryChanged(item, i)) {
+        fig.appendChild(el("span", "img-row__badge", "Not published yet"));
+      }
+      li.appendChild(fig);
+
+      const body = el("div", "img-row__body");
+
+      const capField = field("Caption (shown under the photo)", textBox(item.caption), "cap-" + i);
+      const altField = field("Description for screen readers", textBox(item.alt), "alt-" + i);
+      capField.control.addEventListener("input", (e) => {
+        item.caption = e.target.value; saveDraft(); markDirty();
+      });
+      altField.control.addEventListener("input", (e) => {
+        item.alt = e.target.value; saveDraft(); markDirty();
+      });
+      body.appendChild(capField.wrap);
+      body.appendChild(altField.wrap);
+
+      const tagWrap = el("label", "img-row__check");
+      const tag = document.createElement("input");
+      tag.type = "checkbox";
+      tag.checked = !!item.illustrative;
+      tag.addEventListener("change", () => {
+        item.illustrative = tag.checked; saveDraft(); renderGallery();
+      });
+      tagWrap.appendChild(tag);
+      tagWrap.appendChild(document.createTextNode(" Stock photo (shows an “Illustrative” badge)"));
+      body.appendChild(tagWrap);
+
+      const row = el("div", "admin-row img-row__actions");
+
+      const replaceLabel = el("label", "admin-btn", "Replace photo…");
+      const replaceInput = document.createElement("input");
+      replaceInput.type = "file";
+      replaceInput.accept = "image/jpeg,image/png,image/webp";
+      replaceInput.hidden = true;
+      replaceInput.id = "replace-" + i;
+      replaceLabel.setAttribute("for", replaceInput.id);
+      replaceInput.addEventListener("change", () => {
+        const f = replaceInput.files && replaceInput.files[0];
+        if (f) replacePhoto(item, f);
+        replaceInput.value = "";
+      });
+      row.appendChild(replaceLabel);
+      row.appendChild(replaceInput);
+
+      const up = el("button", "admin-btn", "Move up");
+      up.type = "button";
+      up.disabled = i === 0;
+      up.addEventListener("click", () => move(i, -1));
+      row.appendChild(up);
+
+      const down = el("button", "admin-btn", "Move down");
+      down.type = "button";
+      down.disabled = i === items.length - 1;
+      down.addEventListener("click", () => move(i, 1));
+      row.appendChild(down);
+
+      const del = el("button", "admin-btn admin-btn--danger", "Remove");
+      del.type = "button";
+      del.addEventListener("click", () => removePhoto(i));
+      row.appendChild(del);
+
+      body.appendChild(row);
+      body.appendChild(el("p", "img-row__file", item.src.replace("images/gallery/", "")));
+      li.appendChild(body);
+      list.appendChild(li);
+    });
+
+    markDirty();
+  }
+
+  function markDirty() {
+    const btn = $("img-publish");
+    if (!btn) return;
+    const n = gallery.items.filter(entryChanged).length +
+              (published && published.items.length > gallery.items.length ? 1 : 0);
+    btn.textContent = n > 0 ? "Publish " + n + " change" + (n === 1 ? "" : "s") + "…" : "Publish…";
+    btn.disabled = n === 0;
+  }
+
+  /* ---- actions ----------------------------------------------------- */
+
+  function move(i, by) {
+    const j = i + by;
+    if (j < 0 || j >= gallery.items.length) return;
+    const tmp = gallery.items[i];
+    gallery.items[i] = gallery.items[j];
+    gallery.items[j] = tmp;
+    saveDraft();
+    renderGallery();
+    setStatus($("img-status"), "Order changed. Publish when you are happy with it.", "good");
+  }
+
+  function removePhoto(i) {
+    const item = gallery.items[i];
+    confirmAction(
+      "Remove this photo?",
+      "“" + (item.caption || "This photo") + "” comes out of your draft. It stays on " +
+      "the website until you publish.",
+      () => {
+        gallery.items.splice(i, 1);
+        if (item.pending) idbDel(item.src).catch(() => {});
+        saveDraft();
+        renderGallery();
+        setStatus($("img-status"), "Removed from your draft. Publish to take it off the website.", "good");
+      }
+    );
+  }
+
+  function replacePhoto(item, file) {
+    setStatus($("img-status"), "Preparing the photo…", "");
+    shrink(file).then(({ blob }) => {
+      // Keep the SAME filename: publishing then means overwriting one file
+      // and the website picks it up with no other change.
+      return idbPut(item.src, blob).then(() => {
+        item.pending = true;
+        item.illustrative = false;      // a real job photo, not stock
+        saveDraft();
+        renderGallery();
+        setStatus($("img-status"),
+          "Photo replaced (" + Math.round(blob.size / 1024) + "KB). Publish when you are ready.", "good");
+      });
+    }).catch(() => {
+      setStatus($("img-status"), "That file could not be read as a photo. Try a JPG, PNG or WebP.", "bad");
+    });
+  }
+
+  function addPhotos(files) {
+    const list = Array.prototype.slice.call(files);
+    if (!list.length) return;
+    setStatus($("img-status"), "Preparing " + list.length + " photo" + (list.length === 1 ? "" : "s") + "…", "");
+    let added = 0;
+    const step = (n) => {
+      if (n >= list.length) {
+        saveDraft();
+        renderGallery();
+        setStatus($("img-status"),
+          added ? "Added " + added + " photo" + (added === 1 ? "" : "s") + ". Publish when you are ready."
+                : "None of those files could be read as photos.",
+          added ? "good" : "bad");
+        return;
+      }
+      const file = list[n];
+      shrink(file).then(({ blob }) => {
+        const name = uniqueName(slug(file.name.replace(/\.[^.]+$/, "")));
+        return idbPut(name, blob).then(() => {
+          gallery.items.push({
+            src: name,
+            caption: "New photo",
+            alt: "",
+            full: "",
+            illustrative: false,
+            pending: true
+          });
+          added += 1;
+        });
+      }).catch(() => { /* skip this file */ })
+        .then(() => step(n + 1));
+    };
+    step(0);
+  }
+
+  /* ---- publish ------------------------------------------------------ */
+
+  function downloadLink(name, blob, label) {
+    const a = document.createElement("a");
+    a.className = "admin-btn admin-btn--primary publish-dl";
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    a.textContent = label;
+    objectUrls.push(a.href);
+    return a;
+  }
+
+  function publish() {
+    const box = $("publish-downloads");
+    const where = $("publish-where");
+    const note = $("publish-note");
+    const dialog = $("publish-dialog");
+    if (!box || !dialog) return;
+    box.textContent = "";
+
+    // The manifest the site will read. `pending` is a local-only flag.
+    const clean = {
+      _comment: "Gallery contents. Written by the Images tab in /admin/.",
+      version: 1,
+      updated: todayISO(),
+      items: gallery.items.map((i) => ({
+        src: i.src,
+        caption: i.caption || "",
+        alt: i.alt || "",
+        full: i.full || "",
+        illustrative: !!i.illustrative
+      }))
+    };
+    const manifestBlob = new Blob([JSON.stringify(clean, null, 2)], { type: "application/json" });
+
+    const pending = gallery.items.filter((i) => i.pending);
+    let count = 0;
+
+    const finish = () => {
+      if (manifestChanged()) {
+        box.appendChild(downloadLink("gallery.json", manifestBlob, "Download gallery.json"));
+        count += 1;
+      }
+      where.textContent = "";
+      const ul = el("ul", "publish-where__list");
+      if (pending.length) {
+        ul.appendChild(el("li", "",
+          "Put the photo file" + (pending.length === 1 ? "" : "s") +
+          " into the site's images/gallery folder, replacing anything with the same name."));
+      }
+      if (manifestChanged()) {
+        ul.appendChild(el("li", "", "Put gallery.json in the site's main folder, replacing the old one."));
+      }
+      ul.appendChild(el("li", "",
+        "On GitHub that is: open the folder, press “Add file → Upload files”, drag the " +
+        "file in and press “Commit changes”. The site redeploys on its own."));
+      where.appendChild(ul);
+
+      note.textContent = count === 0
+        ? "Nothing to publish: the gallery already matches the website."
+        : "After the site rebuilds, check the gallery page, then press “Discard my changes” " +
+          "here to clear this draft.";
+      dialog.showModal();
+    };
+
+    if (!pending.length) { finish(); return; }
+
+    let n = 0;
+    const next = () => {
+      if (n >= pending.length) { finish(); return; }
+      const item = pending[n];
+      idbGet(item.src).then((blob) => {
+        if (blob) {
+          box.appendChild(downloadLink(
+            item.src.replace("images/gallery/", ""), blob,
+            "Download " + item.src.replace("images/gallery/", "")));
+          count += 1;
+        }
+      }).catch(() => {}).then(() => { n += 1; next(); });
+    };
+    next();
+  }
+
+  function revertGallery() {
+    confirmAction(
+      "Discard your changes?",
+      "Your draft gallery is thrown away and this goes back to the photos currently on the website.",
+      () => {
+        try { window.localStorage.removeItem(GALLERY_STORE); } catch (e) { /* ignore */ }
+        idbClear().catch(() => {});
+        gallery = clonePublished();
+        renderGallery();
+        setStatus($("img-status"), "Draft discarded. This matches the website again.", "good");
+      }
+    );
+  }
+
+  function clonePublished() {
+    return published
+      ? { items: published.items.map((i) => Object.assign({}, i)) }
+      : { items: [] };
+  }
+
+  /* ---- start-up ----------------------------------------------------- */
+
+  function initGallery() {
+    if (!$("img-list")) return;
+
+    const fail = (msg) => {
+      published = { items: [] };
+      gallery = loadDraft() || { items: [] };
+      renderGallery();
+      setStatus($("img-status"), msg, "bad");
+    };
+
+    if (typeof window.fetch !== "function") {
+      fail("This browser is too old to manage the gallery here.");
+      return;
+    }
+
+    window.fetch("/gallery.json", { cache: "no-cache" })
+      .then((res) => { if (!res.ok) throw new Error("HTTP " + res.status); return res.json(); })
+      .then((data) => {
+        if (!data || !Array.isArray(data.items)) throw new Error("bad manifest");
+        published = { items: data.items.map((i) => Object.assign({}, i)) };
+        gallery = loadDraft() || clonePublished();
+        renderGallery();
+        const changed = gallery.items.filter(entryChanged).length;
+        if (changed) {
+          setStatus($("img-status"),
+            "You have " + changed + " unpublished change" + (changed === 1 ? "" : "s") +
+            " from last time. Publish them, or discard them.", "good");
+        }
+      })
+      .catch(() => fail("Could not read the current gallery (gallery.json). Open this page from the website rather than from a file on disk."));
+
+    $("img-add").addEventListener("change", (e) => {
+      addPhotos(e.target.files);
+      e.target.value = "";
+    });
+    $("img-publish").addEventListener("click", publish);
+    $("img-revert").addEventListener("click", revertGallery);
+  }
+
+
   function init() {
     enquiries = load();
 
@@ -1202,6 +1711,8 @@
       const since = Number(window.sessionStorage.getItem(UNLOCK_FLAG));
       unlocked = !!since && Date.now() - since < AUTO_LOCK_MS;
     } catch (e) { /* ignore */ }
+    initGallery();
+
     if (unlocked) showApp(true);
     else $("admin-key").focus();
   }

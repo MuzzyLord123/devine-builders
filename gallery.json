@@ -1,0 +1,56 @@
+{
+  "_comment": "Gallery contents. Edited through the Images tab of /admin/ - you should not need to touch this by hand. gallery.js renders the grid on gallery.html from this file; if the file is missing or unreadable the built-in HTML in gallery.html is used instead, so the page can never end up empty. 'illustrative' true shows the small Illustrative badge - turn it off once a slot holds a real job photo.",
+  "version": 1,
+  "updated": "2026-09-08",
+  "items": [
+    {
+      "src": "images/gallery/photo-kitchen.jpg",
+      "caption": "Fitted kitchens",
+      "alt": "A modern fitted kitchen with wood units and a stone worktop",
+      "full": "Fitted kitchens, an illustrative example of the kitchen installations we carry out.",
+      "illustrative": true
+    },
+    {
+      "src": "images/gallery/photo-bathroom.jpg",
+      "caption": "Bathrooms & wet rooms",
+      "alt": "A modern tiled bathroom with a walk-in shower and vanity unit",
+      "full": "Bathrooms & wet rooms, an illustrative example of the bathroom work we do.",
+      "illustrative": true
+    },
+    {
+      "src": "images/gallery/photo-extension.jpg",
+      "caption": "Extensions",
+      "alt": "A rear house extension under construction with blockwork and scaffolding",
+      "full": "Extensions, an illustrative example of the extension and new-build work we take on.",
+      "illustrative": true
+    },
+    {
+      "src": "images/gallery/photo-brickwork.jpg",
+      "caption": "Brickwork & masonry",
+      "alt": "A bricklayer building a new brick wall",
+      "full": "Brickwork & masonry, an illustrative example of our bricklaying and walling.",
+      "illustrative": true
+    },
+    {
+      "src": "images/gallery/photo-roofing.jpg",
+      "caption": "Roofing",
+      "alt": "A tiled pitched roof with fascias and soffits",
+      "full": "Roofing, an illustrative example of the roofing work we carry out.",
+      "illustrative": true
+    },
+    {
+      "src": "images/gallery/photo-driveway.jpg",
+      "caption": "Driveways & paving",
+      "alt": "A large block-paved driveway in front of a modern home",
+      "full": "Driveways & block paving, an illustrative example of the driveways and patios we lay.",
+      "illustrative": true
+    },
+    {
+      "src": "images/gallery/photo-landscaping.jpg",
+      "caption": "Landscaping & patios",
+      "alt": "A landscaped garden with a timber pergola and paved patio",
+      "full": "Landscaping & patios, an illustrative example of our garden and outdoor work.",
+      "illustrative": true
+    }
+  ]
+}

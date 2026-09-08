@@ -1,3 +1,12 @@
+EASIEST WAY TO CHANGE THESE PHOTOS
+----------------------------------
+Open the website's /admin/ page, scroll to "Gallery images", and add,
+replace, reorder or re-caption photos there. Press Publish and it hands
+you the exact files to upload back into this folder. No code, and it
+shrinks big phone photos for you so the site stays fast.
+
+The notes below are for doing it by hand instead.
+
 Devine Builders — Gallery images
 =================================
 

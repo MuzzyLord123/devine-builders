@@ -8,6 +8,14 @@
    counter), full keyboard support (Esc / arrows), focus trapping +
    restore, and body scroll-lock.
 
+   GALLERY.JSON
+   Before any of that, it tries to fetch gallery.json and rebuild the grid
+   from it. That file is what the Images tab in /admin/ writes, so the
+   owner can change the photos without touching this markup. The HTML grid
+   below stays in place as the fallback: if the file is missing, broken or
+   empty, or the browser has no fetch, the shipped photos are used exactly
+   as before. The manifest can therefore never leave the page blank.
+
    --------------------------------------------------------------------
    EXPECTED DOM (owned by gallery.html — do NOT generate it here)
    --------------------------------------------------------------------
@@ -89,7 +97,85 @@
     }
   }
 
-  ready(function init() {
+  /* Build one grid <li> from a manifest entry. Everything is set with
+     textContent / setAttribute rather than innerHTML: the captions come
+     from a file the owner edits, so they are treated as untrusted text. */
+  function buildItem(entry) {
+    var li = document.createElement("li");
+    li.className = "gallery__item";
+
+    var btn = document.createElement("button");
+    btn.className = "gallery__btn";
+    btn.type = "button";
+    btn.setAttribute("data-full", entry.full_src || entry.src);
+    if (entry.full) btn.setAttribute("data-caption", entry.full);
+
+    if (entry.illustrative) {
+      var tag = document.createElement("span");
+      tag.className = "gallery__tag";
+      tag.setAttribute("aria-hidden", "true");
+      tag.textContent = "Illustrative";
+      btn.appendChild(tag);
+    }
+
+    var img = document.createElement("img");
+    img.className = "gallery__img";
+    img.src = entry.src;
+    img.alt = entry.alt || "";
+    img.setAttribute("loading", "lazy");
+    // Keep the 4:3 box reserved so swapping photos never shifts the layout.
+    img.setAttribute("width", "800");
+    img.setAttribute("height", "600");
+    btn.appendChild(img);
+
+    var cap = document.createElement("span");
+    cap.className = "gallery__caption";
+    cap.textContent = entry.caption || "";
+    btn.appendChild(cap);
+
+    li.appendChild(btn);
+    return li;
+  }
+
+  /* Replace the shipped grid with the manifest's. Returns false and leaves
+     the HTML untouched if the data is not usable. */
+  function renderManifest(gallery, data) {
+    if (!data || Object.prototype.toString.call(data.items) !== "[object Array]") return false;
+    var items = data.items.filter(function (e) {
+      return e && typeof e.src === "string" && e.src;
+    });
+    if (items.length === 0) return false;   // never blank the page
+
+    var frag = document.createDocumentFragment();
+    for (var i = 0; i < items.length; i++) frag.appendChild(buildItem(items[i]));
+    gallery.textContent = "";
+    gallery.appendChild(frag);
+    return true;
+  }
+
+  ready(function boot() {
+    var gallery = document.getElementById("gallery");
+
+    // No grid, or a browser without fetch: run against the shipped HTML.
+    if (!gallery || typeof window.fetch !== "function") { init(); return; }
+
+    var started = false;
+    function go() { if (!started) { started = true; init(); } }
+
+    // A slow or hanging request must never hold up the lightbox wiring.
+    var timer = window.setTimeout(go, 2500);
+
+    window.fetch("gallery.json", { cache: "no-cache" })
+      .then(function (res) {
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        return res.json();
+      })
+      .then(function (data) { renderManifest(gallery, data); })
+      .catch(function () { /* keep the photos that shipped with the page */ })
+      .then(function () { window.clearTimeout(timer); go(); });
+  });
+
+  function init() {
     var gallery = document.getElementById("gallery");
     var lightbox = document.getElementById("lightbox");
 
@@ -354,7 +440,7 @@
         }
       }
     }
-  });
+  }
 
   /* =================================================================
      Module-level utilities (shared, no closure state needed)

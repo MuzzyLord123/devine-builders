@@ -137,7 +137,7 @@
       <div class="container">
         <div class="section__head section__head--center">
           <p class="section__eyebrow">Gallery</p>
-          <h1 class="section__title">The kind of work we do across North Wales</h1>
+          <h1 class="section__title">Work Carried Out</h1>
           <p class="section__lead">A look at the kinds of work Devine Builders takes on across Connah's Quay, Flintshire and the wider North Wales area, from kitchens and extensions to brickwork, roofing, driveways and landscaping. The images below are <strong>illustrative examples</strong> of the type of work; real photos of Phil's own recent jobs are coming soon. Select any photo to view it larger.</p>
         </div>
       </div>
@@ -150,42 +150,32 @@
           ============================================================
           HOW TO ADD OR REPLACE GALLERY PHOTOS
           ============================================================
-          Photos live in:  images/gallery/
-          Filenames used below (all stock, labelled "Illustrative"):
-            photo-kitchen.jpg, photo-bathroom.jpg, photo-extension.jpg,
-            photo-brickwork.jpg, photo-roofing.jpg, photo-driveway.jpg,
-            photo-landscaping.jpg — plus, in the Before & After section,
-            ba-kitchen-before.jpg / ba-kitchen-after.jpg and
-            ba-bathroom-before.jpg / ba-bathroom-after.jpg.
-            NOTE: the two Before & After "after" slots currently point at
-            photo-kitchen.jpg / photo-bathroom.jpg (byte-identical to the
-            ba-*-after.jpg files, so the browser reuses the cached grid
-            image instead of downloading a duplicate). When Phil supplies
-            real before/after pairs, restore the ba-*-after.jpg filenames.
+          NORMALLY YOU DO NOT EDIT THIS BLOCK.
+          The gallery is driven by /gallery.json, which the Images
+          section of /admin/ writes for you: add, replace, reorder and
+          re-caption photos there, press Publish, and upload the files it
+          hands you. gallery.js fetches that manifest and rebuilds the
+          grid below from it.
 
-          TO REPLACE A STOCK PHOTO WITH A REAL ONE
-            Save your image over the matching filename (same name, same
-            folder, e.g. photo-kitchen.jpg). It then appears automatically —
-            no code changes needed. JPG, PNG and WebP all work. Then also
-            update that slot's alt text and remove its "Illustrative" tag,
-            since it becomes a real job photo.
+          WHY THE MARKUP BELOW STILL EXISTS
+          It is the fallback. If gallery.json is missing, malformed or
+          empty, or JavaScript is off, these figures are what visitors
+          see, so the page can never come up blank. Keep a sensible set
+          here; it does not have to track the manifest exactly.
+
+          Photos live in:  images/gallery/
 
           IF A PHOTO IS MISSING
             The page is resilient: gallery.js detects a missing/broken
-            image and swaps in a tidy "Devine Builders — Photo coming soon"
+            image and swaps in a tidy "Devine Builders, photo coming soon"
             placeholder, so the gallery never looks broken. (Bundled
-            placeholder-1.svg … placeholder-6.svg are also available if you
-            want to point a figure at one directly.)
+            placeholder-1.svg ... placeholder-6.svg are also available if
+            you want to point a figure at one directly.)
 
-          TO ADD A NEW PHOTO
-            Copy one whole <li class="gallery__item"> … </li> block below,
-            paste it, then update:
-              - src          → the new image filename in images/gallery/
-              - alt          → a short, accurate description (screen readers)
-              - <span>       → the short caption shown under the thumbnail
-            Optionally set on the <button>:
-              - data-full    → a larger image for the lightbox view
-              - data-caption → a longer caption shown in the lightbox
+          EDITING THIS FALLBACK BY HAND
+            Copy one whole <li class="gallery__item"> ... </li> block,
+            paste it, then update src, alt and the caption <span>.
+            Optionally set data-full / data-caption on the <button>.
 
           KEEP THESE INTACT (gallery.js relies on them)
             - the clickable element MUST be <button class="gallery__btn" type="button">
