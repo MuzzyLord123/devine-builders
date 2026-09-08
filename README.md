@@ -105,14 +105,19 @@ The site now assumes it is served from a **domain root**:
   production — check the exact case when adding assets.
 - `_headers` (Netlify/Cloudflare Pages) and `vercel.json` (Vercel) start being
   honoured on those hosts — they're ignored on GitHub Pages.
-- **`vercel.json` deliberately omits `trailingSlash`.** Setting it to `false`
-  would redirect `/admin/` to `/admin`, which serves the folder's `index.html`
-  from a path where its relative `../styles.css` and `admin.js` no longer
-  resolve — the tracker would load unstyled with no JavaScript. Leave the key
-  out. (It used to be documented in a `_comment_trailingSlash` key inside
-  `vercel.json`; Vercel validates that file against a strict schema and rejects
-  unknown properties, so the note lives here instead — do not add comment keys
-  back to `vercel.json`.)
+- **`/admin/index.html` uses root-absolute paths, and must keep doing so.**
+  Vercel serves that folder at `/admin` with no trailing slash, so a
+  same-directory `href="admin.css"` resolves to `/admin.css` and 404s. That is
+  exactly what broke the tracker on the first Vercel deploy: `../styles.css`
+  still resolved, so the page looked half-styled, but `admin.css` **and
+  `admin.js`** were dead — leaving an Unlock button that did nothing. Every
+  reference on that page is now `/…`, which is correct at both `/admin` and
+  `/admin/`. Do not "tidy" them back to relative.
+- **`vercel.json` deliberately omits `trailingSlash`** — with root-absolute
+  paths the page no longer cares either way, so there is nothing to gain by
+  pinning it. (Do not add comment keys to `vercel.json` to explain things like
+  this: Vercel validates it against a strict schema and rejects unknown
+  properties, which fails the deploy. Notes go here instead.)
 
 No server, database or build step required anywhere.
 

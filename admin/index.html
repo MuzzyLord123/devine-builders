@@ -39,20 +39,27 @@
   <meta name="robots" content="noindex, nofollow, noarchive">
   <meta name="referrer" content="same-origin">
   <meta name="theme-color" content="#0f172a">
-  <link rel="icon" href="../favicon.ico" sizes="any">
-  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32.png">
-  <link rel="apple-touch-icon" href="../images/apple-touch-icon.png">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
   <!-- The main stylesheet supplies the design tokens, button and form
        styles; admin.css adds only what this page needs on top. -->
-  <link rel="stylesheet" href="../styles.css">
-  <link rel="stylesheet" href="admin.css">
+  <!-- PATHS ARE ROOT-ABSOLUTE ON PURPOSE. Vercel serves this folder at
+       /admin (no trailing slash), so a same-directory href like
+       "admin.css" resolves to /admin.css and 404s — which silently
+       killed the stylesheet AND admin.js, leaving a dead Unlock button.
+       Root-absolute works at /admin and /admin/ alike. The trade-off:
+       this page must be served from a domain root, not opened over
+       file:// or hosted under a sub-path. -->
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/admin/admin.css">
 </head>
 <body class="admin">
 
   <!-- ---------- Lock screen (shown until the key is accepted) ---------- -->
   <div class="admin-lock" id="admin-lock">
     <div class="admin-lock__card">
-      <img class="admin-lock__logo" src="../images/logo-mark.png" width="60" height="40" alt="Devine Builders">
+      <img class="admin-lock__logo" src="/images/logo-mark.png" width="60" height="40" alt="Devine Builders">
       <h1 class="admin-lock__title">Enquiry tracker</h1>
       <p class="admin-lock__text">Enter your access key to view enquiries stored on this device.</p>
       <form class="admin-lock__form" id="unlock-form" autocomplete="off">
@@ -70,7 +77,7 @@
         checked in the browser, so it is not a substitute for your device's own
         passcode. Enquiries are stored only in this browser.
       </p>
-      <p class="admin-lock__back"><a href="../index.html">← Back to the website</a></p>
+      <p class="admin-lock__back"><a href="/index.html">← Back to the website</a></p>
     </div>
   </div>
 
@@ -79,14 +86,14 @@
 
     <header class="admin-bar">
       <div class="admin-bar__brand">
-        <img src="../images/logo-mark.png" width="60" height="40" alt="" aria-hidden="true">
+        <img src="/images/logo-mark.png" width="60" height="40" alt="" aria-hidden="true">
         <div>
           <h1 class="admin-bar__title">Enquiry tracker</h1>
           <p class="admin-bar__sub">Devine Builders · this device only</p>
         </div>
       </div>
       <div class="admin-bar__actions">
-        <a class="admin-btn" href="../index.html">View site</a>
+        <a class="admin-btn" href="/index.html">View site</a>
         <button class="admin-btn" type="button" id="lock-btn">Lock</button>
       </div>
     </header>
@@ -306,7 +313,7 @@
       <footer class="admin-foot">
         <p>
           Enquiry tracker · data stored in this browser only ·
-          <a href="../index.html">Devine Builders website</a>
+          <a href="/index.html">Devine Builders website</a>
         </p>
       </footer>
     </main>
@@ -329,7 +336,7 @@
        ADMIN_KEY_HASH environment variable. It must load BEFORE admin.js;
        both are deferred, so they run in document order. The committed copy
        is empty and admin.js falls back to its built-in key. -->
-  <script src="admin-key.js" defer></script>
-  <script src="admin.js" defer></script>
+  <script src="/admin/admin-key.js" defer></script>
+  <script src="/admin/admin.js" defer></script>
 </body>
 </html>
