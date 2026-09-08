@@ -163,7 +163,7 @@
     box.id = "broken-banner";
     box.appendChild(el("h2", "admin-h2", "Your saved enquiries couldn't be read"));
     box.appendChild(el("p", "admin-help",
-      "There is saved data in this browser, but it isn't in a format this page understands — " +
+      "There is saved data in this browser, but it isn't in a format this page understands, " +
       "so nothing is being shown. Nothing has been deleted, and saving is paused so it can't be " +
       "overwritten. Download the raw file first (it may still be readable by hand), then choose."));
     const row = el("div", "admin-row admin-row--wrap");
@@ -223,7 +223,7 @@
     } catch (e) {
       // Most likely the storage quota, or storage blocked in private mode.
       setStatus($("data-status"),
-        "Could not save — this browser is blocking storage or is full. Back up your data, then free some space.", "bad");
+        "Could not save. This browser is blocking storage or is full. Back up your data, then free some space.", "bad");
       return false;
     }
   }
@@ -516,7 +516,7 @@
 
     const won = enquiries.filter((e) => e.status === "won");
     const decided = count((e) => e.status === "won" || e.status === "lost");
-    const winRate = decided ? Math.round((won.length / decided) * 100) + "%" : "—";
+    const winRate = decided ? Math.round((won.length / decided) * 100) + "%" : "n/a";
     const wonValue = won.reduce((sum, e) => sum + (e.value || 0), 0);
     const dueCount = count(isOverdue);
 
@@ -574,7 +574,7 @@
   }
 
   function replyMailto(item) {
-    const subject = "Your enquiry — " + BUSINESS.name;
+    const subject = "Your enquiry: " + BUSINESS.name;
     const body = [
       "Hi " + (item.name ? item.name.split(" ")[0] : "there") + ",",
       "",
@@ -722,7 +722,7 @@
       const bad = [valueField.control, followField.control]
         .some((c) => c.validity && c.validity.badInput);
       if (bad) {
-        setStatus($("list-status"), "Check the quoted value and follow-up date — one of them isn't a valid entry.", "bad");
+        setStatus($("list-status"), "Check the quoted value and follow-up date: one of them isn't a valid entry.", "bad");
         return;
       }
       const ok = commit(() => {
@@ -899,7 +899,7 @@
     }
     fillForm(Object.assign({ source: "Website", status: "new" }, parsed));
     setStatus($("parse-status"),
-      "Found " + parsed.hits + " detail" + (parsed.hits === 1 ? "" : "s") + " — check them below before saving.", "good");
+      "Found " + parsed.hits + " detail" + (parsed.hits === 1 ? "" : "s") + ". Check them below before saving.", "good");
     showForm("Check the details, then save.");
   }
 
@@ -974,7 +974,7 @@
     download("devine-builders-enquiries-" + stamp() + ".json",
       JSON.stringify({ v: 1, exported: new Date().toISOString(), items: enquiries }, null, 2),
       "application/json");
-    announce("Backup downloaded — keep it somewhere safe.");
+    announce("Backup downloaded. Keep it somewhere safe.");
   }
 
   function csvCell(value) {
@@ -1035,7 +1035,7 @@
       if (unreadable) notes.push(unreadable + " unreadable and not restored");
       announce((added
         ? "Restored " + added + " enquir" + (added === 1 ? "y" : "ies")
-        : "Nothing new to restore") + (notes.length ? " — " + notes.join(", ") + "." : "."));
+        : "Nothing new to restore") + (notes.length ? ": " + notes.join(", ") + "." : "."));
     };
     reader.onerror = () => setStatus($("data-status"), "Couldn't read that file.", "bad");
     reader.readAsText(file);
@@ -1174,7 +1174,7 @@
       }
       // Only the hash is kept, so a typo here would be unrecoverable.
       if (value !== again) {
-        setStatus($("key-status"), "The two keys don't match — type the same one in both boxes.", "bad");
+        setStatus($("key-status"), "The two keys don't match. Type the same one in both boxes.", "bad");
         return;
       }
       try {
@@ -1183,7 +1183,7 @@
         $("new-key-confirm").value = "";
         setStatus($("key-status"), "New key saved for this device. Make sure you've written it down.", "good");
       } catch (err) {
-        setStatus($("key-status"), "Couldn't save the new key — storage is blocked.", "bad");
+        setStatus($("key-status"), "Couldn't save the new key. Storage is blocked.", "bad");
       }
     });
     $("reset-key").addEventListener("click", () => {

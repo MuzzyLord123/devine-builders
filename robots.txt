@@ -1,8 +1,8 @@
-# Devine Builders — robots.txt
+# Devine Builders robots.txt
 # OWNER: update the Sitemap URL below to your real domain.
 User-agent: *
 Allow: /
-# Owner-only enquiry tracker — not part of the public site.
+# Owner-only enquiry tracker, not part of the public site.
 # NOTE: crawlers only read robots.txt from the DOMAIN root, so on the current
 # GitHub Pages project URL (…github.io/devine-builders/) this file is never
 # fetched and these rules do nothing. The tracker's real protection is the

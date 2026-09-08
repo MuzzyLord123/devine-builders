@@ -968,7 +968,7 @@
       var navQuote = document.querySelector(".primary-nav__cta") || document.querySelector('.primary-nav a[href*="estimate.html"]');
       var quoteHref = navQuote ? navQuote.getAttribute("href") : "estimate.html";
       bar.appendChild(
-        btn("quote", quoteHref, "Get an estimate — free, no obligation", quoteSvg, "Get an estimate")
+        btn("quote", quoteHref, "Get an estimate: free, no obligation", quoteSvg, "Get an estimate")
       );
     }
 
@@ -1328,7 +1328,7 @@
         if (match) shown++;
       }
       if (emptyEl) emptyEl.hidden = (shown !== 0);
-      if (countEl) countEl.textContent = q ? ("Showing " + shown + " of " + total + " service categories" + (shown === 0 ? " — no matches" : "")) : "";
+      if (countEl) countEl.textContent = q ? ("Showing " + shown + " of " + total + " service categories" + (shown === 0 ? ", no matches" : "")) : "";
       if (clearBtn) clearBtn.hidden = !input.value;
     }
 
@@ -1353,17 +1353,17 @@
     if (!select || !tip) return;
 
     var tips = {
-      "Extension": "A rough idea of the size and how you'll use the new space helps Phil scope it — photos or any plans are a bonus.",
+      "Extension": "A rough idea of the size and how you'll use the new space helps Phil scope it. Photos or any plans are a bonus.",
       "Renovation": "Tell us which rooms and roughly what you'd like done; photos of the current space help Phil estimate accurately.",
-      "Kitchen": "Rough room measurements and a photo of the current kitchen help \u2014 plus whether you already have units in mind or want Phil to price them in.",
-      "Garage Renovation": "Let us know whether it's a repair or a full conversion, plus rough measurements \u2014 photos inside and out really help.",
+      "Kitchen": "Rough room measurements and a photo of the current kitchen help, plus whether you already have units in mind or want Phil to price them in.",
+      "Garage Renovation": "Let us know whether it's a repair or a full conversion, plus rough measurements. Photos inside and out really help.",
       "Brickwork & Masonry": "A photo of the wall or area and rough measurements help Phil price new brickwork or repairs.",
-      "Groundworks": "Let us know the site access and roughly the area involved — photos help with drainage, foundations or concrete work.",
+      "Groundworks": "Let us know the site access and roughly the area involved. Photos help with drainage, foundations or concrete work.",
       "Roofing": "For a repair, a photo of the issue (from the ground is fine) really helps; for a new roof, the rough size and type.",
-      "Driveway / Patio": "The rough area and your preferred finish — block paving, resin, tarmac or concrete — help Phil estimate.",
+      "Driveway / Patio": "The rough area and your preferred finish (block paving, resin, tarmac or concrete) help Phil estimate.",
       "Landscaping": "Describe the space and what you'd like (lawn, decking, fencing, walls); photos of the garden help.",
       "Property Maintenance": "A quick description of the job and a photo of the problem help Phil tell you what's needed.",
-      "Other / Not sure": "No problem — just describe what you're after and Phil will point you in the right direction."
+      "Other / Not sure": "No problem. Just describe what you're after and Phil will point you in the right direction."
     };
 
     function update() {

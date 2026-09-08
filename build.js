@@ -64,14 +64,14 @@ function resolveHash() {
 
 function write(hash, source) {
   const banner =
-    "/* GENERATED AT DEPLOY TIME BY build.js — DO NOT EDIT, DO NOT COMMIT A REAL HASH.\n" +
+    "/* GENERATED AT DEPLOY TIME BY build.js. DO NOT EDIT, DO NOT COMMIT A REAL HASH.\n" +
     "   The copy committed to the repo is deliberately empty; Vercel overwrites it\n" +
     "   from the ADMIN_KEY / ADMIN_KEY_HASH environment variable at build time.\n" +
     "   With no hash here, admin.js falls back to its own built-in key. */\n";
 
   const body = hash
     ? 'window.__DB_ADMIN_KEY_HASH = "' + hash + '";\n'
-    : "/* no key injected — admin.js uses its built-in fallback */\n";
+    : "/* no key injected, admin.js uses its built-in fallback */\n";
 
   fs.writeFileSync(OUT, banner + body, "utf8");
 
@@ -79,7 +79,7 @@ function write(hash, source) {
     console.log("build.js: admin key injected from " + source + " (sha256 " + hash.slice(0, 8) + "…).");
   } else {
     console.warn(
-      "build.js: WARNING — neither ADMIN_KEY nor ADMIN_KEY_HASH is set, so /admin/ " +
+      "build.js: WARNING: neither ADMIN_KEY nor ADMIN_KEY_HASH is set, so /admin/ " +
       "will keep using the built-in key committed in admin/admin.js. Set one of " +
       "them in the Vercel project's Environment Variables to take the key out of " +
       "the public repo."

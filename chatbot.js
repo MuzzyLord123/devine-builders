@@ -83,7 +83,7 @@
   var SERVICES = [
     {
       id: "extensions", name: "Extensions", page: "extensions-connahs-quay.html",
-      blurb: "Single- and double-storey extensions, garage and loft conversions, conservatories, porches, garden rooms and outbuildings — built from the groundwork up.",
+      blurb: "Single- and double-storey extensions, garage and loft conversions, conservatories, porches, garden rooms and outbuildings, built from the groundwork up.",
       items: ["Single- & double-storey extensions", "Garage & loft conversions", "Conservatories, porches & garden rooms", "Outbuildings & new builds"],
       tags: ["extension", "extensions", "extend", "single storey", "double storey", "loft", "loft conversion", "attic", "conservatory", "conservatories", "porch", "porches", "garden room", "outbuilding", "new build", "new builds", "more space", "extra room"]
     },
@@ -95,31 +95,31 @@
     },
     {
       id: "kitchens", name: "Kitchens", page: "services.html#kitchens",
-      blurb: "New kitchens fitted from strip-out to finish — units, worktops, tiling, flooring, plastering and joinery, plus knock-throughs where a room needs opening up.",
+      blurb: "New kitchens fitted from strip-out to finish: units, worktops, tiling, flooring, plastering and joinery, plus knock-throughs where a room needs opening up.",
       items: ["Kitchen fitting & worktops", "Tiling, flooring & splashbacks", "Plastering, joinery & making good", "Knock-throughs, RSJs & appliance fitting"],
       tags: ["kitchen", "kitchens", "new kitchen", "kitchen fitting", "kitchen fitter", "worktop", "worktops", "splashback", "kitchen units", "galley kitchen"]
     },
     {
       id: "garage-renovations", name: "Garage Renovations", page: "services.html#garage-renovations",
-      blurb: "Garage repairs and full garage conversions — re-roofing, floors, damp proofing and insulation, new doors, walls and rendering.",
+      blurb: "Garage repairs and full garage conversions: re-roofing, floors, damp proofing and insulation, new doors, walls and rendering.",
       items: ["Garage conversions", "Garage re-roofing & flat roof repairs", "Floors, damp proofing & insulation", "New garage doors, walls & rendering"],
       tags: ["garage", "garages", "garage renovation", "garage renovations", "garage conversion", "convert my garage", "garage roof", "garage door", "garage floor"]
     },
     {
       id: "brickwork", name: "Brickwork & Masonry", page: "brickwork-connahs-quay.html",
-      blurb: "Neat, solid brickwork and masonry — new walls, repairs and everything in between, built to keep the weather out.",
+      blurb: "Neat, solid brickwork and masonry: new walls, repairs and everything in between, built to keep the weather out.",
       items: ["Bricklaying, blockwork & stonework", "Garden & retaining walls", "Repointing & structural brickwork", "Chimney repairs"],
       tags: ["brick", "bricks", "brickwork", "bricklaying", "bricklayer", "blockwork", "block work", "masonry", "stonework", "stone", "wall", "walls", "garden wall", "retaining wall", "repointing", "pointing", "chimney", "chimneys"]
     },
     {
       id: "groundworks", name: "Groundworks", page: "groundworks-connahs-quay.html",
-      blurb: "Foundations, drainage and concrete work done right from the very first dig — the groundwork everything else depends on.",
+      blurb: "Foundations, drainage and concrete work done right from the very first dig: the groundwork everything else depends on.",
       items: ["Foundations, footings & underpinning", "Site clearance & excavation", "Drainage installation & drain repairs", "Concrete slabs, kerbing & trenching"],
       tags: ["groundwork", "groundworks", "foundation", "foundations", "footing", "footings", "underpinning", "underpin", "drainage", "drain", "drains", "excavation", "excavate", "digging", "dig", "concrete", "slab", "slabs", "kerbing", "trenching", "site clearance"]
     },
     {
       id: "roofing", name: "Roofing", page: "roofing-connahs-quay.html",
-      blurb: "New roofs, repairs and watertight detailing for pitched and flat roofs — your home's first line of defence against the weather.",
+      blurb: "New roofs, repairs and watertight detailing for pitched and flat roofs: your home's first line of defence against the weather.",
       items: ["New roofs, repairs & flat roofs", "Roof tiling & slate roofing", "Leadwork & chimney repairs", "Fascias, soffits & guttering"],
       tags: ["roof", "roofs", "roofing", "roofer", "flat roof", "pitched roof", "roof repair", "leak", "leaking roof", "tile", "tiles", "tiling", "slate", "slates", "slating", "leadwork", "lead", "fascia", "fascias", "soffit", "soffits", "gutter", "guttering", "gutters"]
     },
@@ -137,7 +137,7 @@
     },
     {
       id: "maintenance", name: "Property Maintenance", page: "maintenance-connahs-quay.html",
-      blurb: "Dependable repairs and upkeep — no job too small, with the same care and tidiness as a big project.",
+      blurb: "Dependable repairs and upkeep, no job too small, with the same care and tidiness as a big project.",
       items: ["General repairs & refurbishments", "Damp & leak repairs", "Insurance, fire & storm damage work", "Interior & exterior decorating"],
       tags: ["maintenance", "repair", "repairs", "fix", "fixing", "handyman", "odd job", "odd jobs", "small job", "small jobs", "damp", "leak", "leaks", "storm damage", "fire damage", "insurance work", "upkeep", "snagging"]
     }
@@ -191,7 +191,7 @@
   function serviceReply(svc, opts) {
     opts = opts || {};
     var blocks = [
-      p(svc.name + " — " + svc.blurb),
+      p(svc.name + ": " + svc.blurb),
       p("That includes: " + svc.items.join("; ") + "."),
       actions([
         { label: svc.name + " details", href: svc.page },
@@ -244,7 +244,7 @@
       reply: function () {
         return {
           blocks: [
-            p("Thanks for stopping by! When you're ready, Phil would be glad to help — call " + CONTACT.telDisplay + " or get a free estimate any time."),
+            p("Thanks for stopping by! When you're ready, Phil would be glad to help. Call " + CONTACT.telDisplay + " or get a free estimate any time."),
             actions([ACT.quote, ACT.call])
           ],
           chips: STARTER_CHIPS
@@ -259,7 +259,7 @@
           blocks: [
             p("Devine Builders covers eight main areas:"),
             p("Extensions · Renovations · Brickwork & Masonry · Groundworks · Roofing · Driveways & Patios · Landscaping · Property Maintenance."),
-            p("Plus all the trades in between — carpentry & joinery, plastering, kitchens & bathrooms, flooring, decorating and structural work. Which one would you like to know more about?"),
+            p("Plus all the trades in between: carpentry & joinery, plastering, kitchens & bathrooms, flooring, decorating and structural work. Which one would you like to know more about?"),
             actions([ACT.services, ACT.quote])
           ],
           chips: [
@@ -278,13 +278,13 @@
       reply: function (ctx) {
         var svc = ctx && ctx.svc;
         var quoteAct = svc
-          ? { label: "Estimate form — " + svc.name, href: "estimate.html?service=" + svc.id, primary: true }
+          ? { label: "Estimate form: " + svc.name, href: "estimate.html?service=" + svc.id, primary: true }
           : ACT.quote;
         return {
           blocks: [
-            p("Getting a free estimate is easy — and there's never any obligation:"),
+            p("Getting a free estimate is easy, and there's never any obligation:"),
             p("1) Tell us about the job · 2) Phil comes back with a clear, no-pressure estimate and a sensible plan · 3) we do the work and keep the site tidy."),
-            p("You can fill in the estimate form, or call/email Phil directly — he usually gets back to you within a day or two. Or answer three quick questions right here and I'll set the form up for you."),
+            p("You can fill in the estimate form, or call/email Phil directly. He usually gets back to you within a day or two. Or answer three quick questions right here and I'll set the form up for you."),
             actions([quoteAct, ACT.call, ACT.email])
           ],
           chips: [
@@ -304,7 +304,7 @@
           : ACT.quote;
         return {
           blocks: [
-            p("Every estimate is free and with no obligation. We don't list fixed prices because every job is different — Phil works out a clear, fair price once he understands exactly what you need." + (svc ? " That goes for " + svc.name.toLowerCase() + " too: the size and spec make all the difference." : "")),
+            p("Every estimate is free and with no obligation. We don't list fixed prices because every job is different. Phil works out a clear, fair price once he understands exactly what you need." + (svc ? " That goes for " + svc.name.toLowerCase() + " too: the size and spec make all the difference." : "")),
             p("Tell us about your project and he'll come back to you, usually within a day or two."),
             actions([quoteAct, ACT.call])
           ],
@@ -321,7 +321,7 @@
       reply: function () {
         return {
           blocks: [
-            p("You can reach Phil directly — he usually gets back to you within a day or two:"),
+            p("You can reach Phil directly. He usually gets back to you within a day or two:"),
             p("📞 Phone: " + CONTACT.telIntl + "   ·   ✉️ Email: " + CONTACT.email),
             actions([ACT.call, ACT.email, ACT.facebook, ACT.quote])
           ],
@@ -358,7 +358,7 @@
           : ACT.quote;
         return {
           blocks: [
-            p("It really depends on the size of the job — a small repair is very different from a full extension. Phil will give you a realistic timescale along with your free estimate, once he's seen what's involved." + (svc ? " For " + svc.name.toLowerCase() + ", just tell him what you have in mind and he'll be straight with you about timing." : "")),
+            p("It really depends on the size of the job: a small repair is very different from a full extension. Phil will give you a realistic timescale along with your free estimate, once he's seen what's involved." + (svc ? " For " + svc.name.toLowerCase() + ", just tell him what you have in mind and he'll be straight with you about timing." : "")),
             actions([quoteAct, ACT.call])
           ],
           chips: [
@@ -374,7 +374,7 @@
       reply: function () {
         return {
           blocks: [
-            p("Devine Builders is a small local business based in Connah's Quay, run by Phil Devine — a hands-on builder. When you call, you talk to the person actually doing the work, not a call centre."),
+            p("Devine Builders is a small local business based in Connah's Quay, run by Phil Devine, a hands-on builder. When you call, you talk to the person actually doing the work, not a call centre."),
             p("That means clear advice, fair pricing and no surprises. Phil treats every home like his own: turning up on time, keeping the site tidy and doing things properly the first time."),
             actions([ACT.services, ACT.quote])
           ],
@@ -395,12 +395,12 @@
         var blocks;
         if (named) {
           blocks = [
-            p("Yes — " + named + " is right in the area we cover. We're based in Connah's Quay and work across Flintshire and the wider North Wales area. Tell Phil about your project for a free estimate."),
+            p("Yes, " + named + " is right in the area we cover. We're based in Connah's Quay and work across Flintshire and the wider North Wales area. Tell Phil about your project for a free estimate."),
             actions([ACT.quote, ACT.call])
           ];
         } else if (ctx && ctx.unknownPlace) {
           blocks = [
-            p("We're based in Connah's Quay and cover Flintshire and the wider North Wales area. I can't say for certain about “" + ctx.unknownPlace + "” specifically — the best thing is to ask Phil; he'll let you know straight away."),
+            p("We're based in Connah's Quay and cover Flintshire and the wider North Wales area. I can't say for certain about “" + ctx.unknownPlace + "” specifically. The best thing is to ask Phil; he'll let you know straight away."),
             actions([ACT.call, ACT.quote])
           ];
         } else {
@@ -411,7 +411,7 @@
           });
           blocks = [
             p("We're based in Connah's Quay and cover Flintshire and the wider North Wales area, including: " + towns.join(", ") + " and more."),
-            p("If you're nearby and not listed, just ask Phil — he'll happily let you know if he reaches you."),
+            p("If you're nearby and not listed, just ask Phil. He'll happily let you know if he reaches you."),
             actions([ACT.quote, ACT.call])
           ];
         }
@@ -430,7 +430,7 @@
       reply: function () {
         return {
           blocks: [
-            p("You can see examples on our Gallery page. A quick, honest heads-up: the images there are illustrations for now — Phil is adding real project photos soon."),
+            p("You can see examples on our Gallery page. A quick, honest heads-up: the images there are illustrations for now. Phil is adding real project photos soon."),
             actions([ACT.gallery, ACT.quote])
           ],
           chips: [
@@ -446,7 +446,7 @@
       reply: function () {
         return {
           blocks: [
-            p("You can download our services brochure (PDF) — it lists everything we do across Flintshire and North Wales."),
+            p("You can download our services brochure (PDF). It lists everything we do across Flintshire and North Wales."),
             actions([ACT.brochure, ACT.services, ACT.quote])
           ],
           chips: STARTER_CHIPS.slice(0, 3)
@@ -461,7 +461,7 @@
       reply: function () {
         return {
           blocks: [
-            p("That's something Phil is best placed to answer directly, rather than me guessing — give him a call or drop him an email and he'll be happy to talk it through honestly."),
+            p("That's something Phil is best placed to answer directly, rather than me guessing. Give him a call or drop him an email and he'll be happy to talk it through honestly."),
             actions([ACT.call, ACT.email])
           ],
           chips: [
@@ -477,7 +477,7 @@
       reply: function () {
         return {
           blocks: [
-            p("I'm Devine Builders' automated assistant — happy to help! I can tell you about our services, the areas we cover, how estimates work, or how to reach Phil. For anything specific to your project, Phil is the best person to speak to.")
+            p("I'm Devine Builders' automated assistant, happy to help! I can tell you about our services, the areas we cover, how estimates work, or how to reach Phil. For anything specific to your project, Phil is the best person to speak to.")
           ],
           chips: STARTER_CHIPS
         };
@@ -491,10 +491,10 @@
       onlyShort: true,
       reply: function (ctx) {
         if (ctx && ctx.svc) {
-          return serviceReply(ctx.svc, { lead: "Happy to — here's more on our " + ctx.svc.name.toLowerCase() + " work." });
+          return serviceReply(ctx.svc, { lead: "Happy to. Here's more on our " + ctx.svc.name.toLowerCase() + " work." });
         }
         return {
-          blocks: [p("Happy to! Which topic — one of our services, the areas we cover, or how free estimates work?")],
+          blocks: [p("Happy to! Which topic: one of our services, the areas we cover, or how free estimates work?")],
           chips: STARTER_CHIPS
         };
       }
@@ -530,7 +530,7 @@
       reply: function () {
         var parent = serviceById(trade.parent);
         return serviceReply(parent, {
-          lead: "Yes — " + trade.name.toLowerCase() + " is something we do. It falls under our " + parent.name + " work."
+          lead: "Yes, " + trade.name.toLowerCase() + " is something we do. It falls under our " + parent.name + " work."
         });
       }
     });
@@ -732,12 +732,12 @@
     var blocks;
     if (pc.covered) {
       blocks = [
-        p("Great — " + pc.code + " is within the area we cover. We're based in Connah's Quay and work across Flintshire and the wider North Wales area. Phil will confirm when he's in touch."),
+        p("Great, " + pc.code + " is within the area we cover. We're based in Connah's Quay and work across Flintshire and the wider North Wales area. Phil will confirm when he's in touch."),
         actions([ACT.quote, ACT.call])
       ];
     } else {
       blocks = [
-        p(pc.code + " looks outside our usual patch — we're based in Connah's Quay and cover Flintshire and the wider North Wales area. It's still worth asking though: Phil will tell you straight away, either way."),
+        p(pc.code + " looks outside our usual patch. We're based in Connah's Quay and cover Flintshire and the wider North Wales area. It's still worth asking though: Phil will tell you straight away, either way."),
         actions([ACT.call, ACT.quote])
       ];
     }
@@ -759,10 +759,10 @@
     var acts = [];
     for (var i = 0; i < list.length; i++) {
       var svc = serviceById(list[i].id);
-      blocks.push(p(svc.name + " — " + svc.blurb));
+      blocks.push(p(svc.name + ": " + svc.blurb));
       acts.push({ label: svc.name + " details", href: svc.page });
     }
-    blocks.push(p("One enquiry can cover the lot — tell Phil what you're planning and he'll estimate it as a whole job."));
+    blocks.push(p("One enquiry can cover the lot. Tell Phil what you're planning and he'll estimate it as a whole job."));
     acts.push(ACT.quote);
     blocks.push(actions(acts));
     return {
@@ -777,7 +777,7 @@
   function fallbackReply() {
     return {
       blocks: [
-        p("I'm a simple assistant, so I may have missed that — sorry! Short and plain works best with me — try something like 'garden wall cost', 'do you cover CH6?' or 'start an estimate'."),
+        p("I'm a simple assistant, so I may have missed that, sorry! Short and plain works best with me. Try something like 'garden wall cost', 'do you cover CH6?' or 'start an estimate'."),
         p("For anything specific, the best thing is to call Phil on " + CONTACT.telDisplay + " or get a free estimate."),
         actions([ACT.quote, ACT.call, ACT.services])
       ],
@@ -920,7 +920,7 @@
     saveState();
     return {
       blocks: [
-        p("No problem — I've dropped that. The normal estimate form is there whenever you want it, and I'm happy to help with anything else."),
+        p("No problem. I've dropped that. The normal estimate form is there whenever you want it, and I'm happy to help with anything else."),
         actions([ACT.quote, ACT.call])
       ],
       chips: STARTER_CHIPS
@@ -936,7 +936,7 @@
     saveState();
     say({
       blocks: [
-        p("Brilliant — three quick questions and I'll set the estimate form up for you. No obligation, and Phil reads every enquiry himself."),
+        p("Brilliant. Three quick questions and I'll set the estimate form up for you. No obligation, and Phil reads every enquiry himself."),
         p("First: what type of job is it?")
       ],
       chips: SERVICES.map(function (svc) {
@@ -957,7 +957,7 @@
     if (flow.step === "type") {
       var ack;
       if (skipped) {
-        ack = "No problem — you can describe it in a moment.";
+        ack = "No problem. You can describe it in a moment.";
       } else {
         var guess = guessService(text);
         if (guess) {
@@ -967,10 +967,10 @@
           // guesses Extensions, but that detail shouldn't be lost.
           if (normalize(text) !== normalize(guess.name)) flow.data.typeText = String(text).trim().slice(0, 60);
           rememberService(guess.id);
-          ack = "Got it — " + guess.name + ".";
+          ack = "Got it, " + guess.name + ".";
         } else {
           flow.data.serviceLabel = String(text).trim().slice(0, 60);
-          ack = "Got it — I'll pass that on in your own words.";
+          ack = "Got it. I'll pass that on in your own words.";
         }
       }
       flow.step = "where";
@@ -993,15 +993,15 @@
         var area = findArea(norm);
         var pc = findPostcode(text);
         if (area || (pc && pc.covered)) {
-          ack2 = "Great — that's right in the area we cover. Phil will confirm when he's in touch.";
+          ack2 = "Great. That's right in the area we cover. Phil will confirm when he's in touch.";
         } else {
-          ack2 = "Noted — and if it turns out to be outside Phil's patch, he'll tell you straight away.";
+          ack2 = "Noted, and if it turns out to be outside Phil's patch, he'll tell you straight away.";
         }
       }
       flow.step = "details";
       saveState();
       return {
-        blocks: [p(ack2), p("Last one: tell me a bit about the job — a sentence or two is plenty.")],
+        blocks: [p(ack2), p("Last one: tell me a bit about the job. A sentence or two is plenty.")],
         chips: [
           { label: "Skip", send: "skip" },
           { label: "Cancel", send: "cancel" }
@@ -1034,14 +1034,14 @@
     } catch (e) { /* private mode — the form still works, just unfilled */ }
     saveState();
 
-    var summary = "Job: " + (d.serviceLabel || "—") +
-      "  ·  Where: " + (d.place || "—") +
-      "  ·  Notes: " + (d.details ? (d.details.length > 90 ? d.details.slice(0, 87) + "…" : d.details) : "—");
+    var summary = "Job: " + (d.serviceLabel || "not given") +
+      "  ·  Where: " + (d.place || "not given") +
+      "  ·  Notes: " + (d.details ? (d.details.length > 90 ? d.details.slice(0, 87) + "…" : d.details) : "not given");
     return {
       blocks: [
         p("Perfect, that's everything. Here's what I've got:"),
         p(summary),
-        p("Tap continue and the estimate form will be pre-filled — just add your name and contact details, check it over, and send. Phil usually replies within a day or two."),
+        p("Tap continue and the estimate form will be pre-filled. Just add your name and contact details, check it over, and send. Phil usually replies within a day or two."),
         actions([
           { label: "Continue to the estimate form", href: "estimate.html" + (d.service ? "?service=" + d.service : ""), primary: true },
           ACT.call

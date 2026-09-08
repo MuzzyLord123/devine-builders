@@ -109,10 +109,10 @@
     var pairs = [
       { id: "email", req: "email-req", hint: "email-hint", on: email,
         wanted: "Where Phil will send your estimate.",
-        spare: "Optional — worth adding as a backup." },
+        spare: "Optional. Worth adding as a backup." },
       { id: "phone", req: "phone-req", hint: "phone-hint", on: !email,
         wanted: "Phil will ring you on this number.",
-        spare: "Optional — add it and Phil can call if that is quicker." }
+        spare: "Optional. Add it and Phil can call if that is quicker." }
     ];
 
     pairs.forEach(function (f) {
@@ -169,10 +169,10 @@
         var v = postcode.value.replace(/\s+/g, "").toUpperCase();
         if (v.length < 2) { areaMsg.textContent = ""; areaMsg.className = "field__area"; return; }
         if (COVERED.test(v)) {
-          areaMsg.textContent = "Great — that's within the area we cover. Phil will confirm when he's in touch.";
+          areaMsg.textContent = "Great. That's within the area we cover. Phil will confirm when he's in touch.";
           areaMsg.className = "field__area is-yes";
         } else {
-          areaMsg.textContent = "We're based in Connah's Quay and cover Flintshire & North Wales — pop it in and Phil will let you know either way.";
+          areaMsg.textContent = "We're based in Connah's Quay and cover Flintshire & North Wales. Pop it in and Phil will let you know either way.";
           areaMsg.className = "field__area is-maybe";
         }
       });
@@ -327,7 +327,7 @@
         postcode: data.postcode || "",
         "project-type": data["project-type"] || "",
         details: data.details || "",
-        _subject: "New estimate request — Devine Builders website",
+        _subject: "New estimate request: Devine Builders website",
         _template: "table",
         _captcha: "false",
         _honey: (function () { var h = form.querySelector('[name="_honey"]'); return h ? h.value : ""; })()
@@ -351,7 +351,7 @@
           // Couldn't reach the backend — fall back to the email-app method
           // so the enquiry can still reach Phil, without losing typed details.
           fallbackToEmailApp(
-            "We couldn't send it directly just now — your email app should be open as a backup, " +
+            "We couldn't send it directly just now. Your email app should be open as a backup, " +
             "or call Phil on 07956 547040."
           );
         });
@@ -394,7 +394,7 @@
      fallback used only if the live (FormSubmit) send fails. */
   function buildMailto(data) {
     var subject =
-      "Estimate request — " + (data["project-type"] || "General enquiry") +
+      "Estimate request: " + (data["project-type"] || "General enquiry") +
       " (" + (data.name || "Website enquiry") + ")";
     var bodyLines = [
       "New estimate request from the Devine Builders website",
